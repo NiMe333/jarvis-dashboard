@@ -1,0 +1,16 @@
+# Dependencies
+shader/node_modules/
+
+# Vite build output
+shader/dist/
+
+# Local environment files
+*.local
+.env
+.env.*
+!.env.example
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
