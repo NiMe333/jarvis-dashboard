@@ -4,7 +4,7 @@
 // current HUD radius (~0.86), 0.21 gives an outer core radius near 23% of HUD.
 // -----------------------------------------------------------------------------
 const float CORE_SCALE = 0.21;
-const float CORE_GLOW = 1.10;
+const float CORE_GLOW = 1.30;
 const float CORE_SPEED = 0.16;
 const float CORE_DETAIL = 1.0;
 const float CORE_ROTATION_SPEED = 0.10;
@@ -44,7 +44,7 @@ float coreSegmentGlow(vec2 p, vec2 a, vec2 b, float width) {
 vec3 coreEdge(vec2 p, vec2 a, vec2 b, float width, vec3 tint, float strength) {
   float sharp = coreSegment(p, a, b, width);
   float halo = coreSegmentGlow(p, a, b, width) * CORE_GLOW;
-  return tint * sharp * strength + CORE_GLOW_WARM * halo * strength * 0.11;
+  return tint * sharp * strength + CORE_GLOW_WARM * halo * strength * 0.145;
 }
 
 // Exactly fourteen silhouette vertices. Their angular spacing is fixed and the
@@ -218,7 +218,7 @@ vec3 layerCore(vec2 p, float t) {
   float temperaturePulse = 0.965 + 0.035 * sin(uTime * 3.20);
   color += CORE_WHITE_HOT * centerSharp * 1.15 * temperaturePulse;
   color += CORE_WHITE_WARM * centerHalo * 0.16 * temperaturePulse;
-  color += CORE_GLOW_WARM * centerAmbient * 0.040 * CORE_GLOW;
+  color += CORE_GLOW_WARM * centerAmbient * 0.060 * CORE_GLOW;
 
   // Selected nodes are bright; the rest of the mesh stays thin and legible.
   color += HUD_CYAN_BRIGHT * pointMask(q, coreOuterVertex(0), 0.020) * 0.90;

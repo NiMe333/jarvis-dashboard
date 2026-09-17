@@ -22,7 +22,7 @@ float outerSector(vec2 p, float angle, float span) {
 vec3 outerArc(vec2 p, float radius, float width, float angle, float span, vec3 tint, float strength) {
   float sharp = arcMask(p, radius, width, angle, span);
   float bloom = arcGlow(p, radius, width, angle, span);
-  return tint * sharp * strength + tint * bloom * 0.12 * uGlowIntensity;
+  return tint * sharp * strength + tint * bloom * 0.15 * uGlowIntensity;
 }
 
 vec3 outerTransitionRail(vec2 p, float radius, float angle, float span, vec3 deepTint, vec3 mainTint, vec3 highlightTint, float strength) {
@@ -32,7 +32,7 @@ vec3 outerTransitionRail(vec2 p, float radius, float angle, float span, vec3 dee
   return deepTint * body * 0.44 * strength
     + mainTint * body * 0.78 * strength
     + highlightTint * core * 0.86 * strength
-    + mainTint * halo * 0.15 * strength;
+    + mainTint * halo * 0.18 * strength;
 }
 
 vec3 outerPanel(vec2 p, float innerRadius, float outerRadius, float angle, float span, vec3 fillTint, vec3 edgeTint, float strength) {
@@ -148,6 +148,12 @@ vec3 outerCoreMesh(vec2 p, float t) {
     color += OUTER_BLUE * capsule(p, nearPoint, farPoint, 0.0009) * 0.34;
     color += OUTER_CYAN_DIM * capsule(p, nearPoint, crossPoint, 0.00072) * 0.24;
     color += OUTER_CYAN_DIM * pointMask(p, farPoint, 0.0032) * 0.20;
+    // A few secondary triangular braces add depth behind the bright machinery.
+    if (mod(index, 2.0) < 0.5) {
+      vec2 adjacent = vec2(cos(angle + TAU / 8.0), sin(angle + TAU / 8.0)) * 0.414;
+      color += OUTER_BLUE * capsule(p, farPoint, adjacent, 0.00075) * 0.20;
+      color += OUTER_CYAN_DIM * capsule(p, nearPoint, adjacent, 0.00062) * 0.13;
+    }
   }
   return color;
 }

@@ -71,8 +71,8 @@ vec3 orangeContainment(vec2 p, float radius) {
   float middle = exp(-pow(abs(length(p) - radius) / 0.031, 2.0));
   float bloom = exp(-pow(abs(length(p) - radius) / 0.105, 2.0));
   return RING_AMBER_HIGHLIGHT * sharp * 1.04
-    + RING_AMBER * middle * 0.52 * INNER_RING_GLOW
-    + RING_ORANGE_DARK * bloom * 0.27 * INNER_RING_GLOW;
+    + RING_AMBER * middle * 0.58 * INNER_RING_GLOW
+    + RING_ORANGE_DARK * bloom * 0.30 * INNER_RING_GLOW;
 }
 
 vec3 cyanArc(vec2 p, float radius, float width, float angle, float span, vec3 tint, float strength) {
@@ -84,7 +84,7 @@ vec3 cyanArc(vec2 p, float radius, float width, float angle, float span, vec3 ti
 vec3 orangeArc(vec2 p, float radius, float width, float angle, float span, float strength) {
   float sharp = arcMask(p, radius, width, angle, span);
   float halo = arcGlow(p, radius, width, angle, span);
-  return RING_ORANGE_LIGHT * sharp * strength + RING_ORANGE * halo * 0.16 * INNER_RING_GLOW;
+  return RING_ORANGE_LIGHT * sharp * strength + RING_ORANGE * halo * 0.205 * INNER_RING_GLOW;
 }
 
 float reactorTicks(vec2 p, float radius, float count, float phase, float majorOnly) {
@@ -129,10 +129,16 @@ vec3 layerInnerRings(vec2 p, float t) {
   float cyanAmbient = exp(-pow((r - 0.88) / 0.40, 2.0));
   float outerAmbient = exp(-pow((r - 1.34) / 0.31, 2.0));
   float warmRecessGlow = exp(-pow((r - 0.585) / 0.125, 2.0));
+  // Warm-white receiver immediately behind the reactor: it catches the core
+  // bloom while remaining a soft recess rather than a new solid ring.
+  float coreWarmBed = exp(-pow((r - 0.485) / 0.135, 2.0));
+  float coreHotBed = exp(-pow((r - 0.515) / 0.070, 2.0));
   float cyanRecessGlow = exp(-pow((r - 0.820) / 0.220, 2.0));
   color += RING_ORANGE_DARK * warmAmbient * 0.040 * energyPulse;
   color += RING_BLUE_DARK * cyanAmbient * 0.055;
   color += RING_BLUE_DEEP * outerAmbient * 0.040;
+  color += RING_ORANGE_LIGHT * coreWarmBed * 0.075;
+  color += RING_ORANGE_WHITE * coreHotBed * 0.038;
   // Low-frequency atmosphere for the dark recesses: visible only as depth,
   // never as an additional ring or a bright flat fill.
   color += RING_AMBER * warmRecessGlow * 0.018 * energyPulse;
