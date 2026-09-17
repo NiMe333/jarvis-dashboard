@@ -19,7 +19,7 @@ vec3 layerParticles(vec2 p, float t) {
   vec3 color = vec3(0.0);
   float r2 = dot(p, p);
   if (r2 < 0.100 || r2 > 0.700) return color;
-  for (int i = 0; i < 14; i++) {
+  for (int i = 0; i < 8; i++) {
     float fi = float(i);
     float a = hash11(fi * 8.7) * TAU;
     float r = 0.48 + hash11(fi + 10.0) * 0.30;
@@ -31,7 +31,7 @@ vec3 layerParticles(vec2 p, float t) {
   }
 
   // Tiny clustered sparks at the lateral energy zones.
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     float fi = float(i);
     float y = -0.22 + fi * 0.11 + sin(fi) * 0.012;
     vec2 left = vec2(-0.70 + hash11(fi) * 0.10, y);
@@ -40,22 +40,5 @@ vec3 layerParticles(vec2 p, float t) {
     color += HUD_CYAN * pointMask(p, right, 0.0028 + hash11(fi + 8.0) * 0.0025) * 0.72;
   }
 
-  // Non-uniform middle clusters: squares, crosses, plus signs and tiny stars.
-  for (int i = 0; i < 9; i++) {
-    float fi = float(i);
-    float angle = 0.20 + hash11(fi * 3.7) * TAU;
-    float radius = 0.365 + hash11(fi + 15.0) * 0.330;
-    vec2 center = vec2(cos(angle), sin(angle)) * radius;
-    float pulse = 0.76;
-    vec3 tint = hash11(fi + 21.0) > 0.74 ? HUD_ORANGE_BRIGHT : HUD_CYAN_BRIGHT;
-    color += particleCross(p, center, 0.006 + hash11(fi + 2.0) * 0.005, tint, pulse * 0.54);
-  }
-  for (int i = 0; i < 5; i++) {
-    float fi = float(i);
-    float angle = 0.68 + fi * 1.22;
-    vec2 center = vec2(cos(angle), sin(angle)) * (0.435 + mod(fi, 2.0) * 0.150);
-    float flash = 0.64;
-    color += particleStar(p, center, 0.008 + mod(fi, 2.0) * 0.003, HUD_CYAN_BRIGHT, flash * 0.52);
-  }
   return color;
 }

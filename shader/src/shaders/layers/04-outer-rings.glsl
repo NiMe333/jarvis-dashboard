@@ -128,8 +128,6 @@ vec3 outerConnectedMesh(vec2 p, float t) {
     color += OUTER_CYAN_DIM * capsule(p, innerA, outerA, 0.00085) * 0.16;
     color += OUTER_CYAN_DIM * capsule(p, innerB, outerA, 0.00072) * 0.12;
     color += OUTER_ICE * capsule(p, innerA, outerB, 0.00060) * accent * 0.16;
-    color += OUTER_CYAN_DIM * pointMask(p, innerA, 0.0026) * (0.12 + accent * 0.10);
-    color += OUTER_CYAN_DIM * pointMask(p, outerA, 0.0030) * (0.10 + accent * 0.12);
   }
   return color;
 }
@@ -147,7 +145,6 @@ vec3 outerCoreMesh(vec2 p, float t) {
     vec2 crossPoint = vec2(cos(angle + 0.42), sin(angle + 0.42)) * 0.420;
     color += OUTER_BLUE * capsule(p, nearPoint, farPoint, 0.0009) * 0.34;
     color += OUTER_CYAN_DIM * capsule(p, nearPoint, crossPoint, 0.00072) * 0.24;
-    color += OUTER_CYAN_DIM * pointMask(p, farPoint, 0.0032) * 0.20;
     // A few secondary triangular braces add depth behind the bright machinery.
     if (mod(index, 2.0) < 0.5) {
       vec2 adjacent = vec2(cos(angle + TAU / 8.0), sin(angle + TAU / 8.0)) * 0.414;

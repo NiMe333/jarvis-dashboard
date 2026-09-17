@@ -82,6 +82,9 @@ float triangleCell(vec2 p, vec2 a, vec2 b, vec2 c) {
 }
 
 vec3 layerCore(vec2 p, float t) {
+  // The complete core, including its soft ambient falloff, ends well before
+  // this radius. Avoid evaluating the dense 14-point mesh across the panel.
+  if (dot(p, p) > 0.0361) return vec3(0.0);
   vec2 q = p / CORE_SCALE;
   float time = t * CORE_SPEED;
   float breathe = 0.94 + 0.06 * sin(time * 5.0);

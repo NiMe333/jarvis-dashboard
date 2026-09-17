@@ -47,10 +47,8 @@ float innerSectorEdges(vec2 p, float innerRadius, float outerRadius, float count
 vec3 energyRing(vec2 p, float radius, float width, vec3 source, vec3 halo, float strength) {
   float sharp = ringMask(p, radius, width);
   float nearHalo = exp(-pow(abs(length(p) - radius) / max(width * 5.5, 0.016), 2.0));
-  float outerBloom = exp(-pow(abs(length(p) - radius) / max(width * 13.0, 0.045), 2.0));
   return source * sharp * strength
-    + halo * nearHalo * 0.095 * INNER_RING_GLOW
-    + halo * outerBloom * 0.022 * INNER_RING_GLOW;
+    + halo * nearHalo * 0.105 * INNER_RING_GLOW;
 }
 
 vec3 transitionRing(vec2 p, float radius) {
@@ -69,10 +67,8 @@ vec3 transitionRing(vec2 p, float radius) {
 vec3 orangeContainment(vec2 p, float radius) {
   float sharp = ringMask(p, radius, 0.018);
   float middle = exp(-pow(abs(length(p) - radius) / 0.031, 2.0));
-  float bloom = exp(-pow(abs(length(p) - radius) / 0.105, 2.0));
   return RING_AMBER_HIGHLIGHT * sharp * 1.04
-    + RING_AMBER * middle * 0.58 * INNER_RING_GLOW
-    + RING_ORANGE_DARK * bloom * 0.30 * INNER_RING_GLOW;
+    + RING_AMBER * middle * 0.58 * INNER_RING_GLOW;
 }
 
 vec3 cyanArc(vec2 p, float radius, float width, float angle, float span, vec3 tint, float strength) {
@@ -112,14 +108,14 @@ vec3 ringNode(vec2 p, float radius, float angle, vec3 tint, float pulse) {
 vec3 reactorDataBlock(vec2 p, vec2 center, float size, vec3 tint, float pulse) {
   vec2 delta = abs(p - center);
   float square = 1.0 - smoothstep(size, size + AA * 2.0, max(delta.x, delta.y));
-  float halo = exp(-pow(length(p - center) / (size * 4.5), 2.0));
-  return tint * square * pulse + tint * halo * 0.16 * pulse;
+  return tint * square * pulse;
 }
 
 vec3 layerInnerRings(vec2 p, float t) {
   vec2 q = p / INNER_CORE_SCALE;
   vec3 color = vec3(0.0);
-  if (dot(p, p) > 0.120) return color;
+  float p2 = dot(p, p);
+  if (p2 < 0.0064 || p2 > 0.120) return color;
   float r = length(q);
   float energyPulse = 1.0;
 
@@ -197,23 +193,13 @@ vec3 layerInnerRings(vec2 p, float t) {
   // Slow data fragments fill the dark band between the amber dashes and the
   // interrupted cyan belt without becoming another continuous ring.
   float dataRotation = 0.0;
-  for (int i = 0; i < 12; i++) {
+  for (int i = 0; i < 8; i++) {
     float index = float(i);
-    float angle = 0.16 + index * TAU / 12.0 + dataRotation;
+    float angle = 0.16 + index * TAU / 8.0 + dataRotation;
     float radius = 0.873 + mod(index, 3.0) * 0.024;
     vec2 position = vec2(cos(angle), sin(angle)) * radius;
     float pulse = 0.82;
     color += reactorDataBlock(q, position, 0.0090, RING_CYAN_BRIGHT, pulse);
-  }
-  for (int i = 0; i < 12; i++) {
-    float index = float(i);
-    float angle = 0.33 + index * TAU / 18.0 - dataRotation * 1.35;
-    float radius = 0.944 + mod(index, 2.0) * 0.016;
-    vec2 position = vec2(cos(angle), sin(angle)) * radius;
-    float pulse = 0.76;
-    float dot = pointMask(q, position, 0.0075);
-    float glow = exp(-pow(length(q - position) / 0.028, 2.0));
-    color += RING_CYAN_DIM * dot * pulse + RING_CYAN_DIM * glow * 0.16 * pulse;
   }
   for (int i = 0; i < 4; i++) {
     float angle = 0.72 + float(i) * TAU / 4.0 - dataRotation * 0.68;

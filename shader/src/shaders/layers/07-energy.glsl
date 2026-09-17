@@ -26,8 +26,6 @@ vec3 layerEnergy(vec2 p, float t) {
   color += HUD_ORANGE_BRIGHT * orangeC * pulse * 1.12;
   color += HUD_CYAN * arcGlow(p, 0.705, 0.010, 0.12 + drift, 0.30) * 0.34;
   color += HUD_ORANGE * arcGlow(p, 0.675, 0.012, 1.94 - drift, 0.34) * pulse * 0.35;
-  color += HUD_ORANGE_BRIGHT * arcGlow(p, 0.535, 0.010, 3.62 + drift, 0.26) * 0.16;
-  color += HUD_ORANGE * arcGlow(p, 0.447, 0.009, 5.45 - drift, 0.22) * 0.14;
 
   // Independent sharp sweeps close the inner-to-housing transition.
   color += energyStreak(p, 0.372, 0.40 - t * 0.094, 0.16, 0.0018, HUD_CYAN_BRIGHT, 0.90);
