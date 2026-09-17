@@ -4,23 +4,24 @@
 // current HUD radius (~0.86), 0.21 gives an outer core radius near 23% of HUD.
 // -----------------------------------------------------------------------------
 const float CORE_SCALE = 0.21;
-const float CORE_GLOW = 0.86;
+const float CORE_GLOW = 1.10;
 const float CORE_SPEED = 0.16;
 const float CORE_DETAIL = 1.0;
 const float CORE_ROTATION_SPEED = 0.10;
 
-const vec3 CORE_CYAN_DARK = vec3(0.02, 0.34, 0.40);
-const vec3 CORE_CYAN_PRIMARY = vec3(0.13, 0.90, 0.89);
-const vec3 CORE_CYAN_BRIGHT = vec3(0.45, 1.00, 0.98);
-const vec3 CORE_CYAN_HIGHLIGHT = vec3(0.82, 1.00, 1.00);
-const vec3 CORE_GLOW_COLOR = vec3(0.00, 0.76, 0.88);
+const vec3 CORE_WHITE_HOT = vec3(1.00, 0.98, 0.90);
+const vec3 CORE_WHITE_WARM = vec3(1.00, 0.88, 0.70);
+const vec3 CORE_ORANGE_LIGHT = vec3(1.00, 0.67, 0.30);
+const vec3 CORE_ORANGE = vec3(1.00, 0.43, 0.10);
+const vec3 CORE_ORANGE_DARK = vec3(0.45, 0.14, 0.025);
+const vec3 CORE_GLOW_WARM = vec3(1.00, 0.52, 0.16);
 
 // Reuse the existing layer expressions below while applying the new palette
 // only to this core source block. Undefine them at the end so later layers are
 // not affected by these aliases.
-#define HUD_CYAN_DARK CORE_CYAN_DARK
-#define HUD_CYAN CORE_CYAN_PRIMARY
-#define HUD_CYAN_BRIGHT CORE_CYAN_BRIGHT
+#define HUD_CYAN_DARK CORE_ORANGE_DARK
+#define HUD_CYAN CORE_ORANGE_LIGHT
+#define HUD_CYAN_BRIGHT CORE_WHITE_WARM
 
 float coreSegmentDistance(vec2 p, vec2 a, vec2 b, out float along) {
   vec2 pa = p - a;
@@ -37,13 +38,13 @@ float coreSegment(vec2 p, vec2 a, vec2 b, float width) {
 float coreSegmentGlow(vec2 p, vec2 a, vec2 b, float width) {
   float along;
   float distanceToSegment = coreSegmentDistance(p, a, b, along);
-  return exp(-pow(distanceToSegment / max(width * 10.0, 0.012), 2.0));
+  return exp(-pow(distanceToSegment / max(width * 14.0, 0.018), 2.0));
 }
 
 vec3 coreEdge(vec2 p, vec2 a, vec2 b, float width, vec3 tint, float strength) {
   float sharp = coreSegment(p, a, b, width);
   float halo = coreSegmentGlow(p, a, b, width) * CORE_GLOW;
-  return tint * sharp * strength + CORE_GLOW_COLOR * halo * strength * 0.075;
+  return tint * sharp * strength + CORE_GLOW_WARM * halo * strength * 0.11;
 }
 
 // Exactly fourteen silhouette vertices. Their angular spacing is fixed and the
@@ -58,7 +59,7 @@ vec2 coreOuterVertex(int index) {
 // individually pulsing the fourteen outer vertices.
 vec2 coreMiddleVertex(int index, float t) {
   float angle = PI * 0.5 + (float(index) + 0.5) * TAU / 14.0;
-  float depth = 0.325 + 0.018 * cos(angle - 0.35);
+  float depth = 0.325;
   vec2 vertex = vec2(cos(angle), sin(angle)) * depth;
   return vertex;
 }
@@ -66,16 +67,9 @@ vec2 coreMiddleVertex(int index, float t) {
 // Eight irregular inner vertices avoid the old obvious seven-sided ring. They
 // form a small faceted cap, with no single hub connected to all outer points.
 vec2 coreInnerVertex(int index, float t) {
-  vec2 vertex = vec2(0.0);
-  if (index == 0) vertex = vec2(-0.018, 0.175);
-  if (index == 1) vertex = vec2(-0.132, 0.108);
-  if (index == 2) vertex = vec2(-0.162, -0.026);
-  if (index == 3) vertex = vec2(-0.082, -0.145);
-  if (index == 4) vertex = vec2(0.038, -0.166);
-  if (index == 5) vertex = vec2(0.153, -0.088);
-  if (index == 6) vertex = vec2(0.158, 0.040);
-  if (index == 7) vertex = vec2(0.078, 0.136);
-  return vertex;
+  float angle = PI * 0.5 + float(index) * TAU / 8.0;
+  float radius = 0.165;
+  return vec2(cos(angle), sin(angle)) * radius;
 }
 
 float triangleCell(vec2 p, vec2 a, vec2 b, vec2 c) {
@@ -100,6 +94,8 @@ vec3 layerCore(vec2 p, float t) {
   float well = 1.0 - smoothstep(0.0, 0.74, length(q));
   color += HUD_CYAN_DARK * well * 0.075;
   color += HUD_CYAN * exp(-pow(length(q) / 0.66, 2.0)) * 0.018 * CORE_GLOW;
+  float reactorAmbient = exp(-pow(length(q) / 0.72, 2.0)) * 0.020 * CORE_GLOW;
+  color += CORE_GLOW_WARM * reactorAmbient;
 
   if (uDebugLayer != 12) {
     // Uneven protection rings: varied radii, widths and contrast are intentional.
@@ -247,6 +243,18 @@ vec3 layerCore(vec2 p, float t) {
   color += coreEdge(q, i6, m12, 0.005, HUD_CYAN, 0.54);
   color += coreEdge(q, i7, m13, 0.005, HUD_CYAN_BRIGHT, 0.68);
   color += coreEdge(q, i7, m0, 0.005, HUD_CYAN, 0.54);
+
+  // Temperature hierarchy at the existing line intersection. This uses the
+  // crossing geometry itself, so no vertex, dot size, or topology is added.
+  float centerCrossA = coreSegment(q, i0, i4, 0.006) * coreSegment(q, i2, i6, 0.005);
+  float centerCrossB = coreSegment(q, i1, i5, 0.0045) * coreSegment(q, i3, i7, 0.0045);
+  float centerSharp = max(centerCrossA, centerCrossB);
+  float centerHalo = exp(-pow(length(q) / 0.045, 2.0));
+  float centerAmbient = exp(-pow(length(q) / 0.115, 2.0));
+  float temperaturePulse = 0.965 + 0.035 * sin(uTime * 3.20);
+  color += CORE_WHITE_HOT * centerSharp * 1.15 * temperaturePulse;
+  color += CORE_WHITE_WARM * centerHalo * 0.16 * temperaturePulse;
+  color += CORE_GLOW_WARM * centerAmbient * 0.040 * CORE_GLOW;
 
   // Selected nodes are bright; the rest of the mesh stays thin and legible.
   color += HUD_CYAN_BRIGHT * pointMask(q, coreOuterVertex(0), 0.020) * 0.90;
