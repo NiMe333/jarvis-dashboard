@@ -176,7 +176,7 @@ vec3 layerInnerRings(vec2 p, float t) {
   color += RING_CYAN_DIM * reactorTicks(q, 0.754, 64.0, tickRotation, 0.0) * 0.72;
   color += RING_CYAN_BRIGHT * reactorTicks(q, 0.754, 64.0, tickRotation, 1.0) * 0.56;
   // Eight thick, glowing amber interruptions move at twice their former speed.
-  float amberRotation = 0.0;
+  float amberRotation = t * INNER_RING_SPEED_SLOW * 1.44;
   color += RING_ORANGE_DARK * radialDash(q, 0.784, 48.0, 0.19, 0.0018, amberRotation) * 0.62;
   for (int i = 0; i < 8; i++) {
     float index = float(i);
