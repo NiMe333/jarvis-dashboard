@@ -174,12 +174,18 @@ vec3 layerInnerRings(vec2 p, float t) {
   float tickRotation = -t * INNER_RING_SPEED_SLOW * 1.35;
   color += RING_CYAN_DIM * reactorTicks(q, 0.754, 64.0, tickRotation, 0.0) * 0.72;
   color += RING_CYAN_BRIGHT * reactorTicks(q, 0.754, 64.0, tickRotation, 1.0) * 0.56;
-  float amberRotation = -t * INNER_RING_SPEED_SLOW * 0.72;
+  // Eight thick, glowing amber interruptions move at twice their former speed.
+  float amberRotation = -t * INNER_RING_SPEED_SLOW * 1.44;
   color += RING_ORANGE_DARK * radialDash(q, 0.784, 48.0, 0.19, 0.0018, amberRotation) * 0.62;
-  color += orangeArc(q, 0.784, 0.0045, 0.32 + amberRotation, 0.18, 0.66);
-  color += orangeArc(q, 0.784, 0.0040, 1.86 + amberRotation, 0.14, 0.54);
-  color += orangeArc(q, 0.784, 0.0044, 3.64 + amberRotation, 0.20, 0.62);
-  color += orangeArc(q, 0.784, 0.0038, 5.16 + amberRotation, 0.13, 0.48);
+  for (int i = 0; i < 8; i++) {
+    float index = float(i);
+    float angle = 0.24 + index * TAU / 8.0 + amberRotation;
+    float span = mix(0.14, 0.23, mod(index, 3.0) * 0.5);
+    float width = mix(0.0150, 0.0180, mod(index, 2.0));
+    float strength = mix(0.54, 0.72, mod(index, 2.0));
+    color += orangeArc(q, 0.784, width, angle, span, strength);
+    color += RING_AMBER * arcGlow(q, 0.784, width * 1.15, angle, span) * 0.22;
+  }
 
   // Slow data fragments fill the dark band between the amber dashes and the
   // interrupted cyan belt without becoming another continuous ring.
@@ -263,9 +269,10 @@ vec3 layerInnerRings(vec2 p, float t) {
     color += RING_CYAN_DIM * capsule(q, d * 1.068, d * 1.187, 0.0018) * 0.40;
   }
   float glassSweep = -t * 0.63;
+  // Three matching fast sweeps on separate outer levels instead of one lone runner.
   color += cyanArc(q, 1.195, 0.0080, 0.62 + glassSweep, 0.20, RING_CYAN_WHITE, 0.92);
-  color += cyanArc(q, 1.150, 0.0040, 0.48 + glassSweep, 0.55, RING_CYAN_DIM, 0.22);
-  color += cyanArc(q, 1.060, 0.0055, 3.72 + glassSweep, 0.24, RING_CYAN_BRIGHT, 0.62);
+  color += cyanArc(q, 1.145, 0.0070, 2.71 + glassSweep, 0.22, RING_CYAN_BRIGHT, 0.74);
+  color += cyanArc(q, 1.090, 0.0065, 4.80 + glassSweep, 0.20, RING_CYAN_BRIGHT, 0.68);
 
   // 15–16: uneven closing rim, cyan arcs and distributed orange accents.
   color += RING_BLUE_DEEP * innerBand(q, 1.193, 1.214) * 0.36;
