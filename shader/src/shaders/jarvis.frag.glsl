@@ -18,15 +18,14 @@ void main() {
     color += layerCore(hud, t);
   } else {
     if (uDebugLayer == 0 || uDebugLayer == 1) color += backgroundLayer(vUv, centered);
+    if (uDebugLayer == 0 || uDebugLayer == 2) color += layerGrid(hud, t);
     if (uDebugLayer == 0 || uDebugLayer == 4) color += layerOuterRings(hud, t);
     if (uDebugLayer == 0 || uDebugLayer == 5) color += layerPanels(hud, t);
     if (uDebugLayer == 0 || uDebugLayer == 6) color += layerInnerRings(hud, t);
     if (uDebugLayer == 0 || uDebugLayer == 7) color += layerEnergy(hud, t);
-    if (uDebugLayer == 9) color += layerOrbits(hud, t);
     if (uDebugLayer == 10) color += layerParticles(hud, t);
     if (uDebugLayer == 0) {
       color += layerCore(hud, t);
-      color += layerOrbits(hud, t);
       color += layerParticles(hud, t);
     }
     if (uDebugLayer == 0 || uDebugLayer == 11) color = layerPostEffects(color, hud, t);

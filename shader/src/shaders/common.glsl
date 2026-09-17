@@ -60,7 +60,8 @@ float arcGlow(vec2 p, float radius, float width, float centerAngle, float span) 
   float delta = abs(atan(sin(angle - centerAngle), cos(angle - centerAngle)));
   float angularEdge = max(AA / max(radius, 0.1), 0.004);
   float arc = 1.0 - smoothstep(span * 0.5, span * 0.5 + angularEdge * 4.0, delta);
-  float radial = exp(-pow(abs(length(p) - radius) / max(width * 5.0, 0.012), 2.0));
+  float radialDistance = abs(length(p) - radius) / max(width * 5.0, 0.012);
+  float radial = exp(-(radialDistance * radialDistance));
   return arc * radial;
 }
 
