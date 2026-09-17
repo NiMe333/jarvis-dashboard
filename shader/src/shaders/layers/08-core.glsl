@@ -7,6 +7,20 @@ const float CORE_SCALE = 0.21;
 const float CORE_GLOW = 0.86;
 const float CORE_SPEED = 0.16;
 const float CORE_DETAIL = 1.0;
+const float CORE_ROTATION_SPEED = 0.10;
+
+const vec3 CORE_CYAN_DARK = vec3(0.02, 0.34, 0.40);
+const vec3 CORE_CYAN_PRIMARY = vec3(0.13, 0.90, 0.89);
+const vec3 CORE_CYAN_BRIGHT = vec3(0.45, 1.00, 0.98);
+const vec3 CORE_CYAN_HIGHLIGHT = vec3(0.82, 1.00, 1.00);
+const vec3 CORE_GLOW_COLOR = vec3(0.00, 0.76, 0.88);
+
+// Reuse the existing layer expressions below while applying the new palette
+// only to this core source block. Undefine them at the end so later layers are
+// not affected by these aliases.
+#define HUD_CYAN_DARK CORE_CYAN_DARK
+#define HUD_CYAN CORE_CYAN_PRIMARY
+#define HUD_CYAN_BRIGHT CORE_CYAN_BRIGHT
 
 float coreSegmentDistance(vec2 p, vec2 a, vec2 b, out float along) {
   vec2 pa = p - a;
@@ -29,7 +43,7 @@ float coreSegmentGlow(vec2 p, vec2 a, vec2 b, float width) {
 vec3 coreEdge(vec2 p, vec2 a, vec2 b, float width, vec3 tint, float strength) {
   float sharp = coreSegment(p, a, b, width);
   float halo = coreSegmentGlow(p, a, b, width) * CORE_GLOW;
-  return tint * (sharp * strength + halo * strength * 0.075);
+  return tint * sharp * strength + CORE_GLOW_COLOR * halo * strength * 0.075;
 }
 
 // Exactly fourteen silhouette vertices. Their angular spacing is fixed and the
@@ -46,7 +60,7 @@ vec2 coreMiddleVertex(int index, float t) {
   float angle = PI * 0.5 + (float(index) + 0.5) * TAU / 14.0;
   float depth = 0.325 + 0.018 * cos(angle - 0.35);
   vec2 vertex = vec2(cos(angle), sin(angle)) * depth;
-  return rotate2d(vertex, t * 0.10);
+  return vertex;
 }
 
 // Eight irregular inner vertices avoid the old obvious seven-sided ring. They
@@ -61,7 +75,7 @@ vec2 coreInnerVertex(int index, float t) {
   if (index == 5) vertex = vec2(0.153, -0.088);
   if (index == 6) vertex = vec2(0.158, 0.040);
   if (index == 7) vertex = vec2(0.078, 0.136);
-  return rotate2d(vertex, -t * 0.065);
+  return vertex;
 }
 
 float triangleCell(vec2 p, vec2 a, vec2 b, vec2 c) {
@@ -124,6 +138,9 @@ vec3 layerCore(vec2 p, float t) {
   // ---------------------------------------------------------------------------
   // Structured geodesic-style wireframe geometry.
   // ---------------------------------------------------------------------------
+  float coreRotation = -uTime * CORE_ROTATION_SPEED;
+  q = rotate2d(q, coreRotation);
+
   vec2 v0 = coreOuterVertex(0);  vec2 v1 = coreOuterVertex(1);
   vec2 v2 = coreOuterVertex(2);  vec2 v3 = coreOuterVertex(3);
   vec2 v4 = coreOuterVertex(4);  vec2 v5 = coreOuterVertex(5);
@@ -207,6 +224,13 @@ vec3 layerCore(vec2 p, float t) {
   color += coreEdge(q, i5, i7, 0.0045, HUD_CYAN_DARK, 0.50);
   color += coreEdge(q, i7, i1, 0.0045, HUD_CYAN, 0.46);
 
+  // Cross the inner square instead of drawing a separate center dot. The two
+  // structured diagonals create the central luminous intersection naturally.
+  color += coreEdge(q, i0, i4, 0.006, HUD_CYAN_BRIGHT, 0.74);
+  color += coreEdge(q, i2, i6, 0.005, HUD_CYAN, 0.68);
+  color += coreEdge(q, i1, i5, 0.0045, HUD_CYAN_BRIGHT, 0.62);
+  color += coreEdge(q, i3, i7, 0.0045, HUD_CYAN, 0.58);
+
   color += coreEdge(q, i0, m13, 0.005, HUD_CYAN_BRIGHT, 0.68);
   color += coreEdge(q, i0, m0, 0.005, HUD_CYAN, 0.54);
   color += coreEdge(q, i1, m1, 0.005, HUD_CYAN_BRIGHT, 0.68);
@@ -236,11 +260,8 @@ vec3 layerCore(vec2 p, float t) {
   color += HUD_CYAN_BRIGHT * pointMask(q, i0, 0.014) * 0.72;
   color += HUD_CYAN_BRIGHT * pointMask(q, i4, 0.014) * 0.72;
 
-  // Small reactor point keeps the triangulation readable instead of leaving a
-  // visually empty center. Its halo is much softer than the ring glow.
-  float centerHalo = exp(-pow(length(q) / 0.060, 2.0)) * 0.10 * CORE_GLOW;
-  color += HUD_CYAN * centerHalo;
-  color += HUD_CYAN_BRIGHT * pointMask(q, vec2(0.0), 0.014) * (1.10 + 0.12 * breathe);
+  // Restore the unrotated space before the two tiny orange core accents.
+  q = rotate2d(q, -coreRotation);
 
   if (uDebugLayer != 12) {
     // Three tiny orange accents only: cyan remains the dominant core color.
@@ -251,3 +272,7 @@ vec3 layerCore(vec2 p, float t) {
 
   return color * CORE_DETAIL * breathe;
 }
+
+#undef HUD_CYAN_DARK
+#undef HUD_CYAN
+#undef HUD_CYAN_BRIGHT
