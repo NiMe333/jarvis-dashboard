@@ -1,8 +1,8 @@
 // Immediate reactor housing: 16+ distinct layers from 1.06 R to 2.75 R.
 const float INNER_CORE_SCALE = 0.21;
 const float INNER_CORE_RADIUS = 0.47;
-const float INNER_RING_SPEED_SLOW = 0.025;
-const float INNER_RING_SPEED_MEDIUM = 0.055;
+const float INNER_RING_SPEED_SLOW = 0.035;
+const float INNER_RING_SPEED_MEDIUM = 0.077;
 const float INNER_RING_GLOW = 1.0;
 
 const vec3 RING_ORANGE_WHITE = vec3(1.00, 0.92, 0.74);
@@ -109,20 +109,33 @@ vec3 ringNode(vec2 p, float radius, float angle, vec3 tint, float pulse) {
   return RING_CYAN_WHITE * sharp * pulse + tint * halo * 0.18 * pulse + RING_CYAN_WHITE * flare * 0.26 * pulse;
 }
 
+vec3 reactorDataBlock(vec2 p, vec2 center, float size, vec3 tint, float pulse) {
+  vec2 delta = abs(p - center);
+  float square = 1.0 - smoothstep(size, size + AA * 2.0, max(delta.x, delta.y));
+  float halo = exp(-pow(length(p - center) / (size * 4.5), 2.0));
+  return tint * square * pulse + tint * halo * 0.16 * pulse;
+}
+
 vec3 layerInnerRings(vec2 p, float t) {
   vec2 q = p / INNER_CORE_SCALE;
   vec3 color = vec3(0.0);
   float r = length(q);
-  float energyPulse = 0.95 + 0.05 * sin(t * 0.46);
+  float energyPulse = 0.95 + 0.05 * sin(t * 0.60);
 
   // Low-opacity depth illumination: warm near the core, blue through the web,
   // and a faint outer falloff so the assembly never cuts directly into black.
   float warmAmbient = exp(-pow(r / 0.70, 2.0));
   float cyanAmbient = exp(-pow((r - 0.88) / 0.40, 2.0));
   float outerAmbient = exp(-pow((r - 1.34) / 0.31, 2.0));
+  float warmRecessGlow = exp(-pow((r - 0.585) / 0.125, 2.0));
+  float cyanRecessGlow = exp(-pow((r - 0.820) / 0.220, 2.0));
   color += RING_ORANGE_DARK * warmAmbient * 0.040 * energyPulse;
   color += RING_BLUE_DARK * cyanAmbient * 0.055;
   color += RING_BLUE_DEEP * outerAmbient * 0.040;
+  // Low-frequency atmosphere for the dark recesses: visible only as depth,
+  // never as an additional ring or a bright flat fill.
+  color += RING_AMBER * warmRecessGlow * 0.018 * energyPulse;
+  color += RING_CYAN_DIM * cyanRecessGlow * 0.024;
 
   // 1–3: compact hot containment. The former two dark spacer bands were
   // removed so the reactor housing begins close to the locked core.
@@ -136,7 +149,7 @@ vec3 layerInnerRings(vec2 p, float t) {
   // 4–6: cyan rings pulled inward with a deliberately narrow animated recess.
   color += transitionRing(q, 0.588) * energyPulse;
   color += energyRing(q, 0.605, 0.0220, RING_CYAN, RING_CYAN_BRIGHT, 0.88 * energyPulse);
-  float transitionRotation = -t * 0.35;
+  float transitionRotation = -t * 0.46;
   color += RING_AMBER_HIGHLIGHT * arcMask(q, 0.588, 0.0038, 0.44 + transitionRotation, 0.19) * (0.72 + 0.08 * energyPulse);
   color += RING_AMBER * arcGlow(q, 0.588, 0.0045, 0.44 + transitionRotation, 0.19) * 0.16;
   float dashRotation = t * INNER_RING_SPEED_MEDIUM;
@@ -154,19 +167,46 @@ vec3 layerInnerRings(vec2 p, float t) {
   color += orangeArc(q, 0.659, 0.0024, 4.18 - recessRotation, 0.11, 0.42);
 
   // 7–10: paired technical lines, clock-wise 64 ticks, and amber dash belt.
-  color += energyRing(q, 0.695, 0.0110, RING_CYAN_DIM, RING_CYAN, 0.56);
+  color += energyRing(q, 0.695, 0.0140, RING_CYAN_DIM, RING_CYAN, 0.56);
 
   // Compact secondary belt, moved inward with the immediate cyan assembly.
-  color += energyRing(q, 0.725, 0.0110, RING_CYAN_DIM, RING_CYAN, 0.56);
+  color += energyRing(q, 0.725, 0.0140, RING_CYAN_DIM, RING_CYAN, 0.56);
   float tickRotation = -t * INNER_RING_SPEED_SLOW * 1.35;
   color += RING_CYAN_DIM * reactorTicks(q, 0.754, 64.0, tickRotation, 0.0) * 0.72;
   color += RING_CYAN_BRIGHT * reactorTicks(q, 0.754, 64.0, tickRotation, 1.0) * 0.56;
   float amberRotation = -t * INNER_RING_SPEED_SLOW * 0.72;
   color += RING_ORANGE_DARK * radialDash(q, 0.784, 48.0, 0.19, 0.0018, amberRotation) * 0.62;
-  color += orangeArc(q, 0.784, 0.0035, 0.32 + amberRotation, 0.18, 0.66);
-  color += orangeArc(q, 0.784, 0.0030, 1.86 + amberRotation, 0.14, 0.54);
-  color += orangeArc(q, 0.784, 0.0034, 3.64 + amberRotation, 0.20, 0.62);
-  color += orangeArc(q, 0.784, 0.0028, 5.16 + amberRotation, 0.13, 0.48);
+  color += orangeArc(q, 0.784, 0.0045, 0.32 + amberRotation, 0.18, 0.66);
+  color += orangeArc(q, 0.784, 0.0040, 1.86 + amberRotation, 0.14, 0.54);
+  color += orangeArc(q, 0.784, 0.0044, 3.64 + amberRotation, 0.20, 0.62);
+  color += orangeArc(q, 0.784, 0.0038, 5.16 + amberRotation, 0.13, 0.48);
+
+  // Slow data fragments fill the dark band between the amber dashes and the
+  // interrupted cyan belt without becoming another continuous ring.
+  float dataRotation = t * 0.064;
+  for (int i = 0; i < 12; i++) {
+    float index = float(i);
+    float angle = 0.16 + index * TAU / 12.0 + dataRotation;
+    float radius = 0.873 + mod(index, 3.0) * 0.024;
+    vec2 position = vec2(cos(angle), sin(angle)) * radius;
+    float pulse = 0.72 + 0.22 * sin(t * 0.72 + index * 1.73);
+    color += reactorDataBlock(q, position, 0.0090, RING_CYAN_BRIGHT, pulse);
+  }
+  for (int i = 0; i < 18; i++) {
+    float index = float(i);
+    float angle = 0.33 + index * TAU / 18.0 - dataRotation * 1.35;
+    float radius = 0.944 + mod(index, 2.0) * 0.016;
+    vec2 position = vec2(cos(angle), sin(angle)) * radius;
+    float pulse = 0.68 + 0.18 * sin(t * 0.88 + index * 0.91);
+    float dot = pointMask(q, position, 0.0075);
+    float glow = exp(-pow(length(q - position) / 0.028, 2.0));
+    color += RING_CYAN_DIM * dot * pulse + RING_CYAN_DIM * glow * 0.16 * pulse;
+  }
+  for (int i = 0; i < 4; i++) {
+    float angle = 0.72 + float(i) * TAU / 4.0 - dataRotation * 0.68;
+    vec2 position = vec2(cos(angle), sin(angle)) * 0.914;
+    color += reactorDataBlock(q, position, 0.0065, RING_AMBER, 0.64 + 0.12 * sin(t * 0.84 + float(i)));
+  }
 
   // 11: stationary segmented reactor web, three radial levels and diagonal braces.
   color += RING_BLUE_DEEP * innerBand(q, 0.842, 1.012) * 0.34;
@@ -211,8 +251,9 @@ vec3 layerInnerRings(vec2 p, float t) {
   color += RING_CYAN_DIM * glassMask * glassCenter * 0.24 * energyPulse;
   color += energyRing(q, 1.060, 0.0150, RING_CYAN, RING_CYAN_BRIGHT, 0.80 * energyPulse);
   // Four heavy illuminated sections replace the continuous outer glow.
+  float outerSectionRotation = -t * INNER_RING_SPEED_SLOW * 1.60;
   for (int i = 0; i < 4; i++) {
-    float sectionAngle = 0.30 + float(i) * TAU / 4.0;
+    float sectionAngle = 0.30 + float(i) * TAU / 4.0 + outerSectionRotation;
     color += cyanArc(q, 1.195, 0.0280, sectionAngle, 1.30, RING_CYAN_WHITE, 0.84 * energyPulse);
   }
   color += RING_CYAN_DIM * ringMask(q, 1.127, 0.0020) * 0.46;
@@ -221,7 +262,7 @@ vec3 layerInnerRings(vec2 p, float t) {
     vec2 d = vec2(cos(a), sin(a));
     color += RING_CYAN_DIM * capsule(q, d * 1.068, d * 1.187, 0.0018) * 0.40;
   }
-  float glassSweep = -t * 0.48;
+  float glassSweep = -t * 0.63;
   color += cyanArc(q, 1.195, 0.0080, 0.62 + glassSweep, 0.20, RING_CYAN_WHITE, 0.92);
   color += cyanArc(q, 1.150, 0.0040, 0.48 + glassSweep, 0.55, RING_CYAN_DIM, 0.22);
   color += cyanArc(q, 1.060, 0.0055, 3.72 + glassSweep, 0.24, RING_CYAN_BRIGHT, 0.62);
@@ -249,9 +290,9 @@ vec3 layerInnerRings(vec2 p, float t) {
   color += cyanArc(q, 1.382, 0.0020, 5.14, 0.11, RING_CYAN_DIM, 0.20);
 
   // Four compact intersections: attached to rings, never screen-wide axes.
-  float nodePulseA = 0.88 + 0.12 * sin(t * 0.82 + 0.0);
-  float nodePulseB = 0.88 + 0.12 * sin(t * 0.82 + 2.1);
-  float nodePulseC = 0.88 + 0.12 * sin(t * 0.82 + 4.2);
+  float nodePulseA = 0.88 + 0.12 * sin(t * 1.05 + 0.0);
+  float nodePulseB = 0.88 + 0.12 * sin(t * 1.05 + 2.1);
+  float nodePulseC = 0.88 + 0.12 * sin(t * 1.05 + 4.2);
   color += ringNode(q, 0.605, 0.04, RING_CYAN_BRIGHT, nodePulseA);
   color += ringNode(q, 0.659, 1.48 + recessRotation, RING_CYAN_DIM, nodePulseB * 0.62);
   color += ringNode(q, 0.659, 3.58 + recessRotation, RING_CYAN_DIM, nodePulseC * 0.58);
