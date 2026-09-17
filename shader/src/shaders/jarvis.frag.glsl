@@ -5,9 +5,15 @@ void main() {
   float t = uFreezeTime ? 0.0 : uTime * uAnimationSpeed;
   vec3 color = vec3(0.0);
 
-  // Temporary CORE_ONLY mode: debugLayer 8 renders background + central core.
+  // INNER_CORE_ONLY (13) is the working comparison view for the approved core
+  // plus the first cyan ring assembly. It intentionally skips post effects.
+  if (uDebugLayer == 13) {
+    color += backgroundLayer(vUv, centered);
+    color += layerCore(hud, t);
+    color += layerInnerRings(hud, t);
+  // CORE_ONLY mode: debugLayer 8 renders background + central core.
   // GEOMETRY_ONLY (12) uses the same core function with its rings bypassed.
-  if (uDebugLayer == 8 || uDebugLayer == 12) {
+  } else if (uDebugLayer == 8 || uDebugLayer == 12) {
     color += backgroundLayer(vUv, centered);
     color += layerCore(hud, t);
   } else {

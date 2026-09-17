@@ -19,8 +19,8 @@ export const jarvisConfig = {
   animationSpeed: 1,
   hudScale: 1.0,
   glowIntensity: 0.82,
-  // Temporary CORE_ONLY preview: 8 = background + central core only.
-  debugLayer: 8,
+  // Working inner-ring preview: 13 = background + core + layer 06 only.
+  debugLayer: 13,
   freezeTime: false,
   debugUV: false,
   cyan: '#00E5FF',

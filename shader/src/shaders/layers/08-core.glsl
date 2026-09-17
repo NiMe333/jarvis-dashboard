@@ -85,8 +85,6 @@ vec3 layerCore(vec2 p, float t) {
   vec2 q = p / CORE_SCALE;
   float time = t * CORE_SPEED;
   float breathe = 0.94 + 0.06 * sin(time * 5.0);
-  float spinSlow = time * 0.42;
-  float spinFast = -time * 0.76;
   vec3 color = vec3(0.0);
 
   // Dark reactor well behind the geometry. It gives the center depth without
@@ -96,40 +94,6 @@ vec3 layerCore(vec2 p, float t) {
   color += HUD_CYAN * exp(-pow(length(q) / 0.66, 2.0)) * 0.018 * CORE_GLOW;
   float reactorAmbient = exp(-pow(length(q) / 0.72, 2.0)) * 0.020 * CORE_GLOW;
   color += CORE_GLOW_WARM * reactorAmbient;
-
-  if (uDebugLayer != 12) {
-    // Uneven protection rings: varied radii, widths and contrast are intentional.
-    color += HUD_CYAN_DARK * ringMask(q, 0.39, 0.018) * 0.42;
-    color += HUD_CYAN * ringMask(q, 0.45, 0.009) * 0.90;
-    color += HUD_CYAN_BRIGHT * ringMask(q, 0.53, 0.013) * 0.80 * breathe;
-    color += HUD_CYAN_DARK * ringMask(q, 0.61, 0.025) * 0.36;
-    color += HUD_CYAN * ringMask(q, 0.68, 0.006) * 0.52;
-    color += HUD_CYAN_DARK * ringMask(q, 0.75, 0.012) * 0.58;
-    color += HUD_CYAN * ringMask(q, 0.84, 0.004) * 0.78;
-    color += HUD_CYAN_DARK * ringMask(q, 0.93, 0.016) * 0.62;
-
-    // Distinct mid-width halo layers, kept separate from sharp line work.
-    color += HUD_CYAN * softRing(q, 0.53, 0.030) * 0.045 * CORE_GLOW;
-    color += HUD_CYAN_BRIGHT * softRing(q, 0.84, 0.024) * 0.030 * CORE_GLOW;
-    color += HUD_CYAN_DARK * softRing(q, 0.68, 0.045) * 0.055 * CORE_GLOW;
-
-    // Counter-rotating segmented rings and their small radial ticks.
-    color += HUD_CYAN_BRIGHT * arcMask(q, 0.53, 0.012, 0.32 + spinFast, 0.74) * 0.90;
-    color += HUD_CYAN * arcMask(q, 0.53, 0.008, 3.64 + spinFast, 0.48) * 0.84;
-    color += HUD_CYAN * arcMask(q, 0.68, 0.010, 1.82 + spinSlow, 0.68) * 0.72;
-    color += HUD_CYAN_BRIGHT * arcMask(q, 0.68, 0.006, 4.76 + spinSlow, 0.32) * 0.78;
-    color += HUD_CYAN * arcMask(q, 0.84, 0.007, 2.50 - spinSlow, 0.54) * 0.76;
-    color += HUD_CYAN_BRIGHT * tickRing(q, 0.745, 48.0, 0.010, 0.030) * 0.66;
-    color += HUD_CYAN * tickRing(q, 0.600, 36.0, 0.008, 0.022) * 0.60;
-    color += HUD_CYAN_DARK * radialDash(q, 0.875, 32.0, 0.22, 0.008, spinFast) * 0.72;
-
-    // A few short radial bridges create the tunnel-like depth between ring levels.
-    for (int i = 0; i < 6; i++) {
-      float a = float(i) * TAU / 6.0 + spinSlow;
-      vec2 dir = vec2(cos(a), sin(a));
-      color += HUD_CYAN * capsule(q, dir * 0.54, dir * 0.72, 0.005) * 0.25;
-    }
-  }
 
   // ---------------------------------------------------------------------------
   // Structured geodesic-style wireframe geometry.
@@ -267,16 +231,6 @@ vec3 layerCore(vec2 p, float t) {
   color += HUD_CYAN * pointMask(q, coreOuterVertex(13), 0.013) * 0.60;
   color += HUD_CYAN_BRIGHT * pointMask(q, i0, 0.014) * 0.72;
   color += HUD_CYAN_BRIGHT * pointMask(q, i4, 0.014) * 0.72;
-
-  // Restore the unrotated space before the two tiny orange core accents.
-  q = rotate2d(q, -coreRotation);
-
-  if (uDebugLayer != 12) {
-    // Three tiny orange accents only: cyan remains the dominant core color.
-    color += HUD_ORANGE_BRIGHT * arcMask(q, 0.68, 0.010, 0.48 - spinSlow, 0.075) * 0.82;
-    color += HUD_ORANGE * arcMask(q, 0.84, 0.008, 3.26 + spinSlow, 0.060) * 0.74;
-    color += HUD_ORANGE_BRIGHT * pointMask(q, vec2(cos(5.24), sin(5.24)) * 0.84, 0.010) * 0.72;
-  }
 
   return color * CORE_DETAIL * breathe;
 }
