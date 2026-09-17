@@ -19,7 +19,8 @@ export const jarvisConfig = {
   animationSpeed: 1,
   hudScale: 1.0,
   glowIntensity: 0.82,
-  debugLayer: 0,
+  // Temporary CORE_ONLY preview: 8 = background + central core only.
+  debugLayer: 8,
   freezeTime: false,
   debugUV: false,
   cyan: '#00E5FF',
