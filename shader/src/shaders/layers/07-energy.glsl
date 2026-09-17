@@ -9,7 +9,7 @@ vec3 layerEnergy(vec2 p, float t) {
   float r2 = dot(p, p);
   if (r2 < 0.105 || r2 > 0.555) return color;
   float pulse = 1.0;
-  float drift = t * 0.035;
+  float drift = t * 0.05635;
 
   float cyanA = arcMask(p, 0.705, 0.006, 0.12 + drift, 0.30);
   float cyanB = arcMask(p, 0.705, 0.004, 3.48 - drift, 0.23);

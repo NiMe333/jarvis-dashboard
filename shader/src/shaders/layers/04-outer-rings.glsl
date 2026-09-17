@@ -156,10 +156,10 @@ vec3 layerOuterRings(vec2 p, float t) {
   vec3 color = vec3(0.0);
   float r2 = dot(p, p);
   if (r2 < 0.076 || r2 > 0.735) return color;
-  float clockwise = -t * 0.040;
-  float counterClockwise = t * 0.058;
-  float panelDriftA = -t * 0.012;
-  float panelDriftB = t * 0.010;
+  float clockwise = -t * 0.0644;
+  float counterClockwise = t * 0.09338;
+  float panelDriftA = -t * 0.01932;
+  float panelDriftB = t * 0.0161;
 
   // Levels 01–04: faint recessed construction web near the inner assembly.
   color += OUTER_DEEP_BLUE * outerBand(p, 0.338, 0.770) * 0.48;

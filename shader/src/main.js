@@ -18,8 +18,9 @@ export const jarvisConfig = {
   performanceMode: false,
   showFps: true,
   thirtyFpsMode: false,
-  maxRenderWidth: 1200,
-  maxRenderHeight: 900,
+  // Normal mode keeps fine line cores crisp inside the dashboard panel.
+  maxRenderWidth: 1300,
+  maxRenderHeight: 1000,
   intensity: 1,
   animationSpeed: 1.65,
   hudScale: 1.0,

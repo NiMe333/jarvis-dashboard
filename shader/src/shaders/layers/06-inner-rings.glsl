@@ -176,7 +176,7 @@ vec3 layerInnerRings(vec2 p, float t) {
   color += RING_CYAN_DIM * reactorTicks(q, 0.754, 64.0, tickRotation, 0.0) * 0.72;
   color += RING_CYAN_BRIGHT * reactorTicks(q, 0.754, 64.0, tickRotation, 1.0) * 0.56;
   // Eight thick, glowing amber interruptions move at twice their former speed.
-  float amberRotation = t * INNER_RING_SPEED_SLOW * 1.44;
+  float amberRotation = t * INNER_RING_SPEED_SLOW * 2.3184;
   color += RING_ORANGE_DARK * radialDash(q, 0.784, 48.0, 0.19, 0.0018, amberRotation) * 0.62;
   for (int i = 0; i < 8; i++) {
     float index = float(i);
@@ -258,7 +258,7 @@ vec3 layerInnerRings(vec2 p, float t) {
   color += RING_CYAN_DIM * glassMask * glassCenter * 0.24 * energyPulse;
   color += energyRing(q, 1.060, 0.0150, RING_CYAN, RING_CYAN_BRIGHT, 0.80 * energyPulse);
   // Four heavy illuminated sections replace the continuous outer glow.
-  float outerSectionRotation = -t * INNER_RING_SPEED_SLOW * 1.60;
+  float outerSectionRotation = -t * INNER_RING_SPEED_SLOW * 2.576;
   for (int i = 0; i < 4; i++) {
     float sectionAngle = 0.30 + float(i) * TAU / 4.0 + outerSectionRotation;
     color += cyanArc(q, 1.195, 0.0280, sectionAngle, 1.30, RING_CYAN_WHITE, 0.84 * energyPulse);
@@ -269,7 +269,7 @@ vec3 layerInnerRings(vec2 p, float t) {
     vec2 d = vec2(cos(a), sin(a));
     color += RING_CYAN_DIM * capsule(q, d * 1.068, d * 1.187, 0.0018) * 0.40;
   }
-  float glassSweep = -t * 0.63;
+  float glassSweep = -t * 1.0143;
   // Three matching fast sweeps on separate outer levels instead of one lone runner.
   color += cyanArc(q, 1.195, 0.0080, 0.62 + glassSweep, 0.20, RING_CYAN_WHITE, 0.92);
   color += cyanArc(q, 1.145, 0.0070, 2.71 + glassSweep, 0.22, RING_CYAN_BRIGHT, 0.74);

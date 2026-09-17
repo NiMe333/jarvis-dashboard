@@ -52,7 +52,7 @@ vec3 layerPanels(vec2 p, float t) {
   vec3 color = vec3(0.0);
   float r2 = dot(p, p);
   if (r2 < 0.205 || r2 > 0.640) return color;
-  float spin = t * 0.006;
+  float spin = t * 0.00966;
   color += panelPaint(p, 0.570, 0.675, 0.25 + spin, 0.54, 0.8, t);
   color += panelPaint(p, 0.570, 0.675, 2.18 - spin, 0.38, 1.7, t);
   color += panelPaint(p, 0.570, 0.675, 3.82 + spin, 0.46, 2.5, t);
