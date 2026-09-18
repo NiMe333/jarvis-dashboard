@@ -19,7 +19,8 @@ vec3 layerParticles(vec2 p, float t) {
   vec3 color = vec3(0.0);
   float r2 = dot(p, p);
   if (r2 < 0.100 || r2 > 0.700) return color;
-  for (int i = 0; i < 8; i++) {
+  // Keep the sparse particle field while avoiding eight point masks per pixel.
+  for (int i = 0; i < 5; i++) {
     float fi = float(i);
     float a = hash11(fi * 8.7) * TAU;
     float r = 0.48 + hash11(fi + 10.0) * 0.30;
@@ -31,7 +32,7 @@ vec3 layerParticles(vec2 p, float t) {
   }
 
   // Tiny clustered sparks at the lateral energy zones.
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 2; i++) {
     float fi = float(i);
     float y = -0.22 + fi * 0.11 + sin(fi) * 0.012;
     vec2 left = vec2(-0.70 + hash11(fi) * 0.10, y);

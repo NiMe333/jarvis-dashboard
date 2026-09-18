@@ -15,13 +15,10 @@ import postEffects from "./shaders/layers/11-post-effects.glsl?raw";
 
 export const jarvisConfig = {
   transparent: false,
-  performanceMode: false,
   showFps: true,
-  // Keep the drawing buffer sharp even on displays with a devicePixelRatio of 1.
-  minRenderWidth: 1148,
-  minRenderHeight: 893,
-  maxRenderWidth: 1300,
-  maxRenderHeight: 1000,
+  // Fixed drawing-buffer size, independent of the window and screen DPR.
+  renderWidth: 1148,
+  renderHeight: 893,
   intensity: 1,
   animationSpeed: 1.65,
   hudScale: 1.0,
@@ -34,6 +31,8 @@ export const jarvisConfig = {
   orange: "#FF9A3D",
 };
 const panel = document.querySelector("#jarvis-core-panel");
+panel.style.width = `min(${jarvisConfig.renderWidth}px, 100%)`;
+panel.style.aspectRatio = `${jarvisConfig.renderWidth} / ${jarvisConfig.renderHeight}`;
 const canvas = document.querySelector("#shader-canvas");
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -82,37 +81,18 @@ const material = new THREE.ShaderMaterial({
   depthTest: false,
   depthWrite: false,
 });
-// One oversized clip-space triangle covers the viewport without a shared diagonal.
-// The vertex shader derives UVs from position; clipping preserves the visible 0–1 range.
-const fullscreenGeometry = new THREE.BufferGeometry();
-fullscreenGeometry.setAttribute(
-  "position",
-  new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3),
-);
-const fullscreenMesh = new THREE.Mesh(fullscreenGeometry, material);
-fullscreenMesh.frustumCulled = false;
+// A rectangle fills only the bounded panel canvas.
+const fullscreenMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
 scene.add(fullscreenMesh);
+renderer.setPixelRatio(1);
+renderer.setSize(jarvisConfig.renderWidth, jarvisConfig.renderHeight, false);
+uniforms.uResolution.value.set(jarvisConfig.renderWidth, jarvisConfig.renderHeight);
+const resizeObserver = new ResizeObserver(() => resize());
 const resize = () => {
   const width = Math.max(panel.clientWidth, 1);
-  const height = Math.max(panel.clientHeight, 1);
-  const targetScale = Math.max(
-    window.devicePixelRatio || 1,
-    jarvisConfig.minRenderWidth / width,
-    jarvisConfig.minRenderHeight / height,
-  );
-  const internalScale = Math.min(
-    targetScale,
-    jarvisConfig.maxRenderWidth / width,
-    jarvisConfig.maxRenderHeight / height,
-  );
-  const renderWidth = Math.max(1, Math.round(width * internalScale));
-  const renderHeight = Math.max(1, Math.round(height * internalScale));
-  renderer.setPixelRatio(1);
-  renderer.setSize(renderWidth, renderHeight, false);
-  uniforms.uResolution.value.set(renderWidth, renderHeight);
-  uniforms.uPixelRatio.value = renderWidth / width;
+  uniforms.uPixelRatio.value = jarvisConfig.renderWidth / width;
 };
-new ResizeObserver(resize).observe(panel);
+resizeObserver.observe(panel);
 resize();
 
 let tabVisible = !document.hidden;
@@ -163,15 +143,32 @@ const render = () => {
   }
   frameId = requestAnimationFrame(render);
 };
-document.addEventListener("visibilitychange", () => {
+const onVisibilityChange = () => {
   tabVisible = !document.hidden;
   updateVisibility();
-});
-new IntersectionObserver(
+};
+document.addEventListener("visibilitychange", onVisibilityChange);
+const intersectionObserver = new IntersectionObserver(
   ([entry]) => {
     panelVisible = entry.isIntersecting;
     updateVisibility();
   },
   { threshold: 0.01 },
-).observe(panel);
+);
+intersectionObserver.observe(panel);
+
+// Vite replaces this module during shader HMR. Stop the old RAF and release
+// WebGL resources before the replacement creates another context/program.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    stopLoop();
+    resizeObserver.disconnect();
+    intersectionObserver.disconnect();
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    fullscreenMesh?.geometry?.dispose();
+    material.dispose();
+    renderer.dispose();
+    performanceHud.remove();
+  });
+}
 startLoop();
