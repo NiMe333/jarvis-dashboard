@@ -82,7 +82,16 @@ const material = new THREE.ShaderMaterial({
   depthTest: false,
   depthWrite: false,
 });
-scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+// One oversized clip-space triangle covers the viewport without a shared diagonal.
+// The vertex shader derives UVs from position; clipping preserves the visible 0–1 range.
+const fullscreenGeometry = new THREE.BufferGeometry();
+fullscreenGeometry.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3),
+);
+const fullscreenMesh = new THREE.Mesh(fullscreenGeometry, material);
+fullscreenMesh.frustumCulled = false;
+scene.add(fullscreenMesh);
 const resize = () => {
   const width = Math.max(panel.clientWidth, 1);
   const height = Math.max(panel.clientHeight, 1);
