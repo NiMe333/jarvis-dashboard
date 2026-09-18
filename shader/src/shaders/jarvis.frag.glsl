@@ -31,6 +31,12 @@ void main() {
     if (uDebugLayer == 0 || uDebugLayer == 11) color = layerPostEffects(color, hud, t);
   }
 
+  // Shared reactor breathing: a soft radial wave travels from the core
+  // outward, so every visible layer responds as one assembly.
+  float radialDistance = length(hud);
+  float radialBreath = 1.0 + 0.055 * sin(t * 0.78 - radialDistance * 5.6);
+  color *= radialBreath;
+
   if (uDebugUV) color = vec3(vUv, 0.0);
   gl_FragColor = vec4(color * uIntensity, uTransparent ? 0.0 : 1.0);
 }
