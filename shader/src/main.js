@@ -17,8 +17,9 @@ export const jarvisConfig = {
   transparent: false,
   performanceMode: false,
   showFps: true,
-  thirtyFpsMode: false,
-  // Normal mode keeps fine line cores crisp inside the dashboard panel.
+  // Keep the drawing buffer sharp even on displays with a devicePixelRatio of 1.
+  minRenderWidth: 1148,
+  minRenderHeight: 893,
   maxRenderWidth: 1300,
   maxRenderHeight: 1000,
   intensity: 1,
@@ -85,16 +86,19 @@ scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
 const resize = () => {
   const width = Math.max(panel.clientWidth, 1);
   const height = Math.max(panel.clientHeight, 1);
-  const maxPixelRatio = jarvisConfig.performanceMode ? 1.0 : 1.4;
-  const dpr = Math.min(window.devicePixelRatio || 1, maxPixelRatio);
-  const internalScale = Math.min(
-    1,
-    jarvisConfig.maxRenderWidth / (width * dpr),
-    jarvisConfig.maxRenderHeight / (height * dpr),
+  const targetScale = Math.max(
+    window.devicePixelRatio || 1,
+    jarvisConfig.minRenderWidth / width,
+    jarvisConfig.minRenderHeight / height,
   );
-  const renderWidth = Math.max(1, Math.round(width * dpr * internalScale));
-  const renderHeight = Math.max(1, Math.round(height * dpr * internalScale));
-  renderer.setPixelRatio(1.05);
+  const internalScale = Math.min(
+    targetScale,
+    jarvisConfig.maxRenderWidth / width,
+    jarvisConfig.maxRenderHeight / height,
+  );
+  const renderWidth = Math.max(1, Math.round(width * internalScale));
+  const renderHeight = Math.max(1, Math.round(height * internalScale));
+  renderer.setPixelRatio(1);
   renderer.setSize(renderWidth, renderHeight, false);
   uniforms.uResolution.value.set(renderWidth, renderHeight);
   uniforms.uPixelRatio.value = renderWidth / width;
@@ -106,7 +110,6 @@ let tabVisible = !document.hidden;
 let panelVisible = true;
 let loopRunning = false;
 let frameId = 0;
-let lastRenderTime = 0;
 const timer = new THREE.Timer();
 timer.connect(document);
 let fpsFrames = 0;
@@ -129,17 +132,11 @@ const updateVisibility = () => {
   if (shouldRender()) startLoop();
   else stopLoop();
 };
-const render = (now) => {
+const render = () => {
   if (!shouldRender()) {
     loopRunning = false;
     return;
   }
-  const frameInterval = jarvisConfig.thirtyFpsMode ? 1000 / 30 : 0;
-  if (frameInterval > 0 && now - lastRenderTime < frameInterval) {
-    frameId = requestAnimationFrame(render);
-    return;
-  }
-  lastRenderTime = now;
   timer.update();
   const elapsed = timer.getElapsed();
   uniforms.uTime.value = jarvisConfig.freezeTime ? 0 : elapsed;
