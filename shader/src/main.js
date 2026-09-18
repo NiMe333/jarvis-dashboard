@@ -17,8 +17,9 @@ export const jarvisConfig = {
   transparent: false,
   showFps: true,
   // Fixed drawing-buffer size, independent of the window and screen DPR.
-  renderWidth: 1148,
-  renderHeight: 893,
+  // Keep the same aspect ratio while cutting fragment work by about half.
+  renderWidth: 900,
+  renderHeight: 700,
   intensity: 1,
   animationSpeed: 1.65,
   hudScale: 1.0,
@@ -40,6 +41,7 @@ const renderer = new THREE.WebGLRenderer({
   alpha: jarvisConfig.transparent,
   powerPreference: "high-performance",
 });
+let contextLost = false;
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const performanceHud = document.createElement("output");
@@ -81,8 +83,14 @@ const material = new THREE.ShaderMaterial({
   depthTest: false,
   depthWrite: false,
 });
-// A rectangle fills only the bounded panel canvas.
-const fullscreenMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+// One oversized clip-space triangle covers the bounded canvas with no shared edge.
+const fullscreenGeometry = new THREE.BufferGeometry();
+fullscreenGeometry.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3),
+);
+const fullscreenMesh = new THREE.Mesh(fullscreenGeometry, material);
+fullscreenMesh.frustumCulled = false;
 scene.add(fullscreenMesh);
 renderer.setPixelRatio(1);
 renderer.setSize(jarvisConfig.renderWidth, jarvisConfig.renderHeight, false);
@@ -104,7 +112,7 @@ timer.connect(document);
 let fpsFrames = 0;
 let fpsWindowStart = 0;
 let currentFps = 0;
-const shouldRender = () => tabVisible && panelVisible;
+const shouldRender = () => tabVisible && panelVisible && !contextLost;
 const startLoop = () => {
   if (!loopRunning && shouldRender()) {
     loopRunning = true;
@@ -117,6 +125,14 @@ const stopLoop = () => {
     loopRunning = false;
   }
 };
+const onContextLost = (event) => {
+  event.preventDefault();
+  contextLost = true;
+  stopLoop();
+  performanceHud.textContent = "WebGL context lost";
+  performanceHud.hidden = false;
+};
+canvas.addEventListener("webglcontextlost", onContextLost);
 const updateVisibility = () => {
   if (shouldRender()) startLoop();
   else stopLoop();
@@ -165,6 +181,7 @@ if (import.meta.hot) {
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
     document.removeEventListener("visibilitychange", onVisibilityChange);
+    canvas.removeEventListener("webglcontextlost", onContextLost);
     fullscreenMesh?.geometry?.dispose();
     material.dispose();
     renderer.dispose();
