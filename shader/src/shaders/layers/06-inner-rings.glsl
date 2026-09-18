@@ -46,9 +46,11 @@ float innerSectorEdges(vec2 p, float innerRadius, float outerRadius, float count
 
 vec3 energyRing(vec2 p, float radius, float width, vec3 source, vec3 halo, float strength) {
   float sharp = ringMask(p, radius, width);
-  float nearHalo = exp(-pow(abs(length(p) - radius) / max(width * 5.5, 0.016), 2.0));
+  float nearHaloDistance = abs(length(p) - radius) / max(width * 5.5, 0.016);
+  float nearHalo = exp(-(nearHaloDistance * nearHaloDistance));
+  float glowQuality = uQuality > 1.5 ? 1.0 : (uQuality > 0.5 ? 0.58 : 0.24);
   return source * sharp * strength
-    + halo * nearHalo * 0.105 * INNER_RING_GLOW;
+    + halo * nearHalo * 0.105 * INNER_RING_GLOW * glowQuality;
 }
 
 vec3 transitionRing(vec2 p, float radius) {
@@ -59,14 +61,17 @@ vec3 transitionRing(vec2 p, float radius) {
   vec3 inward = mix(TRANSITION_AMBER, TRANSITION_WARM, smoothstep(0.00, 0.44, ramp));
   vec3 outward = mix(TRANSITION_WHITE, TRANSITION_ICE, smoothstep(0.52, 1.00, ramp));
   vec3 tint = mix(inward, outward, smoothstep(0.38, 0.68, ramp));
-  float brightCenter = exp(-pow(signedDistance / 0.006, 2.0));
-  float halo = exp(-pow(signedDistance / 0.040, 2.0));
+  float brightDistance = signedDistance / 0.006;
+  float haloDistance = signedDistance / 0.040;
+  float brightCenter = exp(-(brightDistance * brightDistance));
+  float halo = exp(-(haloDistance * haloDistance));
   return tint * body * 0.82 + TRANSITION_WHITE * brightCenter * 0.34 + TRANSITION_CYAN * halo * 0.055;
 }
 
 vec3 orangeContainment(vec2 p, float radius) {
   float sharp = ringMask(p, radius, 0.018);
-  float middle = exp(-pow(abs(length(p) - radius) / 0.031, 2.0));
+  float middleDistance = abs(length(p) - radius) / 0.031;
+  float middle = exp(-(middleDistance * middleDistance));
   return RING_ORANGE_WHITE * sharp * 1.20
     + RING_AMBER_HIGHLIGHT * sharp * 0.42
     + RING_ORANGE * middle * 0.96 * INNER_RING_GLOW;
@@ -103,7 +108,8 @@ vec3 ringNode(vec2 p, float radius, float angle, vec3 tint, float pulse) {
   vec2 direction = vec2(cos(angle), sin(angle));
   vec2 node = direction * radius;
   float sharp = pointMask(p, node, 0.010);
-  float halo = exp(-pow(length(p - node) / 0.036, 2.0));
+  float nodeDistance = length(p - node) / 0.036;
+  float halo = exp(-(nodeDistance * nodeDistance));
   float flare = capsule(p, node - direction * 0.025, node + direction * 0.040, 0.0018);
   return RING_CYAN_WHITE * sharp * pulse + tint * halo * 0.18 * pulse + RING_CYAN_WHITE * flare * 0.26 * pulse;
 }
@@ -124,15 +130,22 @@ vec3 layerInnerRings(vec2 p, float t) {
 
   // Low-opacity depth illumination: warm near the core, blue through the web,
   // and a faint outer falloff so the assembly never cuts directly into black.
-  float warmAmbient = exp(-pow(r / 0.70, 2.0));
-  float cyanAmbient = exp(-pow((r - 0.88) / 0.40, 2.0));
-  float outerAmbient = exp(-pow((r - 1.34) / 0.31, 2.0));
-  float warmRecessGlow = exp(-pow((r - 0.585) / 0.125, 2.0));
+  float warmAmbientDistance = r / 0.70;
+  float cyanAmbientDistance = (r - 0.88) / 0.40;
+  float outerAmbientDistance = (r - 1.34) / 0.31;
+  float warmRecessDistance = (r - 0.585) / 0.125;
+  float warmAmbient = exp(-(warmAmbientDistance * warmAmbientDistance));
+  float cyanAmbient = exp(-(cyanAmbientDistance * cyanAmbientDistance));
+  float outerAmbient = exp(-(outerAmbientDistance * outerAmbientDistance));
+  float warmRecessGlow = exp(-(warmRecessDistance * warmRecessDistance));
   // Warm-white receiver immediately behind the reactor: it catches the core
   // bloom while remaining a soft recess rather than a new solid ring.
-  float coreWarmBed = exp(-pow((r - 0.485) / 0.135, 2.0));
-  float coreHotBed = exp(-pow((r - 0.515) / 0.070, 2.0));
-  float cyanRecessGlow = exp(-pow((r - 0.820) / 0.220, 2.0));
+  float coreWarmDistance = (r - 0.485) / 0.135;
+  float coreHotDistance = (r - 0.515) / 0.070;
+  float cyanRecessDistance = (r - 0.820) / 0.220;
+  float coreWarmBed = exp(-(coreWarmDistance * coreWarmDistance));
+  float coreHotBed = exp(-(coreHotDistance * coreHotDistance));
+  float cyanRecessGlow = exp(-(cyanRecessDistance * cyanRecessDistance));
   color += RING_ORANGE_DARK * warmAmbient * 0.040 * energyPulse;
   color += RING_BLUE_DARK * cyanAmbient * 0.055;
   color += RING_BLUE_DEEP * outerAmbient * 0.040;
@@ -267,7 +280,8 @@ vec3 layerInnerRings(vec2 p, float t) {
   float glassCell = fract((glassAngle + PI) / TAU * 12.0);
   float glassInterrupt = 1.0 - smoothstep(0.34, 0.46, abs(glassCell - 0.5));
   float glassMask = glass * (1.0 - 0.54 * glassInterrupt);
-  float glassCenter = exp(-pow((length(q) - 1.127) / 0.052, 2.0));
+  float glassDistance = (length(q) - 1.127) / 0.052;
+  float glassCenter = exp(-(glassDistance * glassDistance));
   color += RING_BLUE_DARK * glassMask * 0.50;
   color += RING_CYAN_DIM * glassMask * glassCenter * 0.24 * energyPulse;
   color += energyRing(q, 1.060, 0.0150, RING_CYAN, RING_CYAN_BRIGHT, 0.80 * energyPulse);
@@ -322,7 +336,8 @@ vec3 layerInnerRings(vec2 p, float t) {
   vec2 warmDirection = vec2(cos(0.32), sin(0.32));
   vec2 warmNode = warmDirection * 0.784;
   float warmSharp = pointMask(q, warmNode, 0.012);
-  float warmHalo = exp(-pow(length(q - warmNode) / 0.046, 2.0));
+  float warmNodeDistance = length(q - warmNode) / 0.046;
+  float warmHalo = exp(-(warmNodeDistance * warmNodeDistance));
   color += RING_ORANGE_WHITE * warmSharp * nodePulseB * 1.08
     + RING_ORANGE * warmHalo * 0.36 * nodePulseB;
   return color;

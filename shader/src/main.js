@@ -24,6 +24,8 @@ export const jarvisConfig = {
   animationSpeed: 1.65,
   hudScale: 1.0,
   glowIntensity: 0.82,
+  // "auto" adapts to panel size; manual values: 0 = low, 1 = medium, 2 = high.
+  quality: "2",
   // Working inner-ring preview: 13 = background + core + layer 06 only.
   debugLayer: 0,
   freezeTime: false,
@@ -40,7 +42,14 @@ const renderer = new THREE.WebGLRenderer({
   powerPreference: "high-performance",
 });
 // Match the display density so browser/CSS zoom does not upscale a small bitmap.
-const renderDpr = Math.min(window.devicePixelRatio || 1, 1.4);
+const renderDpr = Math.min(window.devicePixelRatio || 1, 1.35);
+const resolveQuality = (width, height) => {
+  if (typeof jarvisConfig.quality === "number") return jarvisConfig.quality;
+  const estimatedPixels = width * height * renderDpr * renderDpr;
+  if (estimatedPixels > 1_600_000) return 0;
+  if (estimatedPixels > 900_000) return 1;
+  return 2;
+};
 let contextLost = false;
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -57,6 +66,7 @@ const uniforms = {
   uAnimationSpeed: { value: jarvisConfig.animationSpeed },
   uHudScale: { value: jarvisConfig.hudScale },
   uGlowIntensity: { value: jarvisConfig.glowIntensity },
+  uQuality: { value: jarvisConfig.quality },
   uTransparent: { value: jarvisConfig.transparent },
   uDebugLayer: { value: jarvisConfig.debugLayer },
   uFreezeTime: { value: jarvisConfig.freezeTime },
@@ -96,13 +106,18 @@ const resizeObserver = new ResizeObserver(() => resize());
 const resize = () => {
   const width = Math.max(panel.clientWidth, 1);
   const height = Math.max(panel.clientHeight, 1);
-  renderer.setPixelRatio(renderDpr);
+  const qualityLevel = resolveQuality(width, height);
+  const qualityScale =
+    qualityLevel === 0 ? 0.62 : qualityLevel === 1 ? 0.82 : 1.0;
+  const effectiveDpr = renderDpr * qualityScale;
+  renderer.setPixelRatio(effectiveDpr);
   renderer.setSize(width, height, false);
   uniforms.uResolution.value.set(
-    Math.round(width * renderDpr),
-    Math.round(height * renderDpr),
+    Math.round(width * effectiveDpr),
+    Math.round(height * effectiveDpr),
   );
-  uniforms.uPixelRatio.value = renderDpr;
+  uniforms.uPixelRatio.value = effectiveDpr;
+  uniforms.uQuality.value = qualityLevel;
 };
 resizeObserver.observe(panel);
 resize();

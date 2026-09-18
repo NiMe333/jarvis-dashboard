@@ -77,8 +77,9 @@ vec3 outerArc(
     span
   );
 
+  float glowQuality = uQuality > 1.5 ? 1.0 : (uQuality > 0.5 ? 0.58 : 0.24);
   return tint * sharp * strength
-    + tint * bloom * 0.15 * uGlowIntensity;
+    + tint * bloom * 0.15 * uGlowIntensity * glowQuality;
 }
 
 
@@ -119,7 +120,8 @@ vec3 outerTransitionRail(
   return deepTint * body * 0.44 * strength
     + mainTint * body * 0.78 * strength
     + highlightTint * core * 0.86 * strength
-    + mainTint * halo * 0.18 * strength;
+    + mainTint * halo * 0.18 * strength
+    * (uQuality > 1.5 ? 1.0 : (uQuality > 0.5 ? 0.58 : 0.24));
 }
 
 
@@ -230,9 +232,10 @@ vec3 outerPanel(
       * strength
 
     + edgeTint
-      * halo
-      * 0.11
-      * strength;
+    * halo
+    * 0.11
+    * strength
+    * (uQuality > 1.5 ? 1.0 : (uQuality > 0.5 ? 0.58 : 0.24));
 }
 
 
@@ -741,8 +744,8 @@ vec3 layerOuterRings(
 
 
   // Reduced construction meshes behind the panels
-  color += outerConnectedMesh(p, t) * 0.12;
-  color += outerCoreMesh(p, t) * 0.18;
+  if (uQuality > 0.5) color += outerConnectedMesh(p, t) * 0.12;
+  if (uQuality > 1.5) color += outerCoreMesh(p, t) * 0.18;
 
 
   // Small bridge nodes

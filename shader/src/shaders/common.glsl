@@ -8,6 +8,7 @@ uniform float uIntensity;
 uniform float uAnimationSpeed;
 uniform float uHudScale;
 uniform float uGlowIntensity;
+uniform float uQuality;
 uniform bool uTransparent;
 uniform int uDebugLayer;
 uniform bool uFreezeTime;
@@ -98,7 +99,8 @@ float orbitalEllipse(vec2 p, float radius, float flatten, float angle, float wid
 float orbitalGlow(vec2 p, float radius, float flatten, float angle) {
   vec2 q = rotate2d(p, angle);
   float ellipse = length(q / vec2(radius, radius * flatten));
-  return exp(-pow(abs(ellipse - 1.0) * radius / 0.018, 2.0));
+  float ellipseDistance = abs(ellipse - 1.0) * radius / 0.018;
+  return exp(-(ellipseDistance * ellipseDistance));
 }
 
 vec3 addGlow(vec3 color, vec3 tint, float sharp, float glow, float strength) {
