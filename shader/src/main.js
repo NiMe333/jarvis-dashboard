@@ -18,8 +18,8 @@ export const jarvisConfig = {
   showFps: true,
   // Fixed drawing-buffer size, independent of the window and screen DPR.
   // Keep the same aspect ratio while cutting fragment work by about half.
-  renderWidth: 900,
-  renderHeight: 700,
+  renderWidth: 760,
+  renderHeight: 560,
   intensity: 1,
   animationSpeed: 1.65,
   hudScale: 1.0,
