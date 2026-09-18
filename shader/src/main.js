@@ -25,7 +25,7 @@ export const jarvisConfig = {
   hudScale: 1.0,
   glowIntensity: 0.82,
   // Working inner-ring preview: 13 = background + core + layer 06 only.
-  debugLayer: 4,
+  debugLayer: 0,
   freezeTime: false,
   debugUV: false,
   cyan: "#00E5FF",
