@@ -41,6 +41,7 @@ const renderer = new THREE.WebGLRenderer({
   alpha: jarvisConfig.transparent,
   powerPreference: "high-performance",
 });
+const renderDpr = 1.25;
 let contextLost = false;
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -92,13 +93,16 @@ fullscreenGeometry.setAttribute(
 const fullscreenMesh = new THREE.Mesh(fullscreenGeometry, material);
 fullscreenMesh.frustumCulled = false;
 scene.add(fullscreenMesh);
-renderer.setPixelRatio(1);
+renderer.setPixelRatio(renderDpr);
 renderer.setSize(jarvisConfig.renderWidth, jarvisConfig.renderHeight, false);
-uniforms.uResolution.value.set(jarvisConfig.renderWidth, jarvisConfig.renderHeight);
+uniforms.uResolution.value.set(
+  Math.round(jarvisConfig.renderWidth * renderDpr),
+  Math.round(jarvisConfig.renderHeight * renderDpr),
+);
 const resizeObserver = new ResizeObserver(() => resize());
 const resize = () => {
   const width = Math.max(panel.clientWidth, 1);
-  uniforms.uPixelRatio.value = jarvisConfig.renderWidth / width;
+  uniforms.uPixelRatio.value = renderDpr;
 };
 resizeObserver.observe(panel);
 resize();
