@@ -1893,8 +1893,6 @@ vec3 layerOuterRings(
     vec3(0.25, 0.08, 0.01), OUTER_AMBER, OUTER_HOT, 0.86);
 
   // Short bright caps make the large pieces feel mechanically locked.
-  color += outerArc(p, 0.852, 0.0060, 0.28 + panelDriftA, 0.14,
-    OUTER_HOT, 0.88);
   color += outerArc(p, 0.834, 0.0070, 2.46 + panelDriftB, 0.18,
     OUTER_WARM, 0.90);
   color += outerArc(p, 0.846, 0.0065, 5.02 + panelDriftB, 0.16,
