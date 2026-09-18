@@ -32,8 +32,6 @@ export const jarvisConfig = {
   orange: "#FF9A3D",
 };
 const panel = document.querySelector("#jarvis-core-panel");
-panel.style.width = `min(${jarvisConfig.renderWidth}px, 100%)`;
-panel.style.aspectRatio = `${jarvisConfig.renderWidth} / ${jarvisConfig.renderHeight}`;
 const canvas = document.querySelector("#shader-canvas");
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -41,7 +39,8 @@ const renderer = new THREE.WebGLRenderer({
   alpha: jarvisConfig.transparent,
   powerPreference: "high-performance",
 });
-const renderDpr = 1.25;
+// Match the display density so browser/CSS zoom does not upscale a small bitmap.
+const renderDpr = Math.min(window.devicePixelRatio || 1, 1.4);
 let contextLost = false;
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -93,15 +92,16 @@ fullscreenGeometry.setAttribute(
 const fullscreenMesh = new THREE.Mesh(fullscreenGeometry, material);
 fullscreenMesh.frustumCulled = false;
 scene.add(fullscreenMesh);
-renderer.setPixelRatio(renderDpr);
-renderer.setSize(jarvisConfig.renderWidth, jarvisConfig.renderHeight, false);
-uniforms.uResolution.value.set(
-  Math.round(jarvisConfig.renderWidth * renderDpr),
-  Math.round(jarvisConfig.renderHeight * renderDpr),
-);
 const resizeObserver = new ResizeObserver(() => resize());
 const resize = () => {
   const width = Math.max(panel.clientWidth, 1);
+  const height = Math.max(panel.clientHeight, 1);
+  renderer.setPixelRatio(renderDpr);
+  renderer.setSize(width, height, false);
+  uniforms.uResolution.value.set(
+    Math.round(width * renderDpr),
+    Math.round(height * renderDpr),
+  );
   uniforms.uPixelRatio.value = renderDpr;
 };
 resizeObserver.observe(panel);

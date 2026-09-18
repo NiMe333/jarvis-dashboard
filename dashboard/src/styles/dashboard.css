@@ -4,3 +4,4 @@
 /* Compact mode: keeps the same layout while reducing its footprint and GPU work. */
 body{min-width:0}
 .dashboard{zoom:.9}
+.dashboard{zoom:1}
