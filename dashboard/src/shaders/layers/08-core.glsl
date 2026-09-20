@@ -7,7 +7,7 @@ const float CORE_SCALE = 0.21;
 const float CORE_GLOW = 1.30;
 const float CORE_SPEED = 0.16;
 const float CORE_DETAIL = 1.0;
-const float CORE_ROTATION_SPEED = 0.10;
+const float CORE_ROTATION_SPEED = 0.18;
 
 const vec3 CORE_WHITE_HOT = vec3(1.00, 0.98, 0.90);
 const vec3 CORE_WHITE_WARM = vec3(1.00, 0.88, 0.70);
@@ -23,27 +23,25 @@ const vec3 CORE_GLOW_WARM = vec3(1.00, 0.52, 0.16);
 #define HUD_CYAN CORE_ORANGE_LIGHT
 #define HUD_CYAN_BRIGHT CORE_WHITE_WARM
 
-float coreSegmentDistance(vec2 p, vec2 a, vec2 b, out float along) {
+float coreSegmentDistance(vec2 p, vec2 a, vec2 b) {
   vec2 pa = p - a;
   vec2 ba = b - a;
-  along = clamp(dot(pa, ba) / max(dot(ba, ba), 0.00001), 0.0, 1.0);
+  float along = clamp(dot(pa, ba) / max(dot(ba, ba), 0.00001), 0.0, 1.0);
   return length(pa - ba * along);
 }
 
 float coreSegment(vec2 p, vec2 a, vec2 b, float width) {
-  float along;
-  return lineMask(coreSegmentDistance(p, a, b, along), width);
-}
-
-float coreSegmentGlow(vec2 p, vec2 a, vec2 b, float width) {
-  float along;
-  float distanceToSegment = coreSegmentDistance(p, a, b, along);
-  return exp(-pow(distanceToSegment / max(width * 14.0, 0.018), 2.0));
+  return lineMask(coreSegmentDistance(p, a, b), width);
 }
 
 vec3 coreEdge(vec2 p, vec2 a, vec2 b, float width, vec3 tint, float strength) {
-  float sharp = coreSegment(p, a, b, width);
-  float halo = coreSegmentGlow(p, a, b, width) * CORE_GLOW;
+  // Calculate segment distance once and reuse it for both the sharp line and
+  // its halo. This preserves the exact appearance while avoiding the former
+  // duplicate projection, dot products and length calculation for every edge.
+  float distanceToSegment = coreSegmentDistance(p, a, b);
+  float sharp = lineMask(distanceToSegment, width);
+  float glowWidth = max(width * 14.0, 0.018);
+  float halo = exp(-pow(distanceToSegment / glowWidth, 2.0)) * CORE_GLOW;
   return tint * sharp * strength + CORE_GLOW_WARM * halo * strength * 0.145;
 }
 
@@ -86,16 +84,17 @@ vec3 layerCore(vec2 p, float t) {
   // this radius. Avoid evaluating the dense 14-point mesh across the panel.
   if (dot(p, p) > 0.0361) return vec3(0.0);
   vec2 q = p / CORE_SCALE;
+  float qRadius = length(q);
   float time = t * CORE_SPEED;
   float breathe = 0.94 + 0.06 * sin(time * 5.0);
   vec3 color = vec3(0.0);
 
   // Dark reactor well behind the geometry. It gives the center depth without
   // turning the whole core into a flat cyan disk.
-  float well = 1.0 - smoothstep(0.0, 0.74, length(q));
+  float well = 1.0 - smoothstep(0.0, 0.74, qRadius);
   color += HUD_CYAN_DARK * well * 0.075;
-  color += HUD_CYAN * exp(-pow(length(q) / 0.66, 2.0)) * 0.018 * CORE_GLOW;
-  float reactorAmbient = exp(-pow(length(q) / 0.72, 2.0)) * 0.020 * CORE_GLOW;
+  color += HUD_CYAN * exp(-pow(qRadius / 0.66, 2.0)) * 0.018 * CORE_GLOW;
+  float reactorAmbient = exp(-pow(qRadius / 0.72, 2.0)) * 0.020 * CORE_GLOW;
   color += CORE_GLOW_WARM * reactorAmbient;
 
   // ---------------------------------------------------------------------------
@@ -103,14 +102,6 @@ vec3 layerCore(vec2 p, float t) {
   // ---------------------------------------------------------------------------
   float coreRotation = -uTime * CORE_ROTATION_SPEED;
   q = rotate2d(q, coreRotation);
-
-  vec2 v0 = coreOuterVertex(0);  vec2 v1 = coreOuterVertex(1);
-  vec2 v2 = coreOuterVertex(2);  vec2 v3 = coreOuterVertex(3);
-  vec2 v4 = coreOuterVertex(4);  vec2 v5 = coreOuterVertex(5);
-  vec2 v6 = coreOuterVertex(6);  vec2 v7 = coreOuterVertex(7);
-  vec2 v8 = coreOuterVertex(8);  vec2 v9 = coreOuterVertex(9);
-  vec2 v10 = coreOuterVertex(10); vec2 v11 = coreOuterVertex(11);
-  vec2 v12 = coreOuterVertex(12); vec2 v13 = coreOuterVertex(13);
 
   vec2 m0 = coreMiddleVertex(0, time);  vec2 m1 = coreMiddleVertex(1, time);
   vec2 m2 = coreMiddleVertex(2, time);  vec2 m3 = coreMiddleVertex(3, time);
@@ -216,8 +207,9 @@ vec3 layerCore(vec2 p, float t) {
   float centerCrossA = coreSegment(q, i0, i4, 0.006) * coreSegment(q, i2, i6, 0.005);
   float centerCrossB = coreSegment(q, i1, i5, 0.0045) * coreSegment(q, i3, i7, 0.0045);
   float centerSharp = max(centerCrossA, centerCrossB);
-  float centerHalo = exp(-pow(length(q) / 0.045, 2.0));
-  float centerAmbient = exp(-pow(length(q) / 0.115, 2.0));
+  // Rotation does not change vector length, so the cached radius remains exact.
+  float centerHalo = exp(-pow(qRadius / 0.045, 2.0));
+  float centerAmbient = exp(-pow(qRadius / 0.115, 2.0));
   float temperaturePulse = 0.965 + 0.035 * sin(uTime * 3.20);
   color += CORE_WHITE_HOT * centerSharp * 1.15 * temperaturePulse;
   color += CORE_WHITE_WARM * centerHalo * 0.16 * temperaturePulse;

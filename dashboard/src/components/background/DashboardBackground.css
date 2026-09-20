@@ -1,0 +1,135 @@
+.dashboard-background {
+  position: fixed;
+  z-index: var(--layer-background);
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 43% 38% at 9% 9%, #102b3980 0%, transparent 76%),
+    radial-gradient(ellipse 39% 37% at 95% 14%, #10273772 0%, transparent 74%),
+    radial-gradient(ellipse 47% 40% at 5% 94%, #0b29356e 0%, transparent 75%),
+    radial-gradient(ellipse 44% 39% at 97% 91%, #1028326c 0%, transparent 76%),
+    radial-gradient(ellipse 31% 57% at 0% 48%, #09232f60 0%, transparent 78%),
+    radial-gradient(ellipse 30% 56% at 100% 55%, #0a26325e 0%, transparent 78%),
+    radial-gradient(ellipse 55% 25% at 47% 0%, #0b1f2a52 0%, transparent 80%),
+    radial-gradient(ellipse 54% 26% at 51% 100%, #0a202b50 0%, transparent 79%),
+    radial-gradient(ellipse 30% 37% at 50% 49%, #030d164a 0%, transparent 100%),
+    linear-gradient(145deg, #020812, #040e18 52%, #01060d);
+}
+
+.dashboard-background::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: radial-gradient(ellipse at center, transparent 26%, #01050b38 100%);
+  z-index: 1;
+}
+
+.dashboard-background__dots {
+  position: absolute;
+  inset: 0;
+  mask-image: radial-gradient(ellipse 69% 73% at 50% 49%, #00000036 0%, #000 49%, #000 100%);
+  z-index: 2;
+}
+
+.dashboard-background__dots--primary {
+  background-image: radial-gradient(circle, #65dce02b 0.55px, transparent 0.95px);
+  background-size: 34px 34px;
+  background-position: 0 0;
+}
+
+.dashboard-background__dots--secondary {
+  background-image: radial-gradient(circle, #76e5e012 0.45px, transparent 0.9px);
+  background-size: 68px 68px;
+  background-position: 11px 7px;
+}
+
+.dashboard-background__particles {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  mask-image: radial-gradient(ellipse 65% 69% at 50% 49%, #00000028 0%, #000 50%, #000 100%);
+}
+
+.atmospheric-particle {
+  position: absolute;
+  display: block;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #83dce93d;
+}
+
+.atmospheric-particle--01 { left: 8%; top: 23%; width: 2px; height: 2px; }
+.atmospheric-particle--02 { left: 17%; top: 76%; width: 2px; height: 2px; }
+.atmospheric-particle--03 { left: 29%; top: 11%; width: 1px; height: 1px; }
+.atmospheric-particle--04 { left: 72%; top: 17%; width: 2px; height: 2px; }
+.atmospheric-particle--05 { left: 91%; top: 31%; width: 2px; height: 2px; }
+.atmospheric-particle--06 { left: 83%; top: 81%; width: 1px; height: 1px; }
+.atmospheric-particle--07 { left: 6%; top: 67%; width: 2px; height: 2px; }
+.atmospheric-particle--08 { left: 96%; top: 61%; width: 2px; height: 2px; }
+.atmospheric-particle--09 { left: 36%; top: 91%; width: 2px; height: 2px; }
+.atmospheric-particle--10 { left: 64%; top: 8%; width: 1px; height: 1px; }
+
+.dashboard-background__scanlines {
+  position: absolute;
+  inset: 0;
+  opacity: 0.24;
+  z-index: 4;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    var(--scanline) 4px
+  );
+}
+
+.dashboard-background__hud {
+  position: absolute;
+  inset: 0;
+  color: var(--accent-cyan-dim);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.18em;
+  opacity: 0.48;
+  z-index: 5;
+}
+
+.hud-mark {
+  position: absolute;
+  display: block;
+}
+
+.hud-mark--north-west,
+.hud-mark--north-east,
+.hud-mark--south-west,
+.hud-mark--south-east {
+  padding: 0.6rem 0.7rem;
+  border-color: var(--hud-border);
+  border-style: solid;
+}
+
+.hud-mark--north-west {
+  top: 5%; left: 4%; border-width: 1px 0 0 1px;
+}
+.hud-mark--north-east {
+  top: 5%; right: 4%; border-width: 1px 1px 0 0;
+}
+.hud-mark--south-west {
+  bottom: 5%; left: 4%; border-width: 0 0 1px 1px;
+}
+.hud-mark--south-east {
+  right: 4%; bottom: 5%; border-width: 0 1px 1px 0;
+}
+.hud-mark--west-tick,
+.hud-mark--east-tick {
+  top: 50%; width: 12px; height: 1px; background: var(--hud-border);
+}
+.hud-mark--west-tick { left: 2.5%; }
+.hud-mark--east-tick { right: 2.5%; }
+
+@media (max-width: 600px) {
+  .dashboard-background__hud {
+    font-size: 0.48rem;
+  }
+}
