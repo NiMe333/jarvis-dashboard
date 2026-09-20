@@ -113,8 +113,6 @@
   background: linear-gradient(var(--header-line), var(--header-line)) bottom right / calc(100% - 9px) 1px no-repeat, linear-gradient(45deg, transparent 46%, var(--header-line-bright) 48% 52%, transparent 54%) top right / 10px 10px no-repeat;
 }
 .dashboard-header__intelligence small,
-.dashboard-header__intelligence em,
-.dashboard-header__quote small,
 .dashboard-header__clock > small {
   color: var(--header-text-muted);
   font: 8px/1 var(--font-mono);
@@ -124,7 +122,6 @@
 }
 .dashboard-header__intelligence strong { color: var(--header-text-primary); font-size: clamp(10px, 0.8vw, 12px); font-weight: 400; letter-spacing: 0.14em; white-space: nowrap; }
 .dashboard-header__intelligence > span { color: #51d0dc; font-size: clamp(8px, 0.61vw, 9px); letter-spacing: 0.08em; white-space: nowrap; text-shadow: 0 0 5px #45d4df22; }
-.dashboard-header__intelligence em { color: #5b9ca5; font-size: 8px; }
 .dashboard-header__intelligence > i { position: absolute; bottom: 5px; left: clamp(18px, 1.4vw, 30px); width: min(45%, 150px); height: 1px; background: linear-gradient(90deg, var(--header-line-bright), transparent); }
 
 .dashboard-header__quote {
@@ -156,9 +153,7 @@
   background: linear-gradient(90deg, transparent, var(--header-line), transparent);
   transform: translateX(-50%);
 }
-.dashboard-header__quote small { margin-bottom: 1px; }
-
-.dashboard-header__clock { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; margin: 7px clamp(7px, 0.75vw, 11px); padding: 4px clamp(18px, 1.4vw, 30px); }
+.dashboard-header__clock { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; margin: 7px clamp(7px, 0.75vw, 11px); padding: 4px clamp(18px, 1.4vw, 30px); }
 .dashboard-header__clock::before {
   top: 0;
   left: 0;
@@ -173,12 +168,9 @@
   height: 13px;
   background: linear-gradient(var(--header-line), var(--header-line)) bottom right / calc(100% - 9px) 1px no-repeat, linear-gradient(45deg, transparent 46%, var(--header-line-bright) 48% 52%, transparent 54%) top right / 10px 10px no-repeat;
 }
-.live-clock { display: grid; justify-items: center; gap: 3px; }
+.live-clock { display: grid; justify-items: center; gap: 4px; }
 .live-clock__date { color: var(--header-text-muted); font: 8px/1 var(--font-mono); letter-spacing: 0.04em; white-space: nowrap; }
 .live-clock__time { color: #d3edf2; font: 300 clamp(23px, 1.83vw, 28px)/0.95 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.025em; white-space: nowrap; text-shadow: 0 0 7px #9aeaf52b; }
-.uptime-display { display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--header-text-muted); font: 8px/1 var(--font-mono); white-space: nowrap; }
-.uptime-display__value { color: #759da6; }
-.uptime-display__node { color: #4c737c; }
 
 @media (max-width: 1100px) and (min-width: 901px) {
   .dashboard-header { --header-inline-padding: clamp(10px, 1.3vw, 14px); min-height: 104px; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 1fr 1fr; grid-template-areas: "brand intelligence quote" "clock status status"; padding: 5px var(--header-inline-padding); }
@@ -223,8 +215,6 @@
   .dashboard-header__clock .live-clock { justify-items: start; }
   .dashboard-header__clock .live-clock__date { font-size: 8px; }
   .dashboard-header__clock .live-clock__time { font-size: 17px; }
-  .uptime-display { justify-content: flex-start; font-size: 8px; gap: 3px; }
-  .uptime-display__node { display: none; }
   .system-status { gap: 5px; padding: 2px; }
   .system-status__light { width: 15px; height: 15px; }
   .system-status__primary { max-width: 100%; font-size: 8px; line-height: 1.05; white-space: normal; }

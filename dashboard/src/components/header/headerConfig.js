@@ -1,5 +1,4 @@
 export const headerConfig = {
-  nodeName: "NODE.01",
   uptime: "12d 07h 42m",
   alertCount: 0,
   intelligenceTitle: "HOME SERVER INTELLIGENCE",

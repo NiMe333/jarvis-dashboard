@@ -7,14 +7,28 @@ const statusLabels = {
   offline: ["SYSTEM OFFLINE", "CONNECTION UNAVAILABLE"],
 };
 
-export default function SystemStatus({ status = "operational", alertCount = 0 }) {
+function formatUptime(uptime) {
+  return `UPTIME // ${uptime.toUpperCase()}`;
+}
+
+export default function SystemStatus({
+  status = "operational",
+  alertCount = 0,
+  uptime = "",
+}) {
   const [label, detail] = statusLabels[status] ?? statusLabels.offline;
-  const secondary = status === "operational" && alertCount === 0
-    ? "NO ACTIVE ALERTS"
-    : status === "operational" ? `${alertCount} ACTIVE ALERT${alertCount === 1 ? "" : "S"}` : detail;
+  const secondary = status === "operational" && alertCount === 0;
+  status === "operational"
+    ? `${alertCount} ACTIVE ALERT${alertCount === 1 ? "" : "S"}`
+    : detail;
+  const uptimeLabel = formatUptime(uptime);
 
   return (
-    <div className={`system-status system-status--${status}`} role="status" aria-label={`${label}. ${secondary}.`}>
+    <div
+      className={`system-status system-status--${status}`}
+      role="status"
+      aria-label={`${label}. ${secondary}. ${uptimeLabel}.`}
+    >
       <span className="system-status__frame" aria-hidden="true">
         <i className="system-status__edge system-status__edge--tl" />
         <i className="system-status__edge system-status__edge--tr" />
@@ -27,7 +41,7 @@ export default function SystemStatus({ status = "operational", alertCount = 0 })
       <div className="system-status__copy">
         <span className="system-status__primary">{label}</span>
         <span className="system-status__secondary">{secondary}</span>
-        <span className="system-status__meta">NODE.STATUS // NOMINAL</span>
+        <span className="system-status__meta">{uptimeLabel}</span>
       </div>
     </div>
   );

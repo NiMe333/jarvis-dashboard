@@ -47,14 +47,13 @@
   border-radius: 50%;
   background: radial-gradient(circle at 38% 35%, #86ffff, #12d8d8 62%, #04aebb);
   box-shadow: 0 0 8px #22e8e570, 0 0 15px #1acfd338;
-  transform: translateY(-5px);
   animation: status-breathe 4.8s ease-in-out infinite;
 }
 
 .system-status__copy { position: relative; z-index: 1; display: grid; min-width: 0; gap: 4px; }
 .system-status__primary { overflow: hidden; color: var(--status-color); font-size: clamp(8px, 0.66vw, 10px); font-weight: 500; letter-spacing: 0.07em; text-shadow: 0 0 6px #39d5df2a; text-overflow: ellipsis; white-space: nowrap; }
 .system-status__secondary { color: #6d929a; font: 8px/1 var(--font-mono); letter-spacing: 0.1em; white-space: nowrap; }
-.system-status__meta { color: #507b84; font: 7px/1 var(--font-mono); letter-spacing: 0.1em; white-space: nowrap; }
+.system-status__meta { color: #759da6; opacity: 0.76; font: 9px/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.12em; text-shadow: 0 0 4px #45d4df18; white-space: nowrap; }
 
 @keyframes status-breathe { 50% { opacity: 0.72; } }
 @media (prefers-reduced-motion: reduce) { .system-status__light { animation: none; } }
