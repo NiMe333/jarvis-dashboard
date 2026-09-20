@@ -1,19 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import vertexShader from "./healthCore.vert.glsl?raw";
-import fragmentShader from "./healthCore.frag.glsl?raw";
 import "./SystemHealthCore.css";
 
+const SEGMENTS = Array.from({ length: 20 }, (_, index) => index);
+const TICKS = Array.from({ length: 40 }, (_, index) => index);
+const NODES = [18, 108, 198, 288];
+
 export default function SystemHealthCore({ health = 100 }) {
-  const hostRef=useRef(null);const [rendererType,setRendererType]=useState("initializing");
-  useEffect(()=>{const host=hostRef.current;if(!host)return;let renderer,raf,visible=true,pageVisible=!document.hidden,elapsed=0,last=performance.now();try{
-    renderer=new THREE.WebGLRenderer({alpha:true,antialias:false,premultipliedAlpha:false,powerPreference:"high-performance"});renderer.debug.checkShaderErrors=true;renderer.setClearColor(0,0);renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.1));host.appendChild(renderer.domElement);
-    const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,10),geometry=new THREE.PlaneGeometry(2,2);camera.position.set(0,0,1);const material=new THREE.ShaderMaterial({vertexShader,fragmentShader,transparent:true,depthTest:false,depthWrite:false,blending:THREE.NormalBlending,extensions:{derivatives:true},uniforms:{uTime:{value:0},uResolution:{value:new THREE.Vector2(1,1)},uHealth:{value:health/100},uMotionEnabled:{value:matchMedia("(prefers-reduced-motion: reduce)").matches?0:1},uDebugStage:{value:0}}});const mesh=new THREE.Mesh(geometry,material);mesh.position.set(0,0,0);mesh.frustumCulled=false;scene.add(mesh);
-    material.extensions.derivatives=true;
-    const resize=()=>{const b=host.getBoundingClientRect();if(!(b.width>0&&b.height>0))return false;renderer.setSize(b.width,b.height,false);renderer.getDrawingBufferSize(material.uniforms.uResolution.value);renderer.render(scene,camera);return true;};if(!resize())throw new Error("Health Core has zero-sized wrapper");
-    setRendererType("webgl");const ro=new ResizeObserver(resize);ro.observe(host);const io=new IntersectionObserver(([e])=>{visible=e.isIntersecting;});io.observe(host);const onVisibility=()=>{pageVisible=!document.hidden;last=performance.now();};document.addEventListener("visibilitychange",onVisibility);
-    const draw=(now)=>{if(pageVisible&&visible){elapsed+=(now-last)/1000;material.uniforms.uTime.value=elapsed;renderer.render(scene,camera);}last=now;raf=requestAnimationFrame(draw);};raf=requestAnimationFrame(draw);
-    return()=>{cancelAnimationFrame(raf);ro.disconnect();io.disconnect();document.removeEventListener("visibilitychange",onVisibility);geometry.dispose();material.dispose();renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();};
-  }catch(error){if(import.meta.env.DEV)console.warn("Health Core WebGL fallback",error);setRendererType("fallback");}},[health]);
-  return <div className="system-health-core system-health-core" ref={hostRef} data-renderer={rendererType}>{rendererType==="fallback"&&<span className="system-health-core__fallback" aria-hidden="true"/>}<div className="system-health-core__label"><strong>{health}%</strong><span>HEALTHY</span></div></div>;
+  const activeSegments = Math.round((Math.max(0, Math.min(100, health)) / 100) * SEGMENTS.length);
+  const isWarning = health < 90;
+  return <div className={`system-health-core${isWarning ? " is-warning" : ""}`} data-renderer="svg" data-health-state={isWarning ? "warning" : "healthy"} aria-label={`${health}% system health`}><svg className="system-health-core__visual" viewBox="0 0 200 200" role="img" aria-hidden="true"><g className="system-health-core__ticks">{TICKS.map((tick) => <line key={tick} x1="100" y1={tick % 5 === 0 ? "12" : "16"} x2="100" y2={tick % 5 === 0 ? "20" : "19"} transform={`rotate(${tick * 9} 100 100)`} />)}</g><circle className="system-health-core__orbit system-health-core__orbit--outer" cx="100" cy="100" r="82" /><circle className="system-health-core__orbit system-health-core__orbit--middle" cx="100" cy="100" r="57" /><g className="system-health-core__segments">{SEGMENTS.map((segment) => <line key={segment} className={segment < activeSegments ? "is-active" : ""} x1="100" y1="24" x2="100" y2="38" transform={`rotate(${segment * 18} 100 100)`} />)}</g><g className="system-health-core__arcs"><circle cx="100" cy="100" r="45" pathLength="100" /><circle cx="100" cy="100" r="35" pathLength="100" /></g><circle className="system-health-core__inner-ring" cx="100" cy="100" r="25" /><g className="system-health-core__guides"><line x1="52" y1="100" x2="67" y2="100" /><line x1="133" y1="100" x2="148" y2="100" /><line x1="100" y1="52" x2="100" y2="67" /><line x1="100" y1="133" x2="100" y2="148" /></g><g className="system-health-core__nodes">{NODES.map((angle) => <circle key={angle} cx="100" cy="18" r="2.4" transform={`rotate(${angle} 100 100)`} />)}</g></svg><div className="system-health-core__label" aria-hidden="true"><strong>{health}%</strong><span>{isWarning ? "WARNING" : "HEALTHY"}</span></div></div>;
 }
