@@ -39,11 +39,7 @@ export default function DashboardHeader({ className = "" }) {
         <LiveClock />
       </section>
 
-      <SystemStatus
-        status={headerConfig.systemStatus}
-        alertCount={headerConfig.alertCount}
-        uptime={headerConfig.uptime}
-      />
+      <SystemStatus status={headerConfig.systemStatus} alertCount={headerConfig.alertCount} />
     </header>
   );
 }

@@ -1,6 +1,7 @@
 import DashboardShell from "../components/layout/DashboardShell.jsx";
 import HudPanel from "../components/panel/HudPanel.jsx";
 import DashboardHeader from "../components/header/DashboardHeader.jsx";
+import SystemOverview from "../components/overview/SystemOverview.jsx";
 import "./DashboardLayout.css";
 
 export default function App() {
@@ -10,23 +11,22 @@ export default function App() {
         <DashboardHeader className="dashboard-layout__header" />
 
         <div className="dashboard-layout__left">
-          <HudPanel title="SYSTEM OVERVIEW" className="dashboard-layout__overview" frameStyle="open" />
-          <HudPanel title="RESOURCE MONITOR" className="dashboard-layout__resource" frameStyle="bracket" />
+          <SystemOverview />
+          <HudPanel title="LIVE RESOURCES" subtitle="// 1 SEC" className="dashboard-layout__resource" frameStyle="open" variant="compact" />
+          <HudPanel title="NETWORK THROUGHPUT" subtitle="/ REAL-TIME // 1 MIN" className="dashboard-layout__network" frameStyle="open" variant="compact" />
         </div>
 
-        <HudPanel title="JARVIS CORE" eyebrow="PRIMARY INTERFACE" className="dashboard-layout__core" frameStyle="core" shape="core" energy="pair">
-          <div className="dashboard-layout__core-reserved">CORE MODULE RESERVED</div>
-        </HudPanel>
+        <div className="dashboard-layout__center">
+          <HudPanel title="JARVIS CORE" eyebrow="PRIMARY INTERFACE" className="dashboard-layout__core" frameStyle="core" shape="core" energy="pair" variant="large" />
+          <HudPanel title="RECENT EVENTS" subtitle="/ SYSTEM LOG" className="dashboard-layout__events" frameStyle="open" variant="compact" />
+        </div>
 
         <div className="dashboard-layout__right">
-          <HudPanel title="SERVICES & CONTAINERS" className="dashboard-layout__services" frameStyle="open" />
-          <HudPanel title="TEMPERATURE & POWER" className="dashboard-layout__temperature" frameStyle="bracket" energy="single" />
-          <HudPanel title="NETWORK THROUGHPUT" className="dashboard-layout__network" frameStyle="open" />
+          <HudPanel title="SERVICES & CONTAINERS" subtitle="/ CORE SERVICES" className="dashboard-layout__services" frameStyle="open" />
+          <HudPanel title="TEMPERATURE & POWER" subtitle="/ SYSTEM SENSORS" className="dashboard-layout__temperature" frameStyle="bracket" />
+          <HudPanel title="QUICK ACTIONS" subtitle="// OPERATIONS" className="dashboard-layout__actions" frameStyle="contained" energy="single" />
         </div>
 
-        <HudPanel title="RECENT EVENTS" className="dashboard-layout__events" frameStyle="open" />
-        <HudPanel title="QUICK ACTIONS" className="dashboard-layout__actions" frameStyle="contained" energy="single" />
-        <HudPanel className="dashboard-layout__footer" title="SYSTEM STATUS BAR" frameStyle="open" />
       </div>
     </DashboardShell>
   );
