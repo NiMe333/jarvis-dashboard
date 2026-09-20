@@ -153,6 +153,54 @@
   background: linear-gradient(90deg, transparent, var(--header-line), transparent);
   transform: translateX(-50%);
 }
+.rotating-directive {
+  display: grid;
+  width: 100%;
+  gap: 4px;
+  justify-items: center;
+}
+.rotating-directive__meta {
+  color: var(--header-text-muted);
+  font: 8px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+.rotating-directive__messages {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 27px;
+}
+.rotating-directive__message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+.rotating-directive__message > span:first-child {
+  color: #c2e1e6;
+  font-size: clamp(9px, 0.69vw, 10px);
+  text-shadow: 0 0 3px #45d4df24;
+}
+.rotating-directive__message > span:last-child {
+  color: #94b7bf;
+  font-size: clamp(8px, 0.64vw, 9px);
+  letter-spacing: 0.18em;
+}
+.rotating-directive__message--active { animation: directive-enter 350ms ease-out both; }
+.rotating-directive__message--outgoing { animation: directive-exit 350ms ease-in both; }
+@keyframes directive-enter {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes directive-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-3px); }
+}
 .dashboard-header__clock { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; margin: 7px clamp(7px, 0.75vw, 11px); padding: 4px clamp(18px, 1.4vw, 30px); }
 .dashboard-header__clock::before {
   top: 0;
@@ -201,6 +249,12 @@
   .dashboard-header__intelligence > span { font-size: 8px; white-space: normal; }
   .dashboard-header__intelligence > i { bottom: 4px; left: 5px; }
   .dashboard-header__clock .live-clock__time { font-size: 21px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotating-directive__message--active { animation: directive-opacity 80ms linear both; }
+  .rotating-directive__message--outgoing { display: none; }
+  @keyframes directive-opacity { from { opacity: 0; } to { opacity: 1; } }
 }
 
 @media (max-width: 480px) {

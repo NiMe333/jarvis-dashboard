@@ -1,4 +1,5 @@
 import LiveClock from "./LiveClock.jsx";
+import RotatingDirective from "./RotatingDirective.jsx";
 import SystemStatus from "./SystemStatus.jsx";
 import { headerConfig } from "./headerConfig.js";
 import "./DashboardHeader.css";
@@ -20,15 +21,14 @@ export default function DashboardHeader({ className = "" }) {
         className="dashboard-header__intelligence"
         aria-label="Home server intelligence"
       >
-        <small>SYS.INT</small>
+        <small>SYSTEM INTELLIGENCE</small>
         <strong>{headerConfig.intelligenceTitle}</strong>
         <span>{headerConfig.intelligenceSubtitle}</span>
         <i aria-hidden="true" />
       </section>
 
       <blockquote className="dashboard-header__quote">
-        <span>“{headerConfig.quote[0]}</span>
-        <span>{headerConfig.quote[1]}”</span>
+        <RotatingDirective />
       </blockquote>
 
       <section
