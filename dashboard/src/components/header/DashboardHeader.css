@@ -1,0 +1,232 @@
+.dashboard-header {
+  --header-text-primary: #c9e9ef;
+  --header-text-secondary: #35c9d8;
+  --header-text-muted: #668e98;
+  --header-cyan: #45d4df;
+  --header-line: #43c5d43d;
+  --header-line-bright: #58dce69a;
+  --header-rail: #43c5d452;
+  --header-inline-padding: clamp(24px, 1.8vw, 38px);
+  --header-glow-soft: 0 0 8px #45d4df24;
+  --header-glow-strong: 0 0 3px #a4f5ff82, 0 0 9px #45d4df33;
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 17fr) minmax(0, 23fr) minmax(0, 25fr) minmax(0, 14fr) minmax(0, 21fr);
+  align-items: stretch;
+  padding: clamp(6px, 0.55vh, 8px) var(--header-inline-padding);
+  color: var(--header-text-primary);
+}
+
+/* Hairline technical rails, inset from the viewport edge. */
+.dashboard-header::before,
+.dashboard-header::after {
+  position: absolute;
+  right: var(--header-inline-padding);
+  left: var(--header-inline-padding);
+  content: "";
+  pointer-events: none;
+  z-index: 1;
+}
+.dashboard-header::before {
+  top: 2px;
+  height: 3px;
+  background:
+    linear-gradient(90deg, var(--header-rail) 3% 14%, transparent 14% 20%, var(--header-rail) 20% 37%, transparent 37% 46%, var(--header-rail) 46% 61%, transparent 61% 69%, var(--header-rail) 69% 78%, transparent 78% 83%, var(--header-rail) 83% 97%) 0 0 / 100% 1px no-repeat;
+}
+.dashboard-header::after {
+  bottom: 0;
+  height: 5px;
+  background:
+    linear-gradient(90deg, var(--header-rail) 3% 14%, transparent 14% 20%, var(--header-rail) 20% 37%, transparent 37% 46%, var(--header-rail) 46% 61%, transparent 61% 69%, var(--header-rail) 69% 78%, transparent 78% 83%, var(--header-rail) 83% 97%) 0 3px / 100% 1px no-repeat;
+}
+
+.dashboard-header__identity,
+.dashboard-header__intelligence,
+.dashboard-header__quote,
+.dashboard-header__clock {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  z-index: 2;
+}
+
+.dashboard-header__identity { padding: 4px clamp(18px, 1.4vw, 30px) 4px 0; }
+.dashboard-header__brand { display: grid; min-width: 0; align-content: center; gap: 1px; }
+.dashboard-header__brand h1 {
+  margin: 0;
+  color: #d8f5fc;
+  font-family: "Arial Narrow", "Roboto Condensed", "Segoe UI", sans-serif;
+  font-size: clamp(31px, 2.6vw, 40px);
+  font-stretch: condensed;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  line-height: 0.98;
+  text-shadow: 0 0 3px #8aefff75, 0 0 9px #45d4df30;
+}
+.dashboard-header__brand span { color: #3bcddc; font-size: 11px; font-weight: 600; letter-spacing: 0.34em; line-height: 1.15; white-space: nowrap; text-shadow: 0 0 5px #32d8e626; }
+
+.dashboard-header__intelligence,
+.dashboard-header__quote,
+.dashboard-header__clock {
+  isolation: isolate;
+  background-color: #02121a14;
+}
+.dashboard-header__intelligence::before,
+.dashboard-header__intelligence::after,
+.dashboard-header__quote::before,
+.dashboard-header__quote::after,
+.dashboard-header__clock::before,
+.dashboard-header__clock::after {
+  position: absolute;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+}
+.dashboard-header__intelligence > *,
+.dashboard-header__quote > *,
+.dashboard-header__clock > * { position: relative; z-index: 1; }
+
+.dashboard-header__intelligence {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 3px;
+  margin: 7px clamp(7px, 0.75vw, 11px);
+  padding: 4px clamp(18px, 1.4vw, 30px);
+}
+.dashboard-header__intelligence::before {
+  top: 0;
+  right: 0;
+  width: 42%;
+  height: 13px;
+  background: linear-gradient(var(--header-line), var(--header-line)) top right / calc(100% - 9px) 1px no-repeat, linear-gradient(135deg, transparent 46%, var(--header-line) 48% 52%, transparent 54%) bottom right / 10px 10px no-repeat;
+}
+.dashboard-header__intelligence::after {
+  right: 0;
+  bottom: 0;
+  width: 37%;
+  height: 13px;
+  background: linear-gradient(var(--header-line), var(--header-line)) bottom right / calc(100% - 9px) 1px no-repeat, linear-gradient(45deg, transparent 46%, var(--header-line-bright) 48% 52%, transparent 54%) top right / 10px 10px no-repeat;
+}
+.dashboard-header__intelligence small,
+.dashboard-header__intelligence em,
+.dashboard-header__quote small,
+.dashboard-header__clock > small {
+  color: var(--header-text-muted);
+  font: 8px/1 var(--font-mono);
+  font-style: normal;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+.dashboard-header__intelligence strong { color: var(--header-text-primary); font-size: clamp(10px, 0.8vw, 12px); font-weight: 400; letter-spacing: 0.14em; white-space: nowrap; }
+.dashboard-header__intelligence > span { color: #51d0dc; font-size: clamp(8px, 0.61vw, 9px); letter-spacing: 0.08em; white-space: nowrap; text-shadow: 0 0 5px #45d4df22; }
+.dashboard-header__intelligence em { color: #5b9ca5; font-size: 8px; }
+.dashboard-header__intelligence > i { position: absolute; bottom: 5px; left: clamp(18px, 1.4vw, 30px); width: min(45%, 150px); height: 1px; background: linear-gradient(90deg, var(--header-line-bright), transparent); }
+
+.dashboard-header__quote {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  margin: 7px clamp(7px, 0.75vw, 11px);
+  padding: 4px clamp(18px, 1.4vw, 30px);
+  color: #9dbdc5;
+  font: 400 clamp(9px, 0.69vw, 10px)/1.3 var(--font-mono);
+  letter-spacing: 0.15em;
+  text-align: center;
+  white-space: nowrap;
+}
+.dashboard-header__quote::before {
+  top: 0;
+  left: 50%;
+  width: 32%;
+  height: 1px;
+  background: var(--header-line-bright);
+  transform: translateX(-50%);
+}
+.dashboard-header__quote::after {
+  bottom: 0;
+  left: 50%;
+  width: 42%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--header-line), transparent);
+  transform: translateX(-50%);
+}
+.dashboard-header__quote small { margin-bottom: 1px; }
+
+.dashboard-header__clock { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; margin: 7px clamp(7px, 0.75vw, 11px); padding: 4px clamp(18px, 1.4vw, 30px); }
+.dashboard-header__clock::before {
+  top: 0;
+  left: 0;
+  width: 43%;
+  height: 13px;
+  background: linear-gradient(var(--header-line), var(--header-line)) top left / calc(100% - 9px) 1px no-repeat, linear-gradient(45deg, transparent 46%, var(--header-line-bright) 48% 52%, transparent 54%) bottom left / 10px 10px no-repeat;
+}
+.dashboard-header__clock::after {
+  right: 0;
+  bottom: 0;
+  width: 43%;
+  height: 13px;
+  background: linear-gradient(var(--header-line), var(--header-line)) bottom right / calc(100% - 9px) 1px no-repeat, linear-gradient(45deg, transparent 46%, var(--header-line-bright) 48% 52%, transparent 54%) top right / 10px 10px no-repeat;
+}
+.live-clock { display: grid; justify-items: center; gap: 3px; }
+.live-clock__date { color: var(--header-text-muted); font: 8px/1 var(--font-mono); letter-spacing: 0.04em; white-space: nowrap; }
+.live-clock__time { color: #d3edf2; font: 300 clamp(23px, 1.83vw, 28px)/0.95 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.025em; white-space: nowrap; text-shadow: 0 0 7px #9aeaf52b; }
+.uptime-display { display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--header-text-muted); font: 8px/1 var(--font-mono); white-space: nowrap; }
+.uptime-display__value { color: #759da6; }
+.uptime-display__node { color: #4c737c; }
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .dashboard-header { --header-inline-padding: clamp(10px, 1.3vw, 14px); min-height: 104px; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 1fr 1fr; grid-template-areas: "brand intelligence quote" "clock status status"; padding: 5px var(--header-inline-padding); }
+  .dashboard-header__identity { grid-area: brand; }
+  .dashboard-header__intelligence { grid-area: intelligence; }
+  .dashboard-header__quote { grid-area: quote; }
+  .dashboard-header__clock { grid-area: clock; align-items: center; }
+  .dashboard-header > .system-status { grid-area: status; }
+  .dashboard-header__quote { font-size: 9px; }
+  .dashboard-header__intelligence { padding: 0 10px; }
+  .dashboard-header__intelligence > i { bottom: 10%; left: 10px; }
+}
+
+@media (max-width: 900px) {
+  .dashboard-header { --header-inline-padding: 10px; min-height: 126px; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 1fr 1fr; grid-template-areas: "brand brand intelligence" "clock status status"; gap: 3px 7px; padding: 8px var(--header-inline-padding); }
+  .dashboard-header__identity { grid-area: brand; padding-left: 4px; }
+  .dashboard-header__intelligence { grid-area: intelligence; padding: 0 5px; }
+  .dashboard-header__quote { display: none; }
+  .dashboard-header__clock { grid-area: clock; align-items: center; padding: 0 4px; }
+  .dashboard-header > .system-status { grid-area: status; }
+  .dashboard-header__intelligence small,
+  .dashboard-header__intelligence em,
+  .dashboard-header__clock > small,
+  .system-status__meta { display: none; }
+  .dashboard-header__brand h1 { font-size: clamp(22px, 4vw, 31px); letter-spacing: 0.26em; }
+  .dashboard-header__brand span { font-size: 10px; }
+  .dashboard-header__intelligence strong { font-size: 9px; letter-spacing: 0.06em; white-space: normal; }
+  .dashboard-header__intelligence > span { font-size: 8px; white-space: normal; }
+  .dashboard-header__intelligence > i { bottom: 4px; left: 5px; }
+  .dashboard-header__clock .live-clock__time { font-size: 21px; }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header { --header-inline-padding: 8px; min-height: 136px; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-areas: "brand brand intelligence intelligence" "clock clock status status"; gap: 4px 0; padding-inline: var(--header-inline-padding); }
+  .dashboard-header__identity { padding-left: 2px; }
+  .dashboard-header__brand h1 { font-size: 22px; letter-spacing: 0.22em; }
+  .dashboard-header__brand span { font-size: 8px; letter-spacing: 0.19em; }
+  .dashboard-header__intelligence { padding: 0 3px; }
+  .dashboard-header__intelligence strong { font-size: 8px; letter-spacing: 0; }
+  .dashboard-header__intelligence > span { display: none; }
+  .dashboard-header__clock { align-items: flex-start; padding-left: 4px; }
+  .dashboard-header__clock .live-clock { justify-items: start; }
+  .dashboard-header__clock .live-clock__date { font-size: 8px; }
+  .dashboard-header__clock .live-clock__time { font-size: 17px; }
+  .uptime-display { justify-content: flex-start; font-size: 8px; gap: 3px; }
+  .uptime-display__node { display: none; }
+  .system-status { gap: 5px; padding: 2px; }
+  .system-status__light { width: 15px; height: 15px; }
+  .system-status__primary { max-width: 100%; font-size: 8px; line-height: 1.05; white-space: normal; }
+  .system-status__secondary { font-size: 8px; }
+}

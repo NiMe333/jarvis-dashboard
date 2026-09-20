@@ -1,48 +1,38 @@
 .dashboard-shell {
   position: relative;
   isolation: isolate;
-  display: grid;
-  min-height: 100svh;
+  display: block;
+  height: 100dvh;
   width: 100%;
-  overflow: clip;
-  padding: max(var(--space-5), env(safe-area-inset-top))
-    max(var(--space-5), env(safe-area-inset-right))
-    max(var(--space-5), env(safe-area-inset-bottom))
-    max(var(--space-5), env(safe-area-inset-left));
+  overflow: hidden;
+  padding: max(14px, env(safe-area-inset-top))
+    max(14px, env(safe-area-inset-right))
+    max(14px, env(safe-area-inset-bottom))
+    max(14px, env(safe-area-inset-left));
 }
 
 .dashboard-shell__content {
   position: relative;
   z-index: var(--layer-content);
-  display: grid;
-  place-items: center;
+  display: block;
+  height: 100%;
   width: min(100%, var(--dashboard-max-width));
   min-width: 0;
+  min-height: 0;
   margin-inline: auto;
 }
 
-.initialization-marker {
-  text-align: center;
-  padding: var(--space-4);
-  color: var(--text-primary);
-  text-shadow: 0 0 var(--glow-soft) var(--accent-cyan-glow);
-}
+@media (max-width: 900px) {
+  .dashboard-shell {
+    height: auto;
+    min-height: 100svh;
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding: max(var(--space-5), env(safe-area-inset-top))
+      max(var(--space-5), env(safe-area-inset-right))
+      max(var(--space-5), env(safe-area-inset-bottom))
+      max(var(--space-5), env(safe-area-inset-left));
+  }
 
-.initialization-marker__title,
-.initialization-marker__subtitle {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 500;
-}
-
-.initialization-marker__title {
-  font-size: clamp(0.78rem, 2vw, 0.94rem);
-  letter-spacing: 0.2em;
-}
-
-.initialization-marker__subtitle {
-  margin-top: var(--space-3);
-  color: var(--text-secondary);
-  font-size: 0.65rem;
-  letter-spacing: 0.24em;
+  .dashboard-shell__content { height: auto; }
 }

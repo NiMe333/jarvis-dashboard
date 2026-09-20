@@ -5,16 +5,16 @@
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 43% 38% at 9% 9%, #102b3980 0%, transparent 76%),
-    radial-gradient(ellipse 39% 37% at 95% 14%, #10273772 0%, transparent 74%),
-    radial-gradient(ellipse 47% 40% at 5% 94%, #0b29356e 0%, transparent 75%),
-    radial-gradient(ellipse 44% 39% at 97% 91%, #1028326c 0%, transparent 76%),
-    radial-gradient(ellipse 31% 57% at 0% 48%, #09232f60 0%, transparent 78%),
-    radial-gradient(ellipse 30% 56% at 100% 55%, #0a26325e 0%, transparent 78%),
-    radial-gradient(ellipse 55% 25% at 47% 0%, #0b1f2a52 0%, transparent 80%),
-    radial-gradient(ellipse 54% 26% at 51% 100%, #0a202b50 0%, transparent 79%),
+    radial-gradient(ellipse 43% 38% at 9% 9%, #102d3780 0%, transparent 76%),
+    radial-gradient(ellipse 39% 37% at 95% 14%, #10293472 0%, transparent 74%),
+    radial-gradient(ellipse 47% 40% at 5% 94%, #0c2a346e 0%, transparent 75%),
+    radial-gradient(ellipse 44% 39% at 97% 91%, #112a326c 0%, transparent 76%),
+    radial-gradient(ellipse 31% 57% at 0% 48%, #0a252e60 0%, transparent 78%),
+    radial-gradient(ellipse 30% 56% at 100% 55%, #0b282f5e 0%, transparent 78%),
+    radial-gradient(ellipse 55% 25% at 47% 0%, #0b202852 0%, transparent 80%),
+    radial-gradient(ellipse 54% 26% at 51% 100%, #0a212950 0%, transparent 79%),
     radial-gradient(ellipse 30% 37% at 50% 49%, #030d164a 0%, transparent 100%),
-    linear-gradient(145deg, #020812, #040e18 52%, #01060d);
+    linear-gradient(145deg, #030911, #040f17 52%, #01070c);
 }
 
 .dashboard-background::before {
@@ -82,54 +82,4 @@
     transparent 3px,
     var(--scanline) 4px
   );
-}
-
-.dashboard-background__hud {
-  position: absolute;
-  inset: 0;
-  color: var(--accent-cyan-dim);
-  font-family: var(--font-mono);
-  font-size: 0.56rem;
-  letter-spacing: 0.18em;
-  opacity: 0.48;
-  z-index: 5;
-}
-
-.hud-mark {
-  position: absolute;
-  display: block;
-}
-
-.hud-mark--north-west,
-.hud-mark--north-east,
-.hud-mark--south-west,
-.hud-mark--south-east {
-  padding: 0.6rem 0.7rem;
-  border-color: var(--hud-border);
-  border-style: solid;
-}
-
-.hud-mark--north-west {
-  top: 5%; left: 4%; border-width: 1px 0 0 1px;
-}
-.hud-mark--north-east {
-  top: 5%; right: 4%; border-width: 1px 1px 0 0;
-}
-.hud-mark--south-west {
-  bottom: 5%; left: 4%; border-width: 0 0 1px 1px;
-}
-.hud-mark--south-east {
-  right: 4%; bottom: 5%; border-width: 0 1px 1px 0;
-}
-.hud-mark--west-tick,
-.hud-mark--east-tick {
-  top: 50%; width: 12px; height: 1px; background: var(--hud-border);
-}
-.hud-mark--west-tick { left: 2.5%; }
-.hud-mark--east-tick { right: 2.5%; }
-
-@media (max-width: 600px) {
-  .dashboard-background__hud {
-    font-size: 0.48rem;
-  }
 }
