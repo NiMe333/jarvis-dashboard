@@ -45,11 +45,18 @@ export default function HealthSystemShader({ health = 100, status }) {
     >
       <svg className="health-system-shader__dial" viewBox="0 0 260 260" aria-hidden="true">
         <g className="health-system-shader__pulse">
+          <circle className="health-system-shader__breath-glow" cx="130" cy="130" r="91" />
           <circle className="health-system-shader__guide" cx="130" cy="130" r="96" />
           <circle className="health-system-shader__inner-guide" cx="130" cy="130" r="77" />
-          {Array.from({ length: TICK_COUNT }, (_, index) => (
-            <HealthTick key={index} index={index} active={index < activeTickCount} />
-          ))}
+          <g className="health-system-shader__tick-rotor">
+            {Array.from({ length: TICK_COUNT }, (_, index) => (
+              <HealthTick key={index} index={index} active={index < activeTickCount} />
+            ))}
+          </g>
+        </g>
+        <g className="health-system-shader__static-rail">
+          <circle className="health-system-shader__static-rail-cyan" cx="130" cy="130" r="92" />
+          <circle className="health-system-shader__static-rail-amber" cx="130" cy="130" r="92" pathLength="100" />
         </g>
         <g className="health-system-shader__rotor">
           <circle className="health-system-shader__rotor-cyan" cx="130" cy="130" r="87" />

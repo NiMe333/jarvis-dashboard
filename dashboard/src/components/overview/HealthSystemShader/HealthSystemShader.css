@@ -11,6 +11,7 @@
   isolation: isolate;
   overflow: visible;
   color: #e5ffff;
+  contain: layout paint style;
 }
 
 .health-system-shader__dial {
@@ -36,16 +37,50 @@
 }
 
 .health-system-shader__pulse,
-.health-system-shader__rotor {
+.health-system-shader__rotor,
+.health-system-shader__tick-rotor {
   transform-origin: 130px 130px;
+  will-change: transform, opacity;
 }
 
 .health-system-shader__pulse {
-  animation: health-system-breathe 4.2s ease-in-out infinite;
+  animation: health-system-breathe 4.2s steps(126, end) infinite;
 }
 
 .health-system-shader__rotor {
-  animation: health-system-rotate 18s linear infinite;
+  animation: health-system-rotate 18s steps(540, end) infinite;
+}
+
+.health-system-shader__tick-rotor {
+  animation: health-system-counter-rotate 30s steps(900, end) infinite;
+}
+
+.health-system-shader__breath-glow {
+  fill: none;
+  stroke: rgba(20, 220, 235, .10);
+  stroke-width: 13;
+  opacity: .52;
+}
+
+.health-system-shader__static-rail-cyan,
+.health-system-shader__static-rail-amber {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.health-system-shader__static-rail-cyan {
+  stroke: rgba(54, 230, 239, .62);
+  stroke-width: .8;
+  stroke-dasharray: 74 8 22 10;
+  filter: drop-shadow(0 0 2px rgba(23, 221, 235, .62)) drop-shadow(0 0 5px rgba(12, 180, 205, .24));
+}
+
+.health-system-shader__static-rail-amber {
+  stroke: rgba(255, 177, 67, .92);
+  stroke-width: 1.35;
+  stroke-dasharray: 3.5 46.5;
+  stroke-dashoffset: 11;
+  filter: drop-shadow(0 0 3px rgba(255, 147, 31, .72));
 }
 
 .health-system-shader__rotor-cyan,
@@ -61,17 +96,17 @@
 }
 
 .health-system-shader__rotor-amber {
-  stroke: rgba(245, 173, 70, .46);
-  stroke-width: 1.2;
+  stroke: rgba(255, 174, 52, .82);
+  stroke-width: 1.45;
   stroke-dasharray: 3 61 10 54;
-  filter: drop-shadow(0 0 2px rgba(245, 173, 70, .28));
+  filter: drop-shadow(0 0 2px rgba(255, 159, 34, .85)) drop-shadow(0 0 5px rgba(245, 133, 20, .48));
 }
 
 .health-system-shader__tick {
   stroke: rgba(123, 218, 226, .26);
   stroke-width: .85;
   stroke-linecap: square;
-  transition: stroke .25s ease, opacity .25s ease, filter .25s ease;
+  transition: stroke .25s ease, opacity .25s ease;
 }
 
 .health-system-shader__tick.is-major {
@@ -85,7 +120,6 @@
 
 .health-system-shader__tick.is-active {
   stroke: #25dce8;
-  filter: drop-shadow(0 0 2px rgba(27, 226, 239, .55));
 }
 
 .health-system-shader__tick.is-active.is-major {
@@ -100,8 +134,9 @@
 
 .health-system-shader__tick.is-amber,
 .health-system-shader__tick.is-active.is-amber {
-  stroke: #f5ad46;
-  filter: drop-shadow(0 0 3px rgba(245, 173, 70, .6));
+  stroke: #ffb143;
+  stroke-width: 1.8;
+  filter: drop-shadow(0 0 2px rgba(255, 191, 91, .95)) drop-shadow(0 0 5px rgba(255, 137, 24, .72));
 }
 
 .health-system-shader__corner {
@@ -167,18 +202,23 @@
 }
 
 @keyframes health-system-breathe {
-  0%, 100% { opacity: .78; transform: scale(.992); }
-  50% { opacity: 1; transform: scale(1.008); }
+  0%, 100% { opacity: .72; transform: scale(.988); }
+  50% { opacity: 1; transform: scale(1.012); }
 }
 
 @keyframes health-system-rotate {
   to { transform: rotate(360deg); }
 }
 
+@keyframes health-system-counter-rotate {
+  to { transform: rotate(-360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .health-system-shader__tick { transition: none; }
   .health-system-shader__pulse,
-  .health-system-shader__rotor { animation: none; }
+  .health-system-shader__rotor,
+  .health-system-shader__tick-rotor { animation: none; }
 }
 
 @media (min-width: 901px) {
