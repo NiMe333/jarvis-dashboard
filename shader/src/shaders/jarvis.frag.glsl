@@ -8,16 +8,16 @@ void main() {
   // INNER_CORE_ONLY (13) is the working comparison view for the approved core
   // plus the first cyan ring assembly. It intentionally skips post effects.
   if (uDebugLayer == 13) {
-    color += backgroundLayer(vUv, centered);
+    if (!uTransparent) color += backgroundLayer(vUv, centered);
     color += layerCore(hud, t);
     color += layerInnerRings(hud, t);
   // CORE_ONLY mode: debugLayer 8 renders background + central core.
   // GEOMETRY_ONLY (12) uses the same core function with its rings bypassed.
   } else if (uDebugLayer == 8 || uDebugLayer == 12) {
-    color += backgroundLayer(vUv, centered);
+    if (!uTransparent) color += backgroundLayer(vUv, centered);
     color += layerCore(hud, t);
   } else {
-    if (uDebugLayer == 0 || uDebugLayer == 1) color += backgroundLayer(vUv, centered);
+    if (!uTransparent && (uDebugLayer == 0 || uDebugLayer == 1)) color += backgroundLayer(vUv, centered);
     if (uDebugLayer == 0 || uDebugLayer == 2) color += layerGrid(hud, t);
     if (uDebugLayer == 0 || uDebugLayer == 4) color += layerOuterRings(hud, t);
     if (uDebugLayer == 0 || uDebugLayer == 5) color += layerPanels(hud, t);
@@ -38,5 +38,9 @@ void main() {
   color *= radialBreath;
 
   if (uDebugUV) color = vec3(vUv, 0.0);
-  gl_FragColor = vec4(color * uIntensity, uTransparent ? 0.0 : 1.0);
+  vec3 outputColor = color * uIntensity;
+  float outputAlpha = uTransparent
+    ? clamp(max(max(outputColor.r, outputColor.g), outputColor.b), 0.0, 1.0)
+    : 1.0;
+  gl_FragColor = vec4(outputColor, outputAlpha);
 }

@@ -2,6 +2,7 @@ import DashboardShell from "../components/layout/DashboardShell.jsx";
 import HudPanel from "../components/panel/HudPanel.jsx";
 import DashboardHeader from "../components/header/DashboardHeader.jsx";
 import SystemOverview from "../components/overview/SystemOverview.jsx";
+import JarvisShader from "../components/JarvisShader.jsx";
 import "./DashboardLayout.css";
 
 export default function App() {
@@ -17,7 +18,9 @@ export default function App() {
         </div>
 
         <div className="dashboard-layout__center">
-          <HudPanel title="JARVIS CORE" eyebrow="PRIMARY INTERFACE" className="dashboard-layout__core" frameStyle="core" shape="core" energy="pair" variant="large" />
+          <HudPanel title="JARVIS CORE" eyebrow="PRIMARY INTERFACE" className="dashboard-layout__core" frameStyle="core" shape="core" energy="pair" variant="large">
+            <JarvisShader />
+          </HudPanel>
           <HudPanel title="RECENT EVENTS" subtitle="/ SYSTEM LOG" className="dashboard-layout__events" frameStyle="open" variant="compact" />
         </div>
 
