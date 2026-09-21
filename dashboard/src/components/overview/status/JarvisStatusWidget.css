@@ -1,0 +1,162 @@
+.jarvis-status {
+  --status-accent: #42eaff;
+  --status-text: #dffbff;
+  display: grid;
+  width: min(100%, 420px);
+  height: auto;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  align-content: stretch;
+  gap: clamp(4px, 1cqh, 9px);
+  margin-inline: auto;
+  color: var(--status-text);
+  container-type: inline-size;
+}
+
+.jarvis-status[data-state="warning"] { --status-accent: #ffb04a; }
+.jarvis-status[data-state="critical"] { --status-accent: #ff5c68; }
+.jarvis-status[data-state="offline"] { --status-accent: #718c95; }
+
+.jarvis-status__readout {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(5px, 1.6cqh, 13px);
+  padding: clamp(3px, 1cqh, 8px) 2px;
+  text-align: center;
+}
+
+.jarvis-status__readout::before,
+.jarvis-status__readout::after {
+  width: min(76%, 230px);
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--status-accent) 58%, transparent), transparent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--status-accent) 22%, transparent);
+  content: "";
+}
+
+.jarvis-status__heading {
+  max-width: 100%;
+  color: var(--status-accent);
+  font-family: var(--font-mono);
+  font-size: clamp(8px, 7cqw, 18px);
+  letter-spacing: .14em;
+  line-height: 1;
+  text-indent: .14em;
+  white-space: nowrap;
+}
+
+.jarvis-status__value {
+  max-width: 100%;
+  color: var(--status-text);
+  font-family: var(--font-display);
+  font-size: clamp(23px, 21cqw, 68px);
+  font-weight: 400;
+  letter-spacing: .035em;
+  line-height: 1;
+  text-shadow: 0 0 7px color-mix(in srgb, var(--status-accent) 28%, transparent);
+  white-space: nowrap;
+}
+
+.jarvis-status__events {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  border-block: 1px solid color-mix(in srgb, var(--status-accent) 46%, transparent);
+  margin-inline: auto;
+}
+
+.jarvis-status__events::before,
+.jarvis-status__events::after {
+  position: absolute;
+  width: 7px;
+  inset-block: -1px;
+  border-block: 2px solid var(--status-accent);
+  content: "";
+}
+
+.jarvis-status__events::before { left: 0; border-left: 2px solid var(--status-accent); }
+.jarvis-status__events::after { right: 0; border-right: 2px solid var(--status-accent); }
+
+.jarvis-status__event {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  padding: clamp(4px, 1cqh, 8px) clamp(7px, 4cqw, 16px);
+}
+
+.jarvis-status__event-head {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 5px;
+  color: color-mix(in srgb, var(--status-accent) 78%, #78959a);
+  font-family: var(--font-mono);
+  font-size: clamp(7px, 5.6cqw, 14px);
+  letter-spacing: .06em;
+  line-height: 1;
+}
+
+.jarvis-status__event-head time {
+  color: var(--status-text);
+  font-family: var(--font-display);
+  font-size: 1.12em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+
+.jarvis-status__event > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--status-accent) 74%, #78959a);
+  font-family: var(--font-mono);
+  font-size: clamp(6px, 4.8cqw, 12px);
+  font-weight: 400;
+  letter-spacing: .05em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jarvis-status__security {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: clamp(5px, 3cqw, 10px);
+  padding: 2px clamp(4px, 2cqw, 8px) 0;
+  color: color-mix(in srgb, var(--status-accent) 76%, #78959a);
+  font-family: var(--font-mono);
+  font-size: clamp(7px, 5.4cqw, 14px);
+  letter-spacing: .06em;
+  line-height: 1;
+  white-space: nowrap;
+  margin-inline: auto;
+}
+
+.jarvis-status__security i {
+  width: clamp(7px, 4.5cqw, 13px);
+  aspect-ratio: 1;
+  flex: none;
+  border-radius: 50%;
+  background: var(--status-accent);
+  box-shadow: 0 0 4px var(--status-accent), 0 0 8px color-mix(in srgb, var(--status-accent) 32%, transparent);
+  animation: jarvis-status-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes jarvis-status-pulse {
+  50% { opacity: .7; transform: scale(.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jarvis-status__security i { animation: none; }
+}
