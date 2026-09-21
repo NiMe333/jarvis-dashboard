@@ -28,6 +28,8 @@ const fragmentShader = [
   fragmentMain,
 ].join("\n");
 
+export const CORE_VERTICAL_OFFSET_PX = 26;
+
 export const QUALITY_PRESETS = Object.freeze({
   high: {
     dpr: 2.0,
@@ -82,6 +84,7 @@ export default function JarvisShader({ quality = "high" }) {
       uIntensity: { value: 1 },
       uAnimationSpeed: { value: 1.65 },
       uHudScale: { value: 1 },
+      uCoreOffsetY: { value: 0 },
       uGlowIntensity: { value: 0.82 },
       uQuality: { value: qualityLevel(preset.detail) },
       uDetail: { value: preset.detail },
@@ -120,23 +123,26 @@ export default function JarvisShader({ quality = "high" }) {
     uniforms.uAnimationSpeed.value = reducedMotion ? 0 : 1.65;
     const shouldRender = () => !document.hidden && inViewport;
 
-    const recordCanvasMetrics = () => {
+    const recordCanvasMetrics = (cssHeight) => {
       renderer.getDrawingBufferSize(drawingBufferSize);
       uniforms.uResolution.value.copy(drawingBufferSize);
       uniforms.uPixelRatio.value = renderer.getPixelRatio();
+      uniforms.uCoreOffsetY.value = (CORE_VERTICAL_OFFSET_PX * 2)
+        / (Math.max(cssHeight, 1) * Math.max(uniforms.uHudScale.value, 0.01));
       wrapper.dataset.canvasResolution = `${drawingBufferSize.x}x${drawingBufferSize.y}`;
+      wrapper.dataset.coreOffsetY = uniforms.uCoreOffsetY.value.toFixed(4);
     };
 
     const resize = (width, height) => {
       if (!width || !height) return;
       renderer.setSize(width, height, false);
-      recordCanvasMetrics();
+      recordCanvasMetrics(height);
       if (!frameId && shouldRender()) renderer.render(scene, camera);
     };
 
     const bounds = wrapper.getBoundingClientRect();
     renderer.setSize(bounds.width || 1, bounds.height || 1, false);
-    recordCanvasMetrics();
+    recordCanvasMetrics(bounds.height || 1);
     wrapper.dataset.quality = presetName;
     wrapper.dataset.targetFps = String(preset.fps);
     wrapper.dataset.dpr = renderer.getPixelRatio().toFixed(2);

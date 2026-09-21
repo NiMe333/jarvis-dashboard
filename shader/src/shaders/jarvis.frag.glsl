@@ -2,6 +2,7 @@ void main() {
   vec2 centered = (vUv - 0.5) * 2.0;
   centered.x *= uResolution.x / uResolution.y;
   vec2 hud = centered / max(uHudScale, 0.01);
+  hud.y -= uCoreOffsetY;
   // Shared polar radius. Expensive layers are entered only where their glow or
   // geometry can contribute; every range includes a small safety margin.
   float radius = length(hud);

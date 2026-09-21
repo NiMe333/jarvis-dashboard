@@ -2,7 +2,7 @@ import DashboardShell from "../components/layout/DashboardShell.jsx";
 import HudPanel from "../components/panel/HudPanel.jsx";
 import DashboardHeader from "../components/header/DashboardHeader.jsx";
 import SystemOverview from "../components/overview/SystemOverview.jsx";
-import JarvisShader from "../components/JarvisShader.jsx";
+import JarvisCorePanel from "../components/core/JarvisCorePanel.jsx";
 import "./DashboardLayout.css";
 
 export default function App() {
@@ -39,7 +39,7 @@ export default function App() {
             energy="pair"
             variant="large"
           >
-            <JarvisShader quality="balanced" />
+            <JarvisCorePanel />
           </HudPanel>
           <HudPanel
             title="RECENT EVENTS"

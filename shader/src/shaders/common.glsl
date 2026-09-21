@@ -7,6 +7,7 @@ uniform float uPixelRatio;
 uniform float uIntensity;
 uniform float uAnimationSpeed;
 uniform float uHudScale;
+uniform float uCoreOffsetY;
 uniform float uGlowIntensity;
 uniform float uQuality;
 uniform float uDetail;
