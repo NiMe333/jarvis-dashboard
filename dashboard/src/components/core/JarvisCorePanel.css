@@ -1,36 +1,93 @@
 .jarvis-core-panel {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: 100%;
   height: 100%;
   min-width: 0;
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   container-type: size;
   container-name: jarvis-core-panel;
 }
 
 .jarvis-core-panel__viewport {
+  position: relative;
+  z-index: 1;
   display: grid;
   min-width: 0;
   min-height: 0;
   place-items: center;
-  overflow: hidden;
+  padding-top: clamp(8px, 1.8cqh, 18px);
+  overflow: visible;
   container-type: size;
   container-name: jarvis-core-viewport;
 }
 
 .jarvis-core-panel__shader-shell {
   position: relative;
-  width: min(100cqw, 100cqh, 620px);
-  max-width: 620px;
-  max-height: 620px;
+  width: min(104cqw, 104cqh, 725px);
+  max-width: 725px;
+  max-height: 725px;
   min-width: 0;
   min-height: 0;
   aspect-ratio: 1;
   flex: none;
+}
+
+.jarvis-core-panel__title {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  width: min(74%, 410px);
+  min-height: clamp(52px, 9cqh, 76px);
+  margin: clamp(5px, 1cqh, 10px) auto 0;
+  place-items: center;
+  align-content: center;
+  gap: clamp(5px, .8cqh, 8px);
+}
+
+.jarvis-core-panel__title strong {
+  color: #d8f8fa;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3.1cqw, 38px);
+  font-weight: 300;
+  letter-spacing: .36em;
+  line-height: 1;
+  text-indent: .36em;
+  text-shadow: 0 0 6px rgba(105, 229, 238, .5), 0 0 16px rgba(48, 185, 203, .22);
+}
+
+.jarvis-core-panel__title small {
+  color: rgba(145, 172, 176, .7);
+  font-family: var(--font-mono);
+  font-size: clamp(7px, .78cqw, 10px);
+  font-weight: 400;
+  letter-spacing: .2em;
+  line-height: 1;
+}
+
+.jarvis-core-panel__title::before,
+.jarvis-core-panel__title::after {
+  position: absolute;
+  top: 36%;
+  width: clamp(30px, 8cqw, 70px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(73, 219, 230, .68));
+  box-shadow: 0 0 4px rgba(73, 219, 230, .25);
+  content: "";
+}
+
+.jarvis-core-panel__title::before {
+  right: calc(50% + clamp(58px, 9cqw, 105px));
+  transform: skewX(-32deg);
+}
+
+.jarvis-core-panel__title::after {
+  left: calc(50% + clamp(58px, 9cqw, 105px));
+  background: linear-gradient(90deg, rgba(73, 219, 230, .68), transparent);
+  transform: skewX(32deg);
 }
 
 .jarvis-core-panel__shader-shell > .jarvis-shader,

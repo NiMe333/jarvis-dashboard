@@ -28,7 +28,8 @@ const fragmentShader = [
   fragmentMain,
 ].join("\n");
 
-export const CORE_VERTICAL_OFFSET_PX = 26;
+export const CORE_VERTICAL_OFFSET_PX = 0;
+export const CORE_VISUAL_SCALE = 1.1;
 
 export const QUALITY_PRESETS = Object.freeze({
   high: {
@@ -83,7 +84,7 @@ export default function JarvisShader({ quality = "high" }) {
       uPixelRatio: { value: 1 },
       uIntensity: { value: 1 },
       uAnimationSpeed: { value: 1.65 },
-      uHudScale: { value: 1 },
+      uHudScale: { value: CORE_VISUAL_SCALE },
       uCoreOffsetY: { value: 0 },
       uGlowIntensity: { value: 0.82 },
       uQuality: { value: qualityLevel(preset.detail) },
@@ -127,8 +128,9 @@ export default function JarvisShader({ quality = "high" }) {
       renderer.getDrawingBufferSize(drawingBufferSize);
       uniforms.uResolution.value.copy(drawingBufferSize);
       uniforms.uPixelRatio.value = renderer.getPixelRatio();
-      uniforms.uCoreOffsetY.value = (CORE_VERTICAL_OFFSET_PX * 2)
-        / (Math.max(cssHeight, 1) * Math.max(uniforms.uHudScale.value, 0.01));
+      uniforms.uCoreOffsetY.value =
+        (CORE_VERTICAL_OFFSET_PX * 2) /
+        (Math.max(cssHeight, 1) * Math.max(uniforms.uHudScale.value, 0.01));
       wrapper.dataset.canvasResolution = `${drawingBufferSize.x}x${drawingBufferSize.y}`;
       wrapper.dataset.coreOffsetY = uniforms.uCoreOffsetY.value.toFixed(4);
     };

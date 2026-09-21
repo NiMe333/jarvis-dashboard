@@ -31,8 +31,6 @@ export default function App() {
 
         <div className="dashboard-layout__center">
           <HudPanel
-            title="JARVIS CORE"
-            eyebrow="PRIMARY INTERFACE"
             className="dashboard-layout__core"
             frameStyle="core"
             shape="core"

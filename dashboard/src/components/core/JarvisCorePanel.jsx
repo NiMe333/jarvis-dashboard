@@ -70,6 +70,10 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({ telemetry
 export default function JarvisCorePanel({ telemetry = mockCoreTelemetry }) {
   return (
     <div className="jarvis-core-panel">
+      <div className="jarvis-core-panel__title">
+        <strong>CORE</strong>
+        <small>STATUS</small>
+      </div>
       <div className="jarvis-core-panel__viewport">
         <div className="jarvis-core-panel__shader-shell">
           <StableJarvisShader quality="balanced" />
