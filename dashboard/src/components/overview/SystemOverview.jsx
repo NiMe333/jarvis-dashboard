@@ -9,7 +9,6 @@ export const mockSystemOverview = Object.freeze({
   processor: "Intel Core i5-6500T",
   memory: "16 GB DDR4",
   storage: "256 GB",
-  location: "HOME",
 });
 
 function VectorClock() {
@@ -46,7 +45,6 @@ export default function SystemOverview({
     { label: "CPU", value: telemetry.processor },
     { label: "MEMORY", value: telemetry.memory },
     { label: "STORAGE", value: telemetry.storage },
-    { label: "LOCATION", value: telemetry.location },
   ];
 
   return (
