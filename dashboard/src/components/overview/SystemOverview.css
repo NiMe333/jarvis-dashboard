@@ -16,6 +16,7 @@
   z-index: 2;
   min-width: 0;
   padding: clamp(14px, 2cqw, 24px) clamp(14px, 2.5cqw, 24px) 0;
+  margin-top: 5px;
 }
 
 .system-overview__header::after {
@@ -24,7 +25,7 @@
   height: 1px;
   margin-top: clamp(8px, 1.5cqh, 14px);
   background: #42d9e4;
-  box-shadow: 0 0 5px rgba(66, 217, 228, .22);
+  box-shadow: 0 0 5px rgba(66, 217, 228, 0.22);
   content: "";
 }
 
@@ -38,9 +39,9 @@
   color: #c8e8eb;
   font-family: var(--font-display);
   font-size: clamp(17px, 4.1cqw, 23px);
-  letter-spacing: .13em;
+  letter-spacing: 0.13em;
   line-height: 1;
-  text-shadow: 0 0 6px rgba(81, 219, 229, .18);
+  text-shadow: 0 0 6px rgba(81, 219, 229, 0.18);
 }
 
 .system-overview__header p {
@@ -48,7 +49,7 @@
   color: #55b9c2;
   font-family: var(--font-mono);
   font-size: clamp(9px, 2.25cqw, 12px);
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   line-height: 1;
 }
 
@@ -61,7 +62,8 @@
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   align-items: stretch;
   gap: clamp(10px, 2.2cqw, 24px);
-  padding: clamp(10px, 2cqh, 18px) clamp(14px, 2.5cqw, 24px) clamp(12px, 2.5cqh, 22px);
+  padding: clamp(10px, 2cqh, 18px) clamp(14px, 2.5cqw, 24px)
+    clamp(12px, 2.5cqh, 22px);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   overflow: hidden;
@@ -101,7 +103,7 @@
   font-size: clamp(8px, 4.4cqw, 12px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .system-overview__uptime-row {
@@ -124,8 +126,15 @@
   vector-effect: non-scaling-stroke;
 }
 
-.system-overview__clock-halo { stroke: rgba(34, 226, 235, .16); stroke-width: 5; }
-.system-overview__clock-face { stroke: #25dce7; stroke-width: 1.4; filter: drop-shadow(0 0 2px rgba(37, 220, 231, .5)); }
+.system-overview__clock-halo {
+  stroke: rgba(34, 226, 235, 0.16);
+  stroke-width: 5;
+}
+.system-overview__clock-face {
+  stroke: #25dce7;
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 2px rgba(37, 220, 231, 0.5));
+}
 
 .system-overview__clock-ticks,
 .system-overview__clock-hands,
@@ -135,10 +144,22 @@
   vector-effect: non-scaling-stroke;
 }
 
-.system-overview__clock-ticks { stroke: rgba(66, 226, 234, .78); stroke-width: 1; }
-.system-overview__clock-hands { stroke: #7bf4f7; stroke-width: 1.5; }
-.system-overview__clock-accent { stroke: #dd994c; stroke-width: 1.2; }
-.system-overview__clock-pin { fill: #d7ffff; filter: drop-shadow(0 0 2px rgba(74, 231, 238, .72)); }
+.system-overview__clock-ticks {
+  stroke: rgba(66, 226, 234, 0.78);
+  stroke-width: 1;
+}
+.system-overview__clock-hands {
+  stroke: #7bf4f7;
+  stroke-width: 1.5;
+}
+.system-overview__clock-accent {
+  stroke: #dd994c;
+  stroke-width: 1.2;
+}
+.system-overview__clock-pin {
+  fill: #d7ffff;
+  filter: drop-shadow(0 0 2px rgba(74, 231, 238, 0.72));
+}
 
 .system-overview__uptime-copy {
   display: grid;
@@ -152,16 +173,16 @@
   font-size: clamp(20px, 11.5cqw, 48px);
   font-weight: 400;
   line-height: 1;
-  letter-spacing: .025em;
+  letter-spacing: 0.025em;
   white-space: nowrap;
-  text-shadow: 0 0 7px rgba(106, 230, 237, .2);
+  text-shadow: 0 0 7px rgba(106, 230, 237, 0.2);
 }
 
 .system-overview__uptime-copy small {
   color: #73969b;
   font-size: clamp(6px, 3.5cqw, 10px);
   line-height: 1;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
@@ -171,14 +192,18 @@
   grid-template-columns: max-content minmax(0, 1fr);
   align-items: baseline;
   column-gap: clamp(10px, 6cqw, 34px);
-  row-gap: clamp(3px, .8cqh, 8px);
+  row-gap: clamp(3px, 0.8cqh, 8px);
   margin: clamp(12px, 3cqh, 30px) 0 0;
 }
 
-.system-overview__hardware-row { display: contents; }
+.system-overview__hardware-row {
+  display: contents;
+}
 
 .system-overview__hardware dt,
-.system-overview__hardware dd { margin: 0; }
+.system-overview__hardware dd {
+  margin: 0;
+}
 
 .system-overview__hardware dd {
   min-width: 0;
@@ -188,17 +213,29 @@
   font-size: clamp(9px, 5.3cqw, 16px);
   font-weight: 400;
   line-height: 1.1;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 @container system-overview-panel (max-height: 260px) {
-  .system-overview__header { padding-top: 10px; }
-  .system-overview__header::after { margin-top: 7px; }
-  .system-overview__body { padding-top: 7px; padding-bottom: 9px; }
-  .system-overview__uptime { gap: 5px; }
-  .system-overview__hardware { margin-top: 10px; row-gap: 2px; }
+  .system-overview__header {
+    padding-top: 10px;
+  }
+  .system-overview__header::after {
+    margin-top: 7px;
+  }
+  .system-overview__body {
+    padding-top: 7px;
+    padding-bottom: 9px;
+  }
+  .system-overview__uptime {
+    gap: 5px;
+  }
+  .system-overview__hardware {
+    margin-top: 10px;
+    row-gap: 2px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -212,5 +249,7 @@
     gap: 22px;
   }
 
-  .system-overview__status { min-height: 280px; }
+  .system-overview__status {
+    min-height: 280px;
+  }
 }
