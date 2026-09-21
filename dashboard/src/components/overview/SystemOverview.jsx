@@ -1,15 +1,9 @@
 import HudFrame from "../panel/HudFrame.jsx";
 import JarvisStatusWidget from "./status/JarvisStatusWidget.jsx";
+import { dashboardCopy, dashboardMockData } from "../../config/dashboardContent.js";
 import "./SystemOverview.css";
 
-export const mockSystemOverview = Object.freeze({
-  uptime: "12d 07h 42m",
-  hostname: "jarvis",
-  hypervisor: "Proxmox VE 9.2.20",
-  processor: "Intel Core i5-6500T",
-  memory: "16 GB DDR4",
-  storage: "256 GB",
-});
+export const mockSystemOverview = dashboardMockData.systemOverview;
 
 function VectorClock() {
   return (
@@ -39,12 +33,13 @@ export default function SystemOverview({
   telemetry = mockSystemOverview,
   status,
 }) {
+  const copy = dashboardCopy.systemOverview;
   const identity = [
-    { label: "HOSTNAME", value: telemetry.hostname },
-    { label: "HYPERVISOR", value: telemetry.hypervisor },
-    { label: "CPU", value: telemetry.processor },
-    { label: "MEMORY", value: telemetry.memory },
-    { label: "STORAGE", value: telemetry.storage },
+    { label: copy.hardwareLabels.hostname, value: telemetry.hostname },
+    { label: copy.hardwareLabels.hypervisor, value: telemetry.hypervisor },
+    { label: copy.hardwareLabels.processor, value: telemetry.processor },
+    { label: copy.hardwareLabels.memory, value: telemetry.memory },
+    { label: copy.hardwareLabels.storage, value: telemetry.storage },
   ];
 
   return (
@@ -52,8 +47,8 @@ export default function SystemOverview({
       <HudFrame frameStyle="open" energy="none" />
 
       <header className="system-overview__header">
-        <h2>SYSTEM OVERVIEW</h2>
-        <p>/ HOME SERVER</p>
+        <h2>{copy.title}</h2>
+        <p>{copy.subtitle}</p>
       </header>
 
       <div className="system-overview__body">
@@ -62,11 +57,11 @@ export default function SystemOverview({
             className="system-overview__uptime"
             aria-label="Server uptime"
           >
-            <span className="system-overview__uptime-label">UPTIME</span>
+            <span className="system-overview__uptime-label">{copy.uptimeLabel}</span>
             <div className="system-overview__uptime-row">
               <VectorClock />
               <div className="system-overview__uptime-copy">
-                <strong>{telemetry.uptime ?? "—"}</strong>
+                <strong>{telemetry.uptime ?? dashboardCopy.common.unavailable}</strong>
               </div>
             </div>
           </section>
@@ -75,7 +70,7 @@ export default function SystemOverview({
             {identity.map((item) => (
               <div className="system-overview__hardware-row" key={item.label}>
                 <dt>{item.label}</dt>
-                <dd>{item.value ?? "—"}</dd>
+                <dd>{item.value ?? dashboardCopy.common.unavailable}</dd>
               </div>
             ))}
           </dl>

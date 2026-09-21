@@ -3,6 +3,7 @@ import HudPanel from "../components/panel/HudPanel.jsx";
 import DashboardHeader from "../components/header/DashboardHeader.jsx";
 import SystemOverview from "../components/overview/SystemOverview.jsx";
 import JarvisCorePanel from "../components/core/JarvisCorePanel.jsx";
+import { dashboardCopy } from "../config/dashboardContent.js";
 import "./DashboardLayout.css";
 
 export default function App() {
@@ -14,15 +15,15 @@ export default function App() {
         <div className="dashboard-layout__left">
           <SystemOverview />
           <HudPanel
-            title="LIVE RESOURCES"
-            subtitle="// 1 SEC"
+            title={dashboardCopy.panels.liveResources.title}
+            subtitle={dashboardCopy.panels.liveResources.subtitle}
             className="dashboard-layout__resource"
             frameStyle="open"
             variant="compact"
           />
           <HudPanel
-            title="NETWORK THROUGHPUT"
-            subtitle="/ REAL-TIME // 1 MIN"
+            title={dashboardCopy.panels.network.title}
+            subtitle={dashboardCopy.panels.network.subtitle}
             className="dashboard-layout__network"
             frameStyle="open"
             variant="compact"
@@ -40,8 +41,8 @@ export default function App() {
             <JarvisCorePanel />
           </HudPanel>
           <HudPanel
-            title="RECENT EVENTS"
-            subtitle="/ SYSTEM LOG"
+            title={dashboardCopy.panels.recentEvents.title}
+            subtitle={dashboardCopy.panels.recentEvents.subtitle}
             className="dashboard-layout__events"
             frameStyle="open"
             variant="compact"
@@ -50,20 +51,20 @@ export default function App() {
 
         <div className="dashboard-layout__right">
           <HudPanel
-            title="SERVICES & CONTAINERS"
-            subtitle="/ CORE SERVICES"
+            title={dashboardCopy.panels.services.title}
+            subtitle={dashboardCopy.panels.services.subtitle}
             className="dashboard-layout__services"
             frameStyle="open"
           />
           <HudPanel
-            title="TEMPERATURE & POWER"
-            subtitle="/ SYSTEM SENSORS"
+            title={dashboardCopy.panels.temperature.title}
+            subtitle={dashboardCopy.panels.temperature.subtitle}
             className="dashboard-layout__temperature"
             frameStyle="bracket"
           />
           <HudPanel
-            title="QUICK ACTIONS"
-            subtitle="// OPERATIONS"
+            title={dashboardCopy.panels.quickActions.title}
+            subtitle={dashboardCopy.panels.quickActions.subtitle}
             className="dashboard-layout__actions"
             frameStyle="contained"
             energy="single"

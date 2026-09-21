@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { dashboardCopy } from "../../config/dashboardContent.js";
 
-const directives = [
-  { first: "EVERY SYSTEM MONITORED", second: "EVERY DETAIL UNDER CONTROL" },
-  { first: "READY WHEN YOU ARE", second: "SIR" },
-  { first: "AT YOUR SERVICE", second: "AS ALWAYS" },
-  { first: "SYSTEMS STABLE", second: "SHALL WE BEGIN?" },
-];
+const directives = dashboardCopy.header.directives;
 
 function DirectiveLines({ directive, className, hidden = false }) {
   return (
@@ -74,7 +70,7 @@ export default function RotatingDirective() {
 
   return (
     <div className="rotating-directive">
-      <span className="rotating-directive__meta">JARVIS DIRECTIVE</span>
+      <span className="rotating-directive__meta">{dashboardCopy.header.directiveLabel}</span>
       <span
         className="rotating-directive__messages"
         aria-live="polite"

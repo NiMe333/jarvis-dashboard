@@ -1,18 +1,14 @@
 import "./SystemStatus.css";
+import { dashboardCopy } from "../../config/dashboardContent.js";
 
-const statusLabels = {
-  operational: ["ALL SYSTEMS OPERATIONAL", "NO ACTIVE ALERTS"],
-  warning: ["SYSTEM WARNING", "ATTENTION REQUIRED"],
-  critical: ["CRITICAL SYSTEM STATE", "IMMEDIATE ATTENTION"],
-  offline: ["SYSTEM OFFLINE", "CONNECTION UNAVAILABLE"],
-};
+const statusLabels = dashboardCopy.header.systemStates;
 
 export default function SystemStatus({ status = "operational", alertCount = 0 }) {
-  const [label, detail] = statusLabels[status] ?? statusLabels.offline;
+  const { label, detail } = statusLabels[status] ?? statusLabels.offline;
   const secondary = status === "operational" && alertCount === 0
-    ? "NO ACTIVE ALERTS"
+    ? statusLabels.operational.detail
     : status === "operational"
-    ? `${alertCount} ACTIVE ALERT${alertCount === 1 ? "" : "S"}`
+    ? `${alertCount} ${alertCount === 1 ? dashboardCopy.header.activeAlert : dashboardCopy.header.activeAlerts}`
     : detail;
 
   return (

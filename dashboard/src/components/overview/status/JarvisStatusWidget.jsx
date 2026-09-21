@@ -1,26 +1,14 @@
 import "./JarvisStatusWidget.css";
+import { dashboardCopy, dashboardMockData } from "../../../config/dashboardContent.js";
 
-const STATE_LABELS = {
-  nominal: "NOMINAL",
-  warning: "ATTENTION",
-  critical: "CRITICAL",
-  offline: "OFFLINE",
-};
+const STATE_LABELS = dashboardCopy.systemOverview.statusStates;
 
-export const defaultJarvisStatusData = Object.freeze({
-  heading: "SYSTEM STATUS",
-  status: "NOMINAL",
-  lastEventLabel: "LAST EVENT",
-  lastEventTime: "19:42",
-  lastEvent: "BACKUP COMPLETED",
-  securityLabel: "SECURITY ARMED",
-  state: "nominal",
-});
+export const defaultJarvisStatusData = dashboardMockData.overviewStatus;
 
 export default function JarvisStatusWidget({ data }) {
   const supplied = data ?? {};
-  const state = STATE_LABELS[supplied.state] ? supplied.state : "nominal";
-  const heading = supplied.heading ?? defaultJarvisStatusData.heading;
+  const state = STATE_LABELS[supplied.state] ? supplied.state : defaultJarvisStatusData.state;
+  const heading = supplied.heading ?? dashboardCopy.systemOverview.statusHeading;
   const status = supplied.status ?? STATE_LABELS[state];
   const value = { ...defaultJarvisStatusData, ...supplied, heading, status, state };
 
