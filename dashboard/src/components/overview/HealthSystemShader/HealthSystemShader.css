@@ -35,6 +35,38 @@
   stroke-dasharray: 1.5 4;
 }
 
+.health-system-shader__pulse,
+.health-system-shader__rotor {
+  transform-origin: 130px 130px;
+}
+
+.health-system-shader__pulse {
+  animation: health-system-breathe 4.2s ease-in-out infinite;
+}
+
+.health-system-shader__rotor {
+  animation: health-system-rotate 18s linear infinite;
+}
+
+.health-system-shader__rotor-cyan,
+.health-system-shader__rotor-amber {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.health-system-shader__rotor-cyan {
+  stroke: rgba(36, 219, 232, .30);
+  stroke-width: 1;
+  stroke-dasharray: 20 15 3 11;
+}
+
+.health-system-shader__rotor-amber {
+  stroke: rgba(245, 173, 70, .46);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 61 10 54;
+  filter: drop-shadow(0 0 2px rgba(245, 173, 70, .28));
+}
+
 .health-system-shader__tick {
   stroke: rgba(123, 218, 226, .26);
   stroke-width: .85;
@@ -99,7 +131,7 @@
   align-items: baseline;
   justify-content: center;
   color: inherit;
-  font-size: clamp(39px, 3.15vw, 54px);
+  font-size: clamp(32px, 2.55vw, 44px);
   line-height: .9;
   font-weight: 400;
   letter-spacing: -.035em;
@@ -110,12 +142,12 @@
 
 .health-system-shader__percent {
   margin-left: .025em;
-  font-size: .58em;
+  font-size: .52em;
   letter-spacing: 0;
 }
 
 .health-system-shader__label small {
-  margin-top: 12px;
+  margin-top: 10px;
   color: rgba(46, 222, 232, .96);
   font-size: clamp(9px, .68vw, 12px);
   line-height: 1;
@@ -134,8 +166,19 @@
   color: #ffd27a;
 }
 
+@keyframes health-system-breathe {
+  0%, 100% { opacity: .78; transform: scale(.992); }
+  50% { opacity: 1; transform: scale(1.008); }
+}
+
+@keyframes health-system-rotate {
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .health-system-shader__tick { transition: none; }
+  .health-system-shader__pulse,
+  .health-system-shader__rotor { animation: none; }
 }
 
 @media (min-width: 901px) {

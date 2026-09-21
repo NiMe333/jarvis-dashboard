@@ -44,11 +44,17 @@ export default function HealthSystemShader({ health = 100, status }) {
       aria-label={`${value}% system health, ${healthStatus.toLowerCase()}`}
     >
       <svg className="health-system-shader__dial" viewBox="0 0 260 260" aria-hidden="true">
-        <circle className="health-system-shader__guide" cx="130" cy="130" r="96" />
-        <circle className="health-system-shader__inner-guide" cx="130" cy="130" r="77" />
-        {Array.from({ length: TICK_COUNT }, (_, index) => (
-          <HealthTick key={index} index={index} active={index < activeTickCount} />
-        ))}
+        <g className="health-system-shader__pulse">
+          <circle className="health-system-shader__guide" cx="130" cy="130" r="96" />
+          <circle className="health-system-shader__inner-guide" cx="130" cy="130" r="77" />
+          {Array.from({ length: TICK_COUNT }, (_, index) => (
+            <HealthTick key={index} index={index} active={index < activeTickCount} />
+          ))}
+        </g>
+        <g className="health-system-shader__rotor">
+          <circle className="health-system-shader__rotor-cyan" cx="130" cy="130" r="87" />
+          <circle className="health-system-shader__rotor-amber" cx="130" cy="130" r="82" />
+        </g>
         <path className="health-system-shader__corner" d="M23 48V23h25 M212 23h25v25 M237 212v25h-25 M48 237H23v-25" />
       </svg>
       <div className="health-system-shader__label">
