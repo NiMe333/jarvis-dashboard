@@ -9,13 +9,11 @@ const vec3 OUTER_WARM = vec3(1.00, 0.78, 0.48);
 const vec3 OUTER_HOT = vec3(0.92, 1.00, 1.00);
 
 
-float outerBand(
-  vec2 p,
+float outerBandPolar(
+  float r,
   float innerRadius,
   float outerRadius
 ) {
-  float r = length(p);
-
   return smoothstep(
     innerRadius,
     innerRadius + 0.006,
@@ -29,14 +27,16 @@ float outerBand(
   );
 }
 
+float outerBand(vec2 p, float innerRadius, float outerRadius) {
+  return outerBandPolar(length(p), innerRadius, outerRadius);
+}
 
-float outerSector(
-  vec2 p,
+
+float outerSectorPolar(
+  float a,
   float angle,
   float span
 ) {
-  float a = atan(p.y, p.x);
-
   float delta = abs(
     atan(
       sin(a - angle),
@@ -52,6 +52,11 @@ float outerSector(
 }
 
 
+float outerSector(vec2 p, float angle, float span) {
+  return outerSectorPolar(atan(p.y, p.x), angle, span);
+}
+
+
 vec3 outerArc(
   vec2 p,
   float radius,
@@ -61,16 +66,18 @@ vec3 outerArc(
   vec3 tint,
   float strength
 ) {
-  float sharp = arcMask(
-    p,
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+  float sharp = arcMaskPolar(
+    radialDistance, polarAngle,
     radius,
     width,
     angle,
     span
   );
 
-  float bloom = arcGlow(
-    p,
+  float bloom = arcGlowPolar(
+    radialDistance, polarAngle,
     radius,
     width,
     angle,
@@ -93,24 +100,26 @@ vec3 outerTransitionRail(
   vec3 highlightTint,
   float strength
 ) {
-  float body = arcMask(
-    p,
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+  float body = arcMaskPolar(
+    radialDistance, polarAngle,
     radius,
     0.0100,
     angle,
     span
   );
 
-  float core = arcMask(
-    p,
+  float core = arcMaskPolar(
+    radialDistance, polarAngle,
     radius,
     0.0030,
     angle,
     span
   );
 
-  float halo = arcGlow(
-    p,
+  float halo = arcGlowPolar(
+    radialDistance, polarAngle,
     radius,
     0.0190,
     angle,
@@ -135,22 +144,24 @@ vec3 outerPanel(
   vec3 edgeTint,
   float strength
 ) {
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
   float panel =
-    outerBand(p, innerRadius, outerRadius)
-    * outerSector(p, angle, span);
+    outerBandPolar(radialDistance, innerRadius, outerRadius)
+    * outerSectorPolar(polarAngle, angle, span);
 
   float midRadius =
     (innerRadius + outerRadius) * 0.5;
 
   float radialT = clamp(
-    (length(p) - innerRadius)
+    (radialDistance - innerRadius)
       / max(outerRadius - innerRadius, 0.001),
     0.0,
     1.0
   );
 
   float midDistance =
-    (length(p) - midRadius)
+    (radialDistance - midRadius)
     / max(
       (outerRadius - innerRadius) * 0.56,
       0.012
@@ -159,14 +170,11 @@ vec3 outerPanel(
   float midLight =
     exp(-(midDistance * midDistance));
 
-  float a =
-    atan(p.y, p.x);
-
   float filament =
     0.48
     + 0.52
     * sin(
-      (a - angle) * 18.0
+      (polarAngle - angle) * 18.0
       + radialT * 7.0
     );
 
@@ -177,24 +185,24 @@ vec3 outerPanel(
       - smoothstep(0.74, 0.98, radialT)
     );
 
-  float innerEdge = arcMask(
-    p,
+  float innerEdge = arcMaskPolar(
+    radialDistance, polarAngle,
     innerRadius,
     0.0038,
     angle,
     span
   );
 
-  float outerEdge = arcMask(
-    p,
+  float outerEdge = arcMaskPolar(
+    radialDistance, polarAngle,
     outerRadius,
     0.0052,
     angle,
     span
   );
 
-  float halo = arcGlow(
-    p,
+  float halo = arcGlowPolar(
+    radialDistance, polarAngle,
     outerRadius,
     0.0070,
     angle,
@@ -251,16 +259,19 @@ vec3 outerPanelDetails(
   vec3 color =
     vec3(0.0);
 
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+
   float midRadius =
     (innerRadius + outerRadius) * 0.5;
 
   float panel =
-    outerBand(p, innerRadius, outerRadius)
-    * outerSector(p, angle, span);
+    outerBandPolar(radialDistance, innerRadius, outerRadius)
+    * outerSectorPolar(polarAngle, angle, span);
 
   color += tint
-    * arcMask(
-      p,
+    * arcMaskPolar(
+      radialDistance, polarAngle,
       midRadius,
       0.0014,
       angle,
@@ -270,8 +281,8 @@ vec3 outerPanelDetails(
     * strength;
 
   color += tint
-    * radialDash(
-      p,
+    * radialDashPolar(
+      radialDistance, polarAngle,
       midRadius,
       46.0,
       0.065,
@@ -305,13 +316,13 @@ vec3 outerPanelDetails(
   }
 
   color += OUTER_BLUE
-    * outerBand(
-      p,
+    * outerBandPolar(
+      radialDistance,
       innerRadius + 0.018,
       innerRadius + 0.024
     )
-    * outerSector(
-      p,
+    * outerSectorPolar(
+      polarAngle,
       angle,
       span * 0.72
     )
@@ -744,8 +755,10 @@ vec3 layerOuterRings(
 
 
   // Reduced construction meshes behind the panels
-  if (uQuality > 0.5) color += outerConnectedMesh(p, t) * 0.12;
-  if (uQuality > 1.5) color += outerCoreMesh(p, t) * 0.18;
+  // Secondary construction meshes follow the selected detail preset. Primary
+  // rings, panels, color and motion remain present at every quality level.
+  if (uDetail > 0.70) color += outerConnectedMesh(p, t) * 0.12;
+  if (uDetail > 0.90) color += outerCoreMesh(p, t) * 0.18;
 
 
   // Small bridge nodes

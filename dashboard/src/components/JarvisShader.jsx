@@ -14,9 +14,43 @@ import vertexShader from "../../../shader/src/shaders/fullscreen.vert.glsl?raw";
 import fragmentMain from "../../../shader/src/shaders/jarvis.frag.glsl?raw";
 import "./JarvisShader.css";
 
-const fragmentShader = [common, background, grid, outerRings, panels, innerRings, energy, core, particles, postEffects, fragmentMain].join("\n");
+const fragmentShader = [
+  common,
+  background,
+  grid,
+  outerRings,
+  panels,
+  innerRings,
+  energy,
+  core,
+  particles,
+  postEffects,
+  fragmentMain,
+].join("\n");
 
-export default function JarvisShader() {
+export const QUALITY_PRESETS = Object.freeze({
+  high: {
+    dpr: 2.0,
+    fps: 120,
+    detail: 1.0,
+  },
+
+  balanced: {
+    dpr: 1.25,
+    fps: 60,
+    detail: 0.85,
+  },
+
+  low: {
+    dpr: 0.85,
+    fps: 30,
+    detail: 0.6,
+  },
+});
+
+const qualityLevel = (detail) => (detail >= 0.95 ? 2 : detail >= 0.7 ? 1 : 0);
+
+export default function JarvisShader({ quality = "high" }) {
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -25,9 +59,19 @@ export default function JarvisShader() {
     const canvas = canvasRef.current;
     if (!wrapper || !canvas) return undefined;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35));
+    const presetName = QUALITY_PRESETS[quality] ? quality : "high";
+    const preset = QUALITY_PRESETS[presetName];
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, preset.dpr);
+    const frameInterval = 1000 / preset.fps;
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
+
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const uniforms = {
@@ -39,67 +83,132 @@ export default function JarvisShader() {
       uAnimationSpeed: { value: 1.65 },
       uHudScale: { value: 1 },
       uGlowIntensity: { value: 0.82 },
-      uQuality: { value: 2 },
+      uQuality: { value: qualityLevel(preset.detail) },
+      uDetail: { value: preset.detail },
       uTransparent: { value: true },
       uDebugLayer: { value: 0 },
       uFreezeTime: { value: false },
       uDebugUV: { value: false },
     };
-    const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, depthTest: false, depthWrite: false });
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      depthTest: false,
+      depthWrite: false,
+    });
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3),
+    );
     const mesh = new THREE.Mesh(geometry, material);
     mesh.frustumCulled = false;
     scene.add(mesh);
 
-    const resize = (width, height) => {
-      if (!width || !height) return;
-      renderer.setSize(width, height, false);
-      const drawingBufferSize = new THREE.Vector2();
+    let frameId = 0;
+    let inViewport = true;
+    let reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    let activeElapsed = 0;
+    let lastActiveSample = 0;
+    let lastRenderTime = 0;
+    let statsStartedAt = 0;
+    let renderedFrames = 0;
+    const drawingBufferSize = new THREE.Vector2();
+    uniforms.uAnimationSpeed.value = reducedMotion ? 0 : 1.65;
+    const shouldRender = () => !document.hidden && inViewport;
+
+    const recordCanvasMetrics = () => {
       renderer.getDrawingBufferSize(drawingBufferSize);
       uniforms.uResolution.value.copy(drawingBufferSize);
       uniforms.uPixelRatio.value = renderer.getPixelRatio();
-      if (!frameId) renderer.render(scene, camera);
+      wrapper.dataset.canvasResolution = `${drawingBufferSize.x}x${drawingBufferSize.y}`;
     };
+
+    const resize = (width, height) => {
+      if (!width || !height) return;
+      renderer.setSize(width, height, false);
+      recordCanvasMetrics();
+      if (!frameId && shouldRender()) renderer.render(scene, camera);
+    };
+
     const bounds = wrapper.getBoundingClientRect();
     renderer.setSize(bounds.width || 1, bounds.height || 1, false);
-    const initialBuffer = new THREE.Vector2();
-    renderer.getDrawingBufferSize(initialBuffer);
-    uniforms.uResolution.value.copy(initialBuffer);
-    uniforms.uPixelRatio.value = renderer.getPixelRatio();
+    recordCanvasMetrics();
+    wrapper.dataset.quality = presetName;
+    wrapper.dataset.targetFps = String(preset.fps);
+    wrapper.dataset.dpr = renderer.getPixelRatio().toFixed(2);
 
-    let frameId = 0;
-    let inViewport = true;
-    let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    uniforms.uAnimationSpeed.value = reducedMotion ? 0 : 1.65;
-    const shouldRender = () => !document.hidden && inViewport;
     const render = (now) => {
       frameId = 0;
       if (!shouldRender()) return;
-      uniforms.uTime.value = now / 1000;
-      renderer.render(scene, camera);
+
+      if (!lastActiveSample) {
+        lastActiveSample = now;
+        lastRenderTime = now - frameInterval;
+        statsStartedAt = now;
+      }
+      activeElapsed += now - lastActiveSample;
+      lastActiveSample = now;
+
+      if (reducedMotion || now - lastRenderTime >= frameInterval) {
+        uniforms.uTime.value = activeElapsed / 1000;
+        renderer.render(scene, camera);
+        lastRenderTime = now - ((now - lastRenderTime) % frameInterval);
+        renderedFrames += 1;
+
+        const statsWindow = now - statsStartedAt;
+        if (statsWindow >= 1000) {
+          wrapper.dataset.renderFps = (
+            (renderedFrames * 1000) /
+            statsWindow
+          ).toFixed(1);
+          statsStartedAt = now;
+          renderedFrames = 0;
+        }
+      }
+
       if (!reducedMotion) frameId = requestAnimationFrame(render);
     };
+
     const requestRender = () => {
       if (!shouldRender()) return;
       if (frameId) cancelAnimationFrame(frameId);
+      lastActiveSample = 0;
+      statsStartedAt = 0;
+      renderedFrames = 0;
       frameId = requestAnimationFrame(render);
     };
-    const resizeObserver = new ResizeObserver(([entry]) => resize(entry.contentRect.width, entry.contentRect.height));
+
+    const resizeObserver = new ResizeObserver(([entry]) =>
+      resize(entry.contentRect.width, entry.contentRect.height),
+    );
     resizeObserver.observe(wrapper);
-    const intersectionObserver = new IntersectionObserver(([entry]) => {
-      inViewport = entry.isIntersecting;
-      if (!inViewport && frameId) {
-        cancelAnimationFrame(frameId);
-        frameId = 0;
-      } else if (inViewport) requestRender();
-    }, { threshold: 0.01 });
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        inViewport = entry.isIntersecting;
+        if (!inViewport && frameId) {
+          cancelAnimationFrame(frameId);
+          frameId = 0;
+          lastActiveSample = 0;
+        } else if (inViewport) {
+          requestRender();
+        }
+      },
+      { threshold: 0.01 },
+    );
     intersectionObserver.observe(wrapper);
+
     const onVisibilityChange = () => {
       if (!shouldRender() && frameId) {
         cancelAnimationFrame(frameId);
         frameId = 0;
-      } else requestRender();
+        lastActiveSample = 0;
+      } else {
+        requestRender();
+      }
     };
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const onMotionChange = (event) => {
@@ -118,11 +227,20 @@ export default function JarvisShader() {
       intersectionObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       motionQuery.removeEventListener("change", onMotionChange);
+      scene.remove(mesh);
       geometry.dispose();
       material.dispose();
       renderer.dispose();
     };
-  }, []);
+  }, [quality]);
 
-  return <div ref={wrapperRef} className="jarvis-shader"><canvas ref={canvasRef} className="jarvis-shader__canvas" aria-label="Animated JARVIS core visualization" /></div>;
+  return (
+    <div ref={wrapperRef} className="jarvis-shader">
+      <canvas
+        ref={canvasRef}
+        className="jarvis-shader__canvas"
+        aria-label="Animated JARVIS core visualization"
+      />
+    </div>
+  );
 }

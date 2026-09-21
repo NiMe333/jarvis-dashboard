@@ -45,8 +45,9 @@ float innerSectorEdges(vec2 p, float innerRadius, float outerRadius, float count
 }
 
 vec3 energyRing(vec2 p, float radius, float width, vec3 source, vec3 halo, float strength) {
-  float sharp = ringMask(p, radius, width);
-  float nearHaloDistance = abs(length(p) - radius) / max(width * 5.5, 0.016);
+  float radialDistance = length(p);
+  float sharp = lineMask(abs(radialDistance - radius), width);
+  float nearHaloDistance = abs(radialDistance - radius) / max(width * 5.5, 0.016);
   float nearHalo = exp(-(nearHaloDistance * nearHaloDistance));
   float glowQuality = uQuality > 1.5 ? 1.0 : (uQuality > 0.5 ? 0.58 : 0.24);
   return source * sharp * strength
@@ -78,14 +79,18 @@ vec3 orangeContainment(vec2 p, float radius) {
 }
 
 vec3 cyanArc(vec2 p, float radius, float width, float angle, float span, vec3 tint, float strength) {
-  float sharp = arcMask(p, radius, width, angle, span);
-  float halo = arcGlow(p, radius, width, angle, span);
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+  float sharp = arcMaskPolar(radialDistance, polarAngle, radius, width, angle, span);
+  float halo = arcGlowPolar(radialDistance, polarAngle, radius, width, angle, span);
   return tint * sharp * strength + RING_CYAN_BRIGHT * halo * 0.12 * INNER_RING_GLOW;
 }
 
 vec3 orangeArc(vec2 p, float radius, float width, float angle, float span, float strength) {
-  float sharp = arcMask(p, radius, width, angle, span);
-  float halo = arcGlow(p, radius, width, angle, span);
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+  float sharp = arcMaskPolar(radialDistance, polarAngle, radius, width, angle, span);
+  float halo = arcGlowPolar(radialDistance, polarAngle, radius, width, angle, span);
   return RING_ORANGE_WHITE * sharp * strength * 0.30
     + RING_ORANGE_LIGHT * sharp * strength * 0.92
     + RING_ORANGE * halo * 0.42 * INNER_RING_GLOW;

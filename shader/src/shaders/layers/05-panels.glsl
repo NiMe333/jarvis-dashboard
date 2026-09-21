@@ -8,13 +8,11 @@ const vec3 PANEL_ORANGE      = vec3(1.00, 0.270, 0.025);
 const vec3 PANEL_AMBER       = vec3(1.00, 0.540, 0.090);
 const vec3 PANEL_WARM        = vec3(1.00, 0.860, 0.580);
 
-float glassPanelMask(vec2 p, float inner, float outer, float centerAngle, float span) {
-  float r = length(p);
+float glassPanelMaskPolar(float r, float angle, float inner, float outer, float centerAngle, float span) {
   float radial =
     smoothstep(inner, inner + 0.012, r)
     * (1.0 - smoothstep(outer - 0.012, outer, r));
 
-  float angle = atan(p.y, p.x);
   float delta = abs(atan(
     sin(angle - centerAngle),
     cos(angle - centerAngle)
@@ -28,6 +26,10 @@ float glassPanelMask(vec2 p, float inner, float outer, float centerAngle, float 
       span * 0.5 + edge,
       delta
     ));
+}
+
+float glassPanelMask(vec2 p, float inner, float outer, float centerAngle, float span) {
+  return glassPanelMaskPolar(length(p), atan(p.y, p.x), inner, outer, centerAngle, span);
 }
 
 float panelHexagonOutline(vec2 p, vec2 center, float size, float thickness) {
@@ -54,32 +56,32 @@ vec3 panelPaint(
   float warmMix,
   float t
 ) {
-  float mask = glassPanelMask(
-    p,
+  float r = length(p);
+  float angle = atan(p.y, p.x);
+  float mask = glassPanelMaskPolar(
+    r, angle,
     inner,
     outer,
     centerAngle,
     span
   );
 
-  float r = length(p);
-  float angle = atan(p.y, p.x);
   float radialT = clamp(
     (r - inner) / max(outer - inner, 0.001),
     0.0,
     1.0
   );
 
-  float edgeOuter = arcMask(
-    p,
+  float edgeOuter = arcMaskPolar(
+    r, angle,
     outer,
     0.0022,
     centerAngle,
     span
   );
 
-  float edgeInner = arcMask(
-    p,
+  float edgeInner = arcMaskPolar(
+    r, angle,
     inner,
     0.0013,
     centerAngle,
@@ -168,8 +170,8 @@ vec3 panelPaint(
 
   edge +=
     mainTone
-    * arcGlow(
-      p,
+    * arcGlowPolar(
+      r, angle,
       outer,
       0.0048,
       centerAngle,
@@ -198,8 +200,11 @@ vec3 panelWebPaint(
 ) {
   vec3 color = vec3(0.0);
 
-  float mask = glassPanelMask(
-    p,
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+
+  float mask = glassPanelMaskPolar(
+    radialDistance, polarAngle,
     inner,
     outer,
     centerAngle,
@@ -231,8 +236,8 @@ vec3 panelWebPaint(
   // Two clean internal arcs replace the former X/N-like construction.
   color +=
     mainTone
-    * arcMask(
-      p,
+    * arcMaskPolar(
+      radialDistance, polarAngle,
       mix(inner, outer, 0.32),
       0.0009,
       centerAngle,
@@ -243,8 +248,8 @@ vec3 panelWebPaint(
 
   color +=
     brightTone
-    * arcMask(
-      p,
+    * arcMaskPolar(
+      radialDistance, polarAngle,
       mix(inner, outer, 0.66),
       0.0008,
       centerAngle,

@@ -9,6 +9,7 @@ uniform float uAnimationSpeed;
 uniform float uHudScale;
 uniform float uGlowIntensity;
 uniform float uQuality;
+uniform float uDetail;
 uniform bool uTransparent;
 uniform int uDebugLayer;
 uniform bool uFreezeTime;
@@ -48,22 +49,28 @@ float softRing(vec2 p, float radius, float width) {
   return 1.0 - smoothstep(width, width + AA * 2.0, abs(length(p) - radius));
 }
 
-float arcMask(vec2 p, float radius, float width, float centerAngle, float span) {
-  float angle = atan(p.y, p.x);
+float arcMaskPolar(float radialDistance, float angle, float radius, float width, float centerAngle, float span) {
   float delta = abs(atan(sin(angle - centerAngle), cos(angle - centerAngle)));
   float angularEdge = max(AA / max(radius, 0.1), 0.003);
   float arc = 1.0 - smoothstep(span * 0.5, span * 0.5 + angularEdge, delta);
-  return arc * lineMask(abs(length(p) - radius), width);
+  return arc * lineMask(abs(radialDistance - radius), width);
 }
 
-float arcGlow(vec2 p, float radius, float width, float centerAngle, float span) {
-  float angle = atan(p.y, p.x);
+float arcGlowPolar(float radialDistance, float angle, float radius, float width, float centerAngle, float span) {
   float delta = abs(atan(sin(angle - centerAngle), cos(angle - centerAngle)));
   float angularEdge = max(AA / max(radius, 0.1), 0.004);
   float arc = 1.0 - smoothstep(span * 0.5, span * 0.5 + angularEdge * 4.0, delta);
-  float radialDistance = abs(length(p) - radius) / max(width * 5.0, 0.012);
-  float radial = exp(-(radialDistance * radialDistance));
+  float glowDistance = abs(radialDistance - radius) / max(width * 5.0, 0.012);
+  float radial = exp(-(glowDistance * glowDistance));
   return arc * radial;
+}
+
+float arcMask(vec2 p, float radius, float width, float centerAngle, float span) {
+  return arcMaskPolar(length(p), atan(p.y, p.x), radius, width, centerAngle, span);
+}
+
+float arcGlow(vec2 p, float radius, float width, float centerAngle, float span) {
+  return arcGlowPolar(length(p), atan(p.y, p.x), radius, width, centerAngle, span);
 }
 
 float tickRing(vec2 p, float radius, float count, float tickWidth, float tickLength) {
@@ -75,13 +82,15 @@ float tickRing(vec2 p, float radius, float count, float tickWidth, float tickLen
   return tick * radial;
 }
 
-float radialDash(vec2 p, float radius, float count, float dashWidth, float dashLength, float phase) {
-  float r = length(p);
-  float angle = atan(p.y, p.x);
+float radialDashPolar(float r, float angle, float radius, float count, float dashWidth, float dashLength, float phase) {
   float cell = fract((angle + phase) / TAU * count);
   float dash = 1.0 - smoothstep(dashWidth, dashWidth + 0.045, abs(cell - 0.5));
   float radial = 1.0 - smoothstep(dashLength, dashLength + AA, abs(r - radius));
   return dash * radial;
+}
+
+float radialDash(vec2 p, float radius, float count, float dashWidth, float dashLength, float phase) {
+  return radialDashPolar(length(p), atan(p.y, p.x), radius, count, dashWidth, dashLength, phase);
 }
 
 float capsule(vec2 p, vec2 a, vec2 b, float radius) {

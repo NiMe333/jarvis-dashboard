@@ -12,16 +12,18 @@ vec3 energyStreak(
   vec3 tint,
   float strength
 ) {
-  float sharp = arcMask(
-    p,
+  float radialDistance = length(p);
+  float polarAngle = atan(p.y, p.x);
+  float sharp = arcMaskPolar(
+    radialDistance, polarAngle,
     radius,
     width,
     angle,
     span
   );
 
-  float halo = arcGlow(
-    p,
+  float halo = arcGlowPolar(
+    radialDistance, polarAngle,
     radius,
     width * 2.65,
     angle,
