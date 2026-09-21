@@ -27,6 +27,7 @@
 
 .jarvis-core-panel__shader-shell {
   position: relative;
+  z-index: 1;
   width: min(104cqw, 104cqh, 725px);
   max-width: 725px;
   max-height: 725px;

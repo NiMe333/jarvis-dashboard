@@ -3,6 +3,7 @@ import * as THREE from "three";
 import common from "../../../shader/src/shaders/common.glsl?raw";
 import background from "../../../shader/src/shaders/layers/01-background.glsl?raw";
 import grid from "../../../shader/src/shaders/layers/02-grid.glsl?raw";
+import coreNetwork from "../../../shader/src/shaders/layers/03-core-network.glsl?raw";
 import outerRings from "../../../shader/src/shaders/layers/04-outer-rings.glsl?raw";
 import panels from "../../../shader/src/shaders/layers/05-panels.glsl?raw";
 import innerRings from "../../../shader/src/shaders/layers/06-inner-rings.glsl?raw";
@@ -12,12 +13,14 @@ import particles from "../../../shader/src/shaders/layers/10-particles.glsl?raw"
 import postEffects from "../../../shader/src/shaders/layers/11-post-effects.glsl?raw";
 import vertexShader from "../../../shader/src/shaders/fullscreen.vert.glsl?raw";
 import fragmentMain from "../../../shader/src/shaders/jarvis.frag.glsl?raw";
+import networkFragmentMain from "../../../shader/src/shaders/core-network.frag.glsl?raw";
 import "./JarvisShader.css";
 
 const fragmentShader = [
   common,
   background,
   grid,
+  coreNetwork,
   outerRings,
   panels,
   innerRings,
@@ -28,8 +31,15 @@ const fragmentShader = [
   fragmentMain,
 ].join("\n");
 
+const networkFragmentShader = [
+  common,
+  background,
+  coreNetwork,
+  networkFragmentMain,
+].join("\n");
+
 export const CORE_VERTICAL_OFFSET_PX = 0;
-export const CORE_VISUAL_SCALE = 1.1;
+export const CORE_VISUAL_SCALE = 1.08;
 
 export const QUALITY_PRESETS = Object.freeze({
   high: {
@@ -41,7 +51,7 @@ export const QUALITY_PRESETS = Object.freeze({
   balanced: {
     dpr: 1.25,
     fps: 60,
-    detail: 0.85,
+    detail: 0.9,
   },
 
   low: {
@@ -55,12 +65,14 @@ const qualityLevel = (detail) => (detail >= 0.95 ? 2 : detail >= 0.7 ? 1 : 0);
 
 export default function JarvisShader({ quality = "high" }) {
   const wrapperRef = useRef(null);
+  const networkCanvasRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
+    const networkCanvas = networkCanvasRef.current;
     const canvas = canvasRef.current;
-    if (!wrapper || !canvas) return undefined;
+    if (!wrapper || !networkCanvas || !canvas) return undefined;
 
     const presetName = QUALITY_PRESETS[quality] ? quality : "high";
     const preset = QUALITY_PRESETS[presetName];
@@ -74,6 +86,44 @@ export default function JarvisShader({ quality = "high" }) {
     });
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
+
+    // The network is intentionally rendered on its own retained canvas. It is
+    // drawn only at startup and after resize, so it adds no work to animation
+    // frames from the existing JARVIS core shader.
+    const networkRenderer = new THREE.WebGLRenderer({
+      canvas: networkCanvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+    networkRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.1));
+    networkRenderer.setClearColor(0x000000, 0);
+
+    const networkScene = new THREE.Scene();
+    const networkCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const networkUniforms = {
+      uResolution: { value: new THREE.Vector2(1, 1) },
+      uIntensity: { value: 1 },
+      uHudScale: { value: CORE_VISUAL_SCALE },
+      uCoreOffsetY: { value: 0 },
+      uTransparent: { value: true },
+      uDebugLayer: { value: 0 },
+    };
+    const networkMaterial = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader: networkFragmentShader,
+      uniforms: networkUniforms,
+      depthTest: false,
+      depthWrite: false,
+    });
+    const networkGeometry = new THREE.BufferGeometry();
+    networkGeometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3),
+    );
+    const networkMesh = new THREE.Mesh(networkGeometry, networkMaterial);
+    networkMesh.frustumCulled = false;
+    networkScene.add(networkMesh);
 
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -121,6 +171,7 @@ export default function JarvisShader({ quality = "high" }) {
     let statsStartedAt = 0;
     let renderedFrames = 0;
     const drawingBufferSize = new THREE.Vector2();
+    const networkDrawingBufferSize = new THREE.Vector2();
     uniforms.uAnimationSpeed.value = reducedMotion ? 0 : 1.65;
     const shouldRender = () => !document.hidden && inViewport;
 
@@ -137,12 +188,23 @@ export default function JarvisShader({ quality = "high" }) {
 
     const resize = (width, height) => {
       if (!width || !height) return;
+      networkRenderer.setSize(width, height, false);
+      networkRenderer.getDrawingBufferSize(networkDrawingBufferSize);
+      networkUniforms.uResolution.value.copy(networkDrawingBufferSize);
+      networkUniforms.uCoreOffsetY.value =
+        (CORE_VERTICAL_OFFSET_PX * 2) /
+        (Math.max(height, 1) * Math.max(networkUniforms.uHudScale.value, 0.01));
+      networkRenderer.render(networkScene, networkCamera);
       renderer.setSize(width, height, false);
       recordCanvasMetrics(height);
       if (!frameId && shouldRender()) renderer.render(scene, camera);
     };
 
     const bounds = wrapper.getBoundingClientRect();
+    networkRenderer.setSize(bounds.width || 1, bounds.height || 1, false);
+    networkRenderer.getDrawingBufferSize(networkDrawingBufferSize);
+    networkUniforms.uResolution.value.copy(networkDrawingBufferSize);
+    networkRenderer.render(networkScene, networkCamera);
     renderer.setSize(bounds.width || 1, bounds.height || 1, false);
     recordCanvasMetrics(bounds.height || 1);
     wrapper.dataset.quality = presetName;
@@ -236,6 +298,10 @@ export default function JarvisShader({ quality = "high" }) {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       motionQuery.removeEventListener("change", onMotionChange);
       scene.remove(mesh);
+      networkScene.remove(networkMesh);
+      networkGeometry.dispose();
+      networkMaterial.dispose();
+      networkRenderer.dispose();
       geometry.dispose();
       material.dispose();
       renderer.dispose();
@@ -244,6 +310,11 @@ export default function JarvisShader({ quality = "high" }) {
 
   return (
     <div ref={wrapperRef} className="jarvis-shader">
+      <canvas
+        ref={networkCanvasRef}
+        className="jarvis-shader__network-canvas"
+        aria-hidden="true"
+      />
       <canvas
         ref={canvasRef}
         className="jarvis-shader__canvas"

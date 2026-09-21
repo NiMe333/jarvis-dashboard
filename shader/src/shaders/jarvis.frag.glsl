@@ -9,9 +9,14 @@ void main() {
   float t = uFreezeTime ? 0.0 : uTime * uAnimationSpeed;
   vec3 color = vec3(0.0);
 
+  // CORE_NETWORK_ONLY (14): the retained static canvas supplies the complete
+  // scaffold; this pass adds only its three restrained activity indicators.
+  if (uDebugLayer == 14) {
+    if (!uTransparent) color += backgroundLayer(vUv, centered);
+    color += layerCoreNetworkActivity(hud, t);
   // INNER_CORE_ONLY (13) is the working comparison view for the approved core
   // plus the first cyan ring assembly. It intentionally skips post effects.
-  if (uDebugLayer == 13) {
+  } else if (uDebugLayer == 13) {
     if (!uTransparent) color += backgroundLayer(vUv, centered);
     if (radius < 0.20) color += layerCore(hud, t);
     if (radius > 0.07 && radius < 0.36) color += layerInnerRings(hud, t);
@@ -22,6 +27,7 @@ void main() {
     if (radius < 0.20) color += layerCore(hud, t);
   } else {
     if (!uTransparent && (uDebugLayer == 0 || uDebugLayer == 1)) color += backgroundLayer(vUv, centered);
+    if (uDebugLayer == 0) color += layerCoreNetworkActivity(hud, t);
     if ((uDebugLayer == 0 || uDebugLayer == 2) && radius > 0.15 && radius < 0.82) color += layerGrid(hud, t);
     if ((uDebugLayer == 0 || uDebugLayer == 4) && radius > 0.26 && radius < 0.87) color += layerOuterRings(hud, t);
     if ((uDebugLayer == 0 || uDebugLayer == 5) && radius > 0.42 && radius < 0.93) color += layerPanels(hud, t);
@@ -37,8 +43,10 @@ void main() {
 
   // Shared reactor breathing: a soft radial wave travels from the core
   // outward, so every visible layer responds as one assembly.
-  float radialBreath = 1.0 + 0.055 * sin(t * 0.78 - radius * 5.6);
-  color *= radialBreath;
+  if (uDebugLayer != 14) {
+    float radialBreath = 1.0 + 0.055 * sin(t * 0.78 - radius * 5.6);
+    color *= radialBreath;
+  }
 
   if (uDebugUV) color = vec3(vUv, 0.0);
   vec3 outputColor = color * uIntensity;
