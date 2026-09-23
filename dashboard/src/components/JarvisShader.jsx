@@ -49,7 +49,7 @@ export const QUALITY_PRESETS = Object.freeze({
   },
 
   balanced: {
-    dpr: 1.25,
+    dpr: 1.3,
     fps: 60,
     detail: 0.9,
   },
