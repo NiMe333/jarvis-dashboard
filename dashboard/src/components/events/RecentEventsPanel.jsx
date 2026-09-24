@@ -1,17 +1,17 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { recentEventsMockData } from "../../config/recentEventsMockData.js";
+import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./RecentEventsPanel.css";
 
-const VALID_SEVERITIES = new Set(["info", "warning", "error", "success"]);
+const VALID_EVENT_TYPES = new Set(Object.keys(dashboardCopy.events.typeLabels));
 const TIME_FORMATTER = new Intl.DateTimeFormat([], {
   hour: "2-digit",
   minute: "2-digit",
 });
 
-function normalizeSeverity(severity) {
-  return VALID_SEVERITIES.has(severity) ? severity : "info";
+function normalizeEventType(type) {
+  return VALID_EVENT_TYPES.has(type) ? type : "info";
 }
 
 function formatEventTime(timestamp) {
@@ -22,10 +22,10 @@ function formatEventTime(timestamp) {
 }
 
 function EventRow({ event, expanded = false }) {
-  const severity = normalizeSeverity(event.severity);
+  const type = normalizeEventType(event.type);
 
   return (
-    <article className={`recent-events__row recent-events__row--${severity}${expanded ? " recent-events__row--expanded" : ""}`}>
+    <article className={`recent-events__row recent-events__row--${type}${expanded ? " recent-events__row--expanded" : ""}`}>
       <span className="recent-events__indicator" aria-hidden="true" />
       <time dateTime={event.timestamp}>{formatEventTime(event.timestamp)}</time>
       <span className="recent-events__message" title={!expanded ? event.message : undefined}>
@@ -64,7 +64,7 @@ function useVisibleEventCount(containerRef, totalCount) {
   return visibleCount;
 }
 
-export default function RecentEventsPanel({ events = recentEventsMockData, className = "" }) {
+export default function RecentEventsPanel({ events = dashboardMockData.recentEvents, className = "" }) {
   const listRef = useRef(null);
   const dialogRef = useRef(null);
   const openButtonRef = useRef(null);
@@ -95,7 +95,7 @@ export default function RecentEventsPanel({ events = recentEventsMockData, class
     <>
       <HudPanel
         title={dashboardCopy.panels.recentEvents.title}
-        subtitle={`${dashboardCopy.panels.recentEvents.subtitle} // ${dashboardCopy.events.mockLabel}`}
+        subtitle={`${dashboardCopy.panels.recentEvents.subtitle} // ${dashboardCopy.common.mockLabel}`}
         className={`recent-events ${className}`.trim()}
         frameStyle="contained"
         variant="compact"
@@ -131,7 +131,7 @@ export default function RecentEventsPanel({ events = recentEventsMockData, class
         <div className="recent-events-dialog__frame">
           <header className="recent-events-dialog__header">
             <div>
-              <p>{dashboardCopy.panels.recentEvents.subtitle} // {dashboardCopy.events.mockLabel}</p>
+              <p>{dashboardCopy.panels.recentEvents.subtitle} // {dashboardCopy.common.mockLabel}</p>
               <h2 id="recent-events-dialog-title">{dashboardCopy.events.dialogTitle}</h2>
             </div>
             <button

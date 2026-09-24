@@ -14,6 +14,7 @@ import postEffects from "../../../shader/src/shaders/layers/11-post-effects.glsl
 import vertexShader from "../../../shader/src/shaders/fullscreen.vert.glsl?raw";
 import fragmentMain from "../../../shader/src/shaders/jarvis.frag.glsl?raw";
 import networkFragmentMain from "../../../shader/src/shaders/core-network.frag.glsl?raw";
+import { dashboardCopy } from "../config/dashboardContent.js";
 import "./JarvisShader.css";
 
 const fragmentShader = [
@@ -318,7 +319,7 @@ export default function JarvisShader({ quality = "high" }) {
       <canvas
         ref={canvasRef}
         className="jarvis-shader__canvas"
-        aria-label="Animated JARVIS core visualization"
+        aria-label={dashboardCopy.accessibility.animatedCore}
       />
     </div>
   );

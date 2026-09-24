@@ -1,7 +1,8 @@
 import LiveClock from "./LiveClock.jsx";
 import RotatingDirective from "./RotatingDirective.jsx";
 import SystemStatus from "./SystemStatus.jsx";
-import { dashboardCopy, dashboardMockData } from "../../config/dashboardContent.js";
+import { dashboardCopy } from "../../config/dashboardContent.js";
+import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./DashboardHeader.css";
 
 export default function DashboardHeader({ className = "" }) {
@@ -9,7 +10,7 @@ export default function DashboardHeader({ className = "" }) {
     <header className={`dashboard-header ${className}`.trim()}>
       <section
         className="dashboard-header__identity"
-        aria-label="JARVIS command center"
+        aria-label={dashboardCopy.accessibility.commandCenter}
       >
         <div className="dashboard-header__brand">
           <h1>{dashboardCopy.header.brand}</h1>
@@ -19,11 +20,11 @@ export default function DashboardHeader({ className = "" }) {
 
       <section
         className="dashboard-header__intelligence"
-        aria-label="Home server intelligence"
+        aria-label={dashboardCopy.accessibility.serverIntelligence}
       >
         <small>{dashboardCopy.header.intelligenceLabel}</small>
-        <strong>{dashboardMockData.header.intelligenceTitle}</strong>
-        <span>{dashboardMockData.header.intelligenceSubtitle}</span>
+        <strong>{dashboardCopy.header.intelligenceTitle}</strong>
+        <span>{dashboardCopy.header.intelligenceSubtitle}</span>
         <i aria-hidden="true" />
       </section>
 
@@ -33,7 +34,7 @@ export default function DashboardHeader({ className = "" }) {
 
       <section
         className="dashboard-header__clock"
-        aria-label="Current date and time"
+        aria-label={dashboardCopy.accessibility.currentDateTime}
       >
         <small>{dashboardCopy.header.localTimeLabel}</small>
         <LiveClock />

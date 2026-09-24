@@ -1,9 +1,18 @@
 import HudFrame from "../panel/HudFrame.jsx";
 import JarvisStatusWidget from "./status/JarvisStatusWidget.jsx";
-import { dashboardCopy, dashboardMockData } from "../../config/dashboardContent.js";
+import { dashboardCopy } from "../../config/dashboardContent.js";
+import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./SystemOverview.css";
 
 export const mockSystemOverview = dashboardMockData.systemOverview;
+
+const HARDWARE_FIELDS = [
+  ["hostname", "hostname"],
+  ["hypervisor", "hypervisor"],
+  ["processor", "processor"],
+  ["memory", "memory"],
+  ["storage", "storage"],
+];
 
 function VectorClock() {
   return (
@@ -11,7 +20,7 @@ function VectorClock() {
       className="system-overview__clock"
       viewBox="0 0 64 64"
       role="img"
-      aria-label="Uptime clock"
+      aria-label={dashboardCopy.accessibility.uptimeClock}
     >
       <circle className="system-overview__clock-halo" cx="32" cy="32" r="25" />
       <circle className="system-overview__clock-face" cx="32" cy="32" r="21" />
@@ -34,13 +43,10 @@ export default function SystemOverview({
   status,
 }) {
   const copy = dashboardCopy.systemOverview;
-  const identity = [
-    { label: copy.hardwareLabels.hostname, value: telemetry.hostname },
-    { label: copy.hardwareLabels.hypervisor, value: telemetry.hypervisor },
-    { label: copy.hardwareLabels.processor, value: telemetry.processor },
-    { label: copy.hardwareLabels.memory, value: telemetry.memory },
-    { label: copy.hardwareLabels.storage, value: telemetry.storage },
-  ];
+  const identity = HARDWARE_FIELDS.map(([labelKey, dataKey]) => ({
+    label: copy.hardwareLabels[labelKey],
+    value: telemetry[dataKey],
+  }));
 
   return (
     <section className="hud-panel hud-panel--cyan hud-panel--standard hud-panel--shape-standard hud-panel--frame-open dashboard-layout__overview system-overview">
@@ -55,7 +61,7 @@ export default function SystemOverview({
         <div className="system-overview__specifications">
           <section
             className="system-overview__uptime"
-            aria-label="Server uptime"
+            aria-label={dashboardCopy.accessibility.serverUptime}
           >
             <span className="system-overview__uptime-label">{copy.uptimeLabel}</span>
             <div className="system-overview__uptime-row">

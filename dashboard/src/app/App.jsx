@@ -5,7 +5,10 @@ import SystemOverview from "../components/overview/SystemOverview.jsx";
 import JarvisCorePanel from "../components/core/JarvisCorePanel.jsx";
 import ServicesPanel from "../components/services/ServicesPanel.jsx";
 import RecentEventsPanel from "../components/events/RecentEventsPanel.jsx";
-import { dashboardCopy } from "../config/dashboardContent.js";
+import QuickActionsPanel from "../components/actions/QuickActionsPanel.jsx";
+import LiveResourcesPanel from "../components/resources/LiveResourcesPanel.jsx";
+import NetworkThroughputPanel from "../components/network/NetworkThroughputPanel.jsx";
+import TemperaturePowerPanel from "../components/sensors/TemperaturePowerPanel.jsx";
 import "./DashboardLayout.css";
 
 export default function App() {
@@ -16,20 +19,8 @@ export default function App() {
 
         <div className="dashboard-layout__left">
           <SystemOverview />
-          <HudPanel
-            title={dashboardCopy.panels.liveResources.title}
-            subtitle={dashboardCopy.panels.liveResources.subtitle}
-            className="dashboard-layout__resource"
-            frameStyle="open"
-            variant="compact"
-          />
-          <HudPanel
-            title={dashboardCopy.panels.network.title}
-            subtitle={dashboardCopy.panels.network.subtitle}
-            className="dashboard-layout__network"
-            frameStyle="open"
-            variant="compact"
-          />
+          <LiveResourcesPanel className="dashboard-layout__resource" />
+          <NetworkThroughputPanel className="dashboard-layout__network" />
         </div>
 
         <div className="dashboard-layout__center">
@@ -47,19 +38,8 @@ export default function App() {
 
         <div className="dashboard-layout__right">
           <ServicesPanel className="dashboard-layout__services" />
-          <HudPanel
-            title={dashboardCopy.panels.temperature.title}
-            subtitle={dashboardCopy.panels.temperature.subtitle}
-            className="dashboard-layout__temperature"
-            frameStyle="bracket"
-          />
-          <HudPanel
-            title={dashboardCopy.panels.quickActions.title}
-            subtitle={dashboardCopy.panels.quickActions.subtitle}
-            className="dashboard-layout__actions"
-            frameStyle="contained"
-            energy="single"
-          />
+          <TemperaturePowerPanel className="dashboard-layout__temperature" />
+          <QuickActionsPanel className="dashboard-layout__actions" />
         </div>
       </div>
     </DashboardShell>

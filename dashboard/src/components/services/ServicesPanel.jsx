@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { servicesMockData } from "../../config/servicesMockData.js";
+import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./ServicesPanel.css";
 
-const VALID_STATUSES = new Set(["running", "stopped", "warning", "unknown"]);
+const VALID_STATUSES = new Set(Object.keys(dashboardCopy.services.statusLabels));
 
 const SERVICE_ICONS = {
   activity: Activity,
@@ -30,7 +30,7 @@ function normalizeStatus(status) {
 function ServiceRow({ service }) {
   const status = normalizeStatus(service.status);
   const Icon = SERVICE_ICONS[service.icon] ?? CircleHelp;
-  const statusLabel = dashboardCopy.services.statusLabels[status];
+  const statusLabel = service.statusLabel ?? dashboardCopy.services.statusLabels[status];
   const isExternalUrl = /^https?:\/\//i.test(service.url ?? "");
   const sharedProps = {
     className: `services-panel__row services-panel__row--${status}${service.url ? " is-linked" : " is-static"}`,
@@ -65,15 +65,15 @@ function ServiceRow({ service }) {
       {...sharedProps}
       href={service.url}
       target={isExternalUrl ? "_blank" : undefined}
-      rel={isExternalUrl ? "noreferrer" : undefined}
-      aria-label={`Open ${service.name}`}
+      rel={isExternalUrl ? "noopener noreferrer" : undefined}
+      aria-label={`${dashboardCopy.accessibility.openServicePrefix} ${service.name}`}
     >
       {content}
     </a>
   );
 }
 
-export default function ServicesPanel({ services = servicesMockData, className = "" }) {
+export default function ServicesPanel({ services = dashboardMockData.services, className = "" }) {
   return (
     <HudPanel
       id="services-panel"

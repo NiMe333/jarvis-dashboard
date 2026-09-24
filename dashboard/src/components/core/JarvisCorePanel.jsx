@@ -2,8 +2,8 @@ import { memo, useLayoutEffect, useRef, useState } from "react";
 import JarvisShader from "../JarvisShader.jsx";
 import {
   dashboardCopy,
-  dashboardMockData,
 } from "../../config/dashboardContent.js";
+import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./JarvisCorePanel.css";
 
 const StableJarvisShader = memo(JarvisShader);
@@ -301,7 +301,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
     <div
       className="jarvis-core-panel__telemetry jarvis-core__telemetry"
       data-status={status}
-      aria-label="JARVIS core telemetry"
+      aria-label={dashboardCopy.accessibility.coreTelemetry}
     >
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--thermal">
         <div className="jarvis-core__metric">
@@ -312,7 +312,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
           <strong className="jarvis-core__telemetry-value">
             {displayMetric(
               telemetry.cpuTemperature,
-              dashboardCopy.core.units.temperature,
+              dashboardCopy.common.units.temperature,
             )}
           </strong>
         </div>
@@ -325,7 +325,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
           <strong className="jarvis-core__telemetry-value">
             {displayMetric(
               telemetry.fanSpeed,
-              dashboardCopy.core.units.fanSpeed,
+              dashboardCopy.common.units.fanSpeed,
             )}
           </strong>
         </div>

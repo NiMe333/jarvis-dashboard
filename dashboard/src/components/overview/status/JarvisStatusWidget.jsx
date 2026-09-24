@@ -1,5 +1,6 @@
 import "./JarvisStatusWidget.css";
-import { dashboardCopy, dashboardMockData } from "../../../config/dashboardContent.js";
+import { dashboardCopy } from "../../../config/dashboardContent.js";
+import { dashboardMockData } from "../../../config/dashboardMockData.js";
 
 const STATE_LABELS = dashboardCopy.systemOverview.statusStates;
 
@@ -10,7 +11,15 @@ export default function JarvisStatusWidget({ data }) {
   const state = STATE_LABELS[supplied.state] ? supplied.state : defaultJarvisStatusData.state;
   const heading = supplied.heading ?? dashboardCopy.systemOverview.statusHeading;
   const status = supplied.status ?? STATE_LABELS[state];
-  const value = { ...defaultJarvisStatusData, ...supplied, heading, status, state };
+  const value = {
+    lastEventLabel: dashboardCopy.systemOverview.lastEventLabel,
+    securityLabel: dashboardCopy.systemOverview.securityLabel,
+    ...defaultJarvisStatusData,
+    ...supplied,
+    heading,
+    status,
+    state,
+  };
 
   return (
     <section className="jarvis-status" data-state={state} aria-label={`${heading}: ${status}`}>
