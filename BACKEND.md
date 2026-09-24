@@ -1,8 +1,8 @@
 # JARVIS dashboard API
 
-The backend is a dependency-free Node.js REST API. It currently uses realistic
-mock records and keeps the same response contract that a later Proxmox data
-provider must implement.
+The backend is a dependency-free Node.js REST API. It supports the original
+mock provider and a read-only Proxmox provider behind the same response
+contract and routes.
 
 ## Project layout
 
@@ -12,7 +12,8 @@ jarvis-dashboard/
 ├── backend/
 │   ├── server.js         HTTP server and active service provider
 │   ├── routes/           Stable REST route mapping
-│   ├── services/         Provider interface and mock implementation
+│   ├── clients/          Proxmox HTTPS client
+│   ├── services/         Mock, Proxmox, and Linux sensor providers
 │   ├── mock-data/        Backend mock values
 │   └── config/           Environment loading
 └── shared/
@@ -50,14 +51,102 @@ If `VITE_API_BASE_URL` is empty or the API is unavailable, the frontend keeps
 using `frontend/src/config/dashboardMockData.js`. There is no polling; data is
 loaded once when the dashboard mounts.
 
+## Data source configuration
+
+Mock mode remains the default:
+
+```dotenv
+DASHBOARD_DATA_SOURCE=mock
+```
+
+For Proxmox, copy `backend/.env.example` to `backend/.env` and configure:
+
+```dotenv
+HOST=0.0.0.0
+PORT=3001
+CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+
+DASHBOARD_DATA_SOURCE=proxmox
+PROXMOX_API_URL=https://proxmox.example.local:8006
+PROXMOX_TOKEN_ID=dashboard@pve!jarvis-readonly
+PROXMOX_TOKEN_SECRET=replace-with-token-secret
+PROXMOX_NODE_NAME=pve
+PROXMOX_TLS_REJECT_UNAUTHORIZED=true
+```
+
+`PROXMOX_API_URL` is the Proxmox origin and port, without `/api2/json`.
+`PROXMOX_NODE_NAME` must exactly match the node name shown by Proxmox. The
+backend sends the token as a `PVEAPIToken` authorization header; credentials
+never enter the frontend bundle or API responses.
+
+The Proxmox provider starts only when all four URL, token ID, token secret, and
+node variables are present. If configuration is incomplete, the backend logs
+the missing variable names and starts with the mock provider. If a configured
+Proxmox server is temporarily unavailable, API requests fail and the frontend
+retains its local mock fallback.
+
+### API token permissions
+
+Create a dedicated Proxmox user and API token used only by this dashboard.
+Grant the built-in read-only `PVEAuditor` role at `/` with propagation to the
+dedicated user and, when token privilege separation is enabled, to the token as
+well. Proxmox evaluates a separated token using the intersection of the user
+and token permissions. This role supplies the audit privileges needed to read
+node status, guest status, storage status, and recent tasks without granting VM
+power or configuration permissions.
+
+Example commands, run from a Proxmox node as an administrator:
+
+```bash
+pveum user add dashboard@pve
+pveum acl modify / -user dashboard@pve -role PVEAuditor
+pveum user token add dashboard@pve jarvis-readonly -privsep 1
+pveum acl modify / -token 'dashboard@pve!jarvis-readonly' -role PVEAuditor
+```
+
+Save the generated token secret immediately; Proxmox only displays it when the
+token is created. You can inspect the effective grants with:
+
+```bash
+pveum user permissions dashboard@pve
+pveum user token permissions dashboard@pve jarvis-readonly
+```
+
+The integration only performs `GET` requests. It does not expose routes that
+start, stop, restart, migrate, update, or reconfigure guests or the node.
+
+### Host hardware sensors
+
+The Proxmox REST API does not normally expose CPU temperature, SATA SMART
+health, fan RPM, Intel RAPL power, or physical-interface byte counters. The
+backend reads these from Linux only when it is running directly on the selected
+Proxmox node: the short local hostname must match `PROXMOX_NODE_NAME` and
+`/etc/pve` must exist. Otherwise those fields are returned as `null` with an
+`unavailable` sensor state.
+
+Direct-host collection uses these read-only sources:
+
+- `/sys/class/thermal` and `/sys/class/hwmon` for CPU temperature and fan RPM
+- `/sys/class/powercap/intel-rapl:*` for measured package power
+- `/proc/net/route` and `/proc/net/dev` for interface counters and rates
+- `smartctl -j -a` for SATA/NVMe temperature and SMART health
+
+Install `smartmontools` on the Proxmox node if SMART information is required.
+The backend account must have read permission for the relevant sysfs files and
+disk device. Do not grant broader device or root access to a dashboard running
+inside an LXC merely to obtain sensors; leaving these fields unavailable is the
+safer configuration.
+
 ## Endpoints and response shapes
 
-All endpoints accept `GET`, return JSON, and currently use mock data.
+All endpoints accept `GET` and return JSON. Values come from the selected data
+source.
 
 ### `GET /api/health`
 
 ```js
-{ status, source, timestamp, uptimeSeconds }
+{ status, source, timestamp, uptimeSeconds, node, hostMetricsAvailable,
+  unavailableSources }
 ```
 
 ### `GET /api/system`
@@ -67,7 +156,8 @@ All endpoints accept `GET`, return JSON, and currently use mock data.
   header: { alertCount, systemStatus },
   systemOverview: { uptime, hostname, hypervisor, processor, memory, storage },
   overviewStatus: { lastEventTime, lastEvent, state },
-  core: { cpuTemperature, fanSpeed, systemHealth, status }
+  core: { cpuTemperature, fanSpeed, systemHealth, status },
+  virtualization: { runningVms, totalVms, runningContainers, totalContainers }
 }
 ```
 
@@ -75,10 +165,10 @@ All endpoints accept `GET`, return JSON, and currently use mock data.
 
 ```js
 {
-  cpuUsage, cpuState,
+  cpuUsage, cpuCount, cpuState,
   memoryUsed, memoryTotal, memoryAvailable,
   storageUsed, storageTotal, storageFree,
-  loadAverage, uptime, processCount
+  swapUsed, swapTotal, loadAverage, uptime, processCount
 }
 ```
 
@@ -97,7 +187,8 @@ Rates are Mbps and totals are bytes.
 
 ```js
 {
-  cpuTemperature, ssdTemperature, powerWatts, fanRpm, sensorStatus,
+  cpuTemperature, ssdTemperature, ssdSmartHealth, ssdDevice,
+  powerWatts, fanRpm, sensorStatus,
   sensorStates: { cpuTemperature, ssdTemperature, powerWatts }
 }
 ```
@@ -107,7 +198,9 @@ Temperature values are degrees Celsius, power is watts, and fan speed is RPM.
 ### `GET /api/services`
 
 ```js
-[{ id, name, description, icon, url, status, statusLabel, statusDetails }]
+[{ id, name, description, icon, url, status, statusLabel, statusDetails,
+   kind, vmid, node, cpuUsage, cpuCount, memoryUsed, memoryTotal,
+   storageUsed, storageTotal, networkReceived, networkTransmitted, uptime }]
 ```
 
 Supported frontend states are `running`, `stopped`, `warning`, and `unknown`.
@@ -129,27 +222,31 @@ Supported event types are `info`, `success`, `warning`, and `error`.
 An empty URL keeps the action disabled. This endpoint does not execute system
 operations.
 
-## Replacing mock data with Proxmox
+## Provider boundary
 
-The route layer in `backend/routes/apiRoutes.js` only calls the provider
-methods defined by `backend/services/dashboardService.js`. Later, add
-`backend/services/proxmoxDashboardService.js` with the same methods and select
-that provider in `backend/server.js`. Routes and frontend components can remain
-unchanged.
+The route layer in `backend/routes/apiRoutes.js` only calls the methods defined
+by `backend/services/dashboardService.js`. Provider selection lives in
+`backend/services/createDashboardService.js`; the implementations are
+`mockDashboardService.js` and `proxmoxDashboardService.js`.
 
 Current environment variables:
 
 - `HOST`: API bind address, default `0.0.0.0`
 - `PORT`: API port, default `3001`
 - `CORS_ORIGIN`: comma-separated allowed frontend origins
+- `DASHBOARD_DATA_SOURCE`: `mock` or `proxmox`
+- `PROXMOX_API_URL`: Proxmox HTTPS origin, normally port 8006
+- `PROXMOX_TOKEN_ID`: full `user@realm!token-name` identifier
+- `PROXMOX_TOKEN_SECRET`: API token secret
+- `PROXMOX_NODE_NAME`: target Proxmox node
+- `PROXMOX_TLS_REJECT_UNAUTHORIZED`: certificate validation, default `true`
 - `VITE_API_BASE_URL`: frontend build-time API base URL
-
-Expected future Proxmox variables:
-
-- `PROXMOX_BASE_URL`
-- `PROXMOX_TOKEN_ID`
-- `PROXMOX_TOKEN_SECRET`
-- `PROXMOX_NODE`
 
 Keep secrets only in the backend environment. Never expose them through a
 `VITE_` variable because Vite embeds those values in the browser bundle.
+
+Set permissions on the backend environment file so only the service account
+can read it, for example `chmod 600 backend/.env`. Prefer a certificate trusted
+by the backend host. Set `PROXMOX_TLS_REJECT_UNAUTHORIZED=false` only for a
+self-signed Proxmox certificate on a trusted private network; this weakens
+server identity verification and should not be used across untrusted networks.

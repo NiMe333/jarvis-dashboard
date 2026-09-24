@@ -22,8 +22,8 @@ export default function App() {
 
         <div className="dashboard-layout__left">
           <SystemOverview telemetry={data.systemOverview} status={data.overviewStatus} />
-          <LiveResourcesPanel data={data.metrics} className="dashboard-layout__resource" />
-          <NetworkThroughputPanel data={data.metrics} className="dashboard-layout__network" />
+          <LiveResourcesPanel data={data.metrics} isMock={data.isMock} className="dashboard-layout__resource" />
+          <NetworkThroughputPanel data={data.metrics} isMock={data.isMock} className="dashboard-layout__network" />
         </div>
 
         <div className="dashboard-layout__center">
@@ -36,12 +36,12 @@ export default function App() {
           >
             <JarvisCorePanel telemetry={data.core} />
           </HudPanel>
-          <RecentEventsPanel events={data.recentEvents} className="dashboard-layout__events" />
+          <RecentEventsPanel events={data.recentEvents} isMock={data.isMock} className="dashboard-layout__events" />
         </div>
 
         <div className="dashboard-layout__right">
           <ServicesPanel services={data.services} className="dashboard-layout__services" />
-          <TemperaturePowerPanel data={data.metrics} className="dashboard-layout__temperature" />
+          <TemperaturePowerPanel data={data.metrics} isMock={data.isMock} className="dashboard-layout__temperature" />
           <QuickActionsPanel actions={data.quickActions} className="dashboard-layout__actions" />
         </div>
       </div>

@@ -1,5 +1,6 @@
 const SHARED_LABELS = Object.freeze({
   mockData: "MOCK DATA",
+  liveData: "LIVE DATA",
   unavailable: "UNAVAILABLE",
   warning: "WARNING",
 });
@@ -174,6 +175,7 @@ export const dashboardCopy = Object.freeze({
     transmitted: "TRANSMITTED",
     interface: "INTERFACE",
     chartLabel: "Mock download and upload throughput for the previous 60 seconds",
+    liveChartLabel: "Download and upload throughput",
   },
   sensors: {
     cpuTemperature: "CPU TEMP",
@@ -192,6 +194,7 @@ export const dashboardCopy = Object.freeze({
   common: {
     unavailable: "—",
     mockLabel: SHARED_LABELS.mockData,
+    liveLabel: SHARED_LABELS.liveData,
     units: {
       percent: "%",
       temperature: "°C",

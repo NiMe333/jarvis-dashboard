@@ -27,27 +27,30 @@ function buildPath(series, key, maximum) {
   }).join(" ");
 }
 
-export default function NetworkThroughputPanel({ data = dashboardMockData.metrics, className = "" }) {
+export default function NetworkThroughputPanel({ data = dashboardMockData.metrics, isMock = true, className = "" }) {
   const series = data.networkSeries ?? [];
   const maximum = Math.max(1, ...series.flatMap((point) => [point.downloadRate ?? 0, point.uploadRate ?? 0]));
   const downloadPath = buildPath(series, "downloadRate", maximum);
   const uploadPath = buildPath(series, "uploadRate", maximum);
+  const formatRate = (value) => Number.isFinite(value)
+    ? `${value}${dashboardCopy.common.units.dataRate}`
+    : dashboardCopy.common.unavailable;
 
   return (
     <HudPanel
       title={dashboardCopy.panels.network.title}
-      subtitle={`${dashboardCopy.panels.network.subtitle} // ${dashboardCopy.common.mockLabel}`}
+      subtitle={`${dashboardCopy.panels.network.subtitle} // ${isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel}`}
       className={`network-throughput ${className}`.trim()}
       frameStyle="contained"
       variant="compact"
     >
       <div className="network-throughput__rates">
-        <div><span className="network-throughput__key network-throughput__key--download" />{dashboardCopy.network.download}<strong>{data.downloadRate}{dashboardCopy.common.units.dataRate}</strong></div>
-        <div><span className="network-throughput__key network-throughput__key--upload" />{dashboardCopy.network.upload}<strong>{data.uploadRate}{dashboardCopy.common.units.dataRate}</strong></div>
+        <div><span className="network-throughput__key network-throughput__key--download" />{dashboardCopy.network.download}<strong>{formatRate(data.downloadRate)}</strong></div>
+        <div><span className="network-throughput__key network-throughput__key--upload" />{dashboardCopy.network.upload}<strong>{formatRate(data.uploadRate)}</strong></div>
       </div>
 
       <div className="network-throughput__chart">
-        <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={dashboardCopy.network.chartLabel}>
+        <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={isMock ? dashboardCopy.network.chartLabel : dashboardCopy.network.liveChartLabel}>
           <defs>
             <linearGradient id="network-download-fill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#55e8f2" stopOpacity="0.2" />

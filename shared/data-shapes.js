@@ -15,12 +15,12 @@ export const API_ENDPOINTS = Object.freeze({
 });
 
 export const API_RESPONSE_FIELDS = Object.freeze({
-  health: ["status", "source", "timestamp", "uptimeSeconds"],
-  system: ["header", "systemOverview", "overviewStatus", "core"],
+  health: ["status", "source", "timestamp", "uptimeSeconds", "node", "hostMetricsAvailable", "unavailableSources"],
+  system: ["header", "systemOverview", "overviewStatus", "core", "virtualization"],
   resources: [
     "cpuUsage", "cpuState", "memoryUsed", "memoryTotal", "memoryAvailable",
     "storageUsed", "storageTotal", "storageFree", "loadAverage", "uptime",
-    "processCount",
+    "processCount", "cpuCount", "swapUsed", "swapTotal",
   ],
   network: [
     "downloadRate", "uploadRate", "totalReceived", "totalTransmitted",
@@ -28,11 +28,13 @@ export const API_RESPONSE_FIELDS = Object.freeze({
   ],
   temperature: [
     "cpuTemperature", "ssdTemperature", "powerWatts", "fanRpm",
-    "sensorStatus", "sensorStates",
+    "sensorStatus", "sensorStates", "ssdSmartHealth", "ssdDevice",
   ],
   service: [
     "id", "name", "description", "icon", "url", "status", "statusLabel",
-    "statusDetails",
+    "statusDetails", "kind", "vmid", "node", "cpuUsage", "cpuCount",
+    "memoryUsed", "memoryTotal", "storageUsed", "storageTotal",
+    "networkReceived", "networkTransmitted", "uptime",
   ],
   event: ["id", "timestamp", "message", "type", "serviceId"],
   quickAction: ["id", "label", "icon", "url"],

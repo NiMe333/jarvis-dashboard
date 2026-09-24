@@ -9,6 +9,16 @@ function percentOf(value, total) {
   return Math.min(100, Math.max(0, (value / total) * 100));
 }
 
+function displayValue(value, suffix = "") {
+  return Number.isFinite(value) ? `${value}${suffix}` : dashboardCopy.common.unavailable;
+}
+
+function displayPair(value, total, suffix = "") {
+  return Number.isFinite(value) && Number.isFinite(total)
+    ? `${value} / ${total}${suffix}`
+    : dashboardCopy.common.unavailable;
+}
+
 function ResourceCard({ icon: Icon, label, value, detail, percent }) {
   const normalizedPercent = Math.min(100, Math.max(0, percent ?? 0));
 
@@ -36,16 +46,16 @@ function ResourceCard({ icon: Icon, label, value, detail, percent }) {
   );
 }
 
-export default function LiveResourcesPanel({ data = dashboardMockData.metrics, className = "" }) {
+export default function LiveResourcesPanel({ data = dashboardMockData.metrics, isMock = true, className = "" }) {
   const units = dashboardCopy.common.units;
   const loadAverage = Array.isArray(data.loadAverage)
-    ? data.loadAverage.map((value) => Number(value).toFixed(2)).join(" / ")
+    ? data.loadAverage.map((value) => Number.isFinite(value) ? value.toFixed(2) : dashboardCopy.common.unavailable).join(" / ")
     : data.loadAverage;
 
   return (
     <HudPanel
       title={dashboardCopy.panels.liveResources.title}
-      subtitle={`${dashboardCopy.panels.liveResources.subtitle} // ${dashboardCopy.common.mockLabel}`}
+      subtitle={`${dashboardCopy.panels.liveResources.subtitle} // ${isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel}`}
       className={`live-resources ${className}`.trim()}
       frameStyle="contained"
       variant="compact"
@@ -54,22 +64,22 @@ export default function LiveResourcesPanel({ data = dashboardMockData.metrics, c
         <ResourceCard
           icon={Cpu}
           label={dashboardCopy.resources.cpu}
-          value={`${data.cpuUsage}${units.percent}`}
+          value={displayValue(data.cpuUsage, units.percent)}
           detail={dashboardCopy.resources.states[data.cpuState] ?? dashboardCopy.common.unavailable}
           percent={data.cpuUsage}
         />
         <ResourceCard
           icon={MemoryStick}
           label={dashboardCopy.resources.memory}
-          value={`${data.memoryUsed} / ${data.memoryTotal}${units.storage}`}
-          detail={`${data.memoryAvailable}${units.storage} ${dashboardCopy.resources.available}`}
+          value={displayPair(data.memoryUsed, data.memoryTotal, units.storage)}
+          detail={Number.isFinite(data.memoryAvailable) ? `${data.memoryAvailable}${units.storage} ${dashboardCopy.resources.available}` : dashboardCopy.common.unavailable}
           percent={percentOf(data.memoryUsed, data.memoryTotal)}
         />
         <ResourceCard
           icon={HardDrive}
           label={dashboardCopy.resources.storage}
-          value={`${data.storageUsed} / ${data.storageTotal}${units.storage}`}
-          detail={`${data.storageFree}${units.storage} ${dashboardCopy.resources.free}`}
+          value={displayPair(data.storageUsed, data.storageTotal, units.storage)}
+          detail={Number.isFinite(data.storageFree) ? `${data.storageFree}${units.storage} ${dashboardCopy.resources.free}` : dashboardCopy.common.unavailable}
           percent={percentOf(data.storageUsed, data.storageTotal)}
         />
       </div>

@@ -22,4 +22,10 @@ export const systemMockData = Object.freeze({
     systemHealth: 100,
     status: "online",
   },
+  virtualization: {
+    runningVms: 2,
+    totalVms: 3,
+    runningContainers: 4,
+    totalContainers: 5,
+  },
 });

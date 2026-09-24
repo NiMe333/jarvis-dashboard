@@ -1,9 +1,9 @@
 import { createServer } from "node:http";
 import { env } from "./config/env.js";
 import { createApp } from "./app.js";
-import { MockDashboardService } from "./services/mockDashboardService.js";
+import { createDashboardService } from "./services/createDashboardService.js";
 
-const service = new MockDashboardService();
+const service = createDashboardService(env);
 const server = createServer(createApp({
   service,
   allowedOrigins: env.allowedOrigins,
@@ -11,6 +11,7 @@ const server = createServer(createApp({
 
 server.listen(env.port, env.host, () => {
   console.log(`JARVIS API listening on http://${env.host}:${env.port}`);
+  console.log(`Dashboard data source: ${service.constructor.name}`);
 });
 
 function shutdown() {

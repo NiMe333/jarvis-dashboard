@@ -1,5 +1,6 @@
 export const resourcesMockData = Object.freeze({
   cpuUsage: 18,
+  cpuCount: 4,
   cpuState: "active",
   memoryUsed: 5.8,
   memoryTotal: 16,
@@ -10,4 +11,6 @@ export const resourcesMockData = Object.freeze({
   loadAverage: [0.42, 0.38, 0.35],
   uptime: "12d 07h 42m",
   processCount: 142,
+  swapUsed: 0.2,
+  swapTotal: 2,
 });

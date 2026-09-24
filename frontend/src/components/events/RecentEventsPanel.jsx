@@ -64,7 +64,8 @@ function useVisibleEventCount(containerRef, totalCount) {
   return visibleCount;
 }
 
-export default function RecentEventsPanel({ events = dashboardMockData.recentEvents, className = "" }) {
+export default function RecentEventsPanel({ events = dashboardMockData.recentEvents, isMock = true, className = "" }) {
+  const sourceLabel = isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel;
   const listRef = useRef(null);
   const dialogRef = useRef(null);
   const openButtonRef = useRef(null);
@@ -95,7 +96,7 @@ export default function RecentEventsPanel({ events = dashboardMockData.recentEve
     <>
       <HudPanel
         title={dashboardCopy.panels.recentEvents.title}
-        subtitle={`${dashboardCopy.panels.recentEvents.subtitle} // ${dashboardCopy.common.mockLabel}`}
+        subtitle={`${dashboardCopy.panels.recentEvents.subtitle} // ${sourceLabel}`}
         className={`recent-events ${className}`.trim()}
         frameStyle="contained"
         variant="compact"
@@ -131,7 +132,7 @@ export default function RecentEventsPanel({ events = dashboardMockData.recentEve
         <div className="recent-events-dialog__frame">
           <header className="recent-events-dialog__header">
             <div>
-              <p>{dashboardCopy.panels.recentEvents.subtitle} // {dashboardCopy.common.mockLabel}</p>
+              <p>{dashboardCopy.panels.recentEvents.subtitle} // {sourceLabel}</p>
               <h2 id="recent-events-dialog-title">{dashboardCopy.events.dialogTitle}</h2>
             </div>
             <button
