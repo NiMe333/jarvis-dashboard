@@ -56,10 +56,11 @@ VITE_API_BASE_URL=https://your-api-host.example
 ```
 
 The value is available to frontend code through
-`src/config/runtimeConfig.js`. It is intentionally empty today because the
-backend has not been implemented. Vite embeds environment values during the
-build, so rebuild and redeploy after changing the URL. Do not place secrets in
-any `VITE_` variable because those values are visible in the browser bundle.
+`src/config/runtimeConfig.js`. For local development the example points to the
+Node API at `http://localhost:3001`; use the externally reachable API URL for a
+production build. Vite embeds environment values during the build, so rebuild
+and redeploy after changing the URL. Do not place secrets in any `VITE_`
+variable because those values are visible in the browser bundle.
 
 ## Nginx deployment in the LXC container
 
@@ -71,7 +72,7 @@ sudo apt install -y nginx rsync
 ```
 
 Create the web root and copy the build output. If the project is built inside
-the container, run this from the `dashboard` directory:
+the container, run this from the `frontend` directory:
 
 ```bash
 sudo mkdir -p /var/www/jarvis-dashboard

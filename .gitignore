@@ -1,7 +1,10 @@
 # Dependencies
+frontend/node_modules/
+backend/node_modules/
 shader/node_modules/
 
 # Vite build output
+frontend/dist/
 shader/dist/
 
 # Local environment files

@@ -1,0 +1,39 @@
+/**
+ * Shared API contract used by the frontend client and backend router.
+ * The field lists are documentation and a stable integration boundary; values
+ * are intentionally not coupled to the current mock implementation.
+ */
+export const API_ENDPOINTS = Object.freeze({
+  health: "/api/health",
+  system: "/api/system",
+  resources: "/api/resources",
+  network: "/api/network",
+  temperature: "/api/temperature",
+  services: "/api/services",
+  events: "/api/events",
+  quickActions: "/api/quick-actions",
+});
+
+export const API_RESPONSE_FIELDS = Object.freeze({
+  health: ["status", "source", "timestamp", "uptimeSeconds"],
+  system: ["header", "systemOverview", "overviewStatus", "core"],
+  resources: [
+    "cpuUsage", "cpuState", "memoryUsed", "memoryTotal", "memoryAvailable",
+    "storageUsed", "storageTotal", "storageFree", "loadAverage", "uptime",
+    "processCount",
+  ],
+  network: [
+    "downloadRate", "uploadRate", "totalReceived", "totalTransmitted",
+    "networkInterface", "networkSeries",
+  ],
+  temperature: [
+    "cpuTemperature", "ssdTemperature", "powerWatts", "fanRpm",
+    "sensorStatus", "sensorStates",
+  ],
+  service: [
+    "id", "name", "description", "icon", "url", "status", "statusLabel",
+    "statusDetails",
+  ],
+  event: ["id", "timestamp", "message", "type", "serviceId"],
+  quickAction: ["id", "label", "icon", "url"],
+});

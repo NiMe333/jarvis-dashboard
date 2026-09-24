@@ -5,7 +5,7 @@ import { dashboardCopy } from "../../config/dashboardContent.js";
 import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./DashboardHeader.css";
 
-export default function DashboardHeader({ className = "" }) {
+export default function DashboardHeader({ data = dashboardMockData.header, className = "" }) {
   return (
     <header className={`dashboard-header ${className}`.trim()}>
       <section
@@ -41,8 +41,8 @@ export default function DashboardHeader({ className = "" }) {
       </section>
 
       <SystemStatus
-        status={dashboardMockData.header.systemStatus}
-        alertCount={dashboardMockData.header.alertCount}
+        status={data.systemStatus}
+        alertCount={data.alertCount}
       />
     </header>
   );
