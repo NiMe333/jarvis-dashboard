@@ -71,6 +71,22 @@ export const dashboardCopy = Object.freeze({
     healthy: "HEALTHY",
     warning: "WARNING",
   },
+  services: {
+    empty: "NO SERVICES CONFIGURED",
+    statusLabels: {
+      running: "RUNNING",
+      stopped: "STOPPED",
+      warning: "WARNING",
+      unknown: "UNKNOWN",
+    },
+  },
+  events: {
+    viewAll: "VIEW ALL",
+    close: "CLOSE EVENT LOG",
+    dialogTitle: "RECENT EVENTS",
+    empty: "NO EVENTS RECORDED",
+    mockLabel: "MOCK DATA",
+  },
   common: {
     unavailable: "—",
   },

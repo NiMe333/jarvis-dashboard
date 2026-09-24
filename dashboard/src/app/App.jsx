@@ -3,6 +3,8 @@ import HudPanel from "../components/panel/HudPanel.jsx";
 import DashboardHeader from "../components/header/DashboardHeader.jsx";
 import SystemOverview from "../components/overview/SystemOverview.jsx";
 import JarvisCorePanel from "../components/core/JarvisCorePanel.jsx";
+import ServicesPanel from "../components/services/ServicesPanel.jsx";
+import RecentEventsPanel from "../components/events/RecentEventsPanel.jsx";
 import { dashboardCopy } from "../config/dashboardContent.js";
 import "./DashboardLayout.css";
 
@@ -40,22 +42,11 @@ export default function App() {
           >
             <JarvisCorePanel />
           </HudPanel>
-          <HudPanel
-            title={dashboardCopy.panels.recentEvents.title}
-            subtitle={dashboardCopy.panels.recentEvents.subtitle}
-            className="dashboard-layout__events"
-            frameStyle="open"
-            variant="compact"
-          />
+          <RecentEventsPanel className="dashboard-layout__events" />
         </div>
 
         <div className="dashboard-layout__right">
-          <HudPanel
-            title={dashboardCopy.panels.services.title}
-            subtitle={dashboardCopy.panels.services.subtitle}
-            className="dashboard-layout__services"
-            frameStyle="open"
-          />
+          <ServicesPanel className="dashboard-layout__services" />
           <HudPanel
             title={dashboardCopy.panels.temperature.title}
             subtitle={dashboardCopy.panels.temperature.subtitle}
