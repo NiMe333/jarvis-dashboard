@@ -16,11 +16,12 @@ export const API_ENDPOINTS = Object.freeze({
 
 export const API_RESPONSE_FIELDS = Object.freeze({
   health: ["status", "source", "timestamp", "uptimeSeconds", "node", "hostMetricsAvailable", "unavailableSources"],
-  system: ["header", "systemOverview", "overviewStatus", "core", "virtualization"],
+  system: ["header", "systemOverview", "overviewStatus", "core", "hostTelemetry", "virtualization"],
   resources: [
     "cpuUsage", "cpuState", "memoryUsed", "memoryTotal", "memoryAvailable",
     "storageUsed", "storageTotal", "storageFree", "loadAverage", "uptime",
     "processCount", "cpuCount", "swapUsed", "swapTotal",
+    "rootStorageUsed", "rootStorageTotal", "rootStorageFree",
   ],
   network: [
     "downloadRate", "uploadRate", "totalReceived", "totalTransmitted",

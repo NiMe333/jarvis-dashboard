@@ -16,7 +16,6 @@ export const dashboardCopy = Object.freeze({
     serverUptime: "Server uptime",
     animatedCore: "Animated JARVIS core visualization",
     coreTelemetry: "JARVIS core telemetry",
-    systemHealth: "system health",
     openServicePrefix: "Open",
   },
   header: {
@@ -47,7 +46,7 @@ export const dashboardCopy = Object.freeze({
     network: { title: "NETWORK THROUGHPUT", subtitle: "/ REAL-TIME // 1 MIN" },
     recentEvents: { title: "RECENT EVENTS", subtitle: "/ SYSTEM LOG" },
     services: { title: "SERVICES & CONTAINERS", subtitle: "/ CORE SERVICES" },
-    temperature: { title: "TEMPERATURE & POWER", subtitle: "/ SYSTEM SENSORS" },
+    hostTelemetry: { title: "HOST TELEMETRY", subtitle: "/ PROXMOX NODE" },
     quickActions: { title: "QUICK ACTIONS", subtitle: "// OPERATIONS" },
   },
   systemOverview: {
@@ -74,9 +73,9 @@ export const dashboardCopy = Object.freeze({
   core: {
     title: "CORE",
     subtitle: "STATUS",
-    cpuTemperatureLabel: "CPU TEMP",
-    fanSpeedLabel: "FAN SPEED",
-    integrityLabel: "SYSTEM INTEGRITY",
+    cpuUsageLabel: "CPU LOAD",
+    memoryAvailableLabel: "MEMORY AVAILABLE",
+    hostStatusLabel: "HOST STATUS",
     secureLabel: "SECURE",
     monitoringLabel: "MONITORING",
     states: {
@@ -85,10 +84,6 @@ export const dashboardCopy = Object.freeze({
       critical: { core: "CORE CRITICAL", integrity: "CRITICAL SYSTEM STATE" },
       offline: { core: "CORE OFFLINE", integrity: "SYSTEM OFFLINE" },
     },
-  },
-  health: {
-    healthy: "HEALTHY",
-    warning: SHARED_LABELS.warning,
   },
   services: {
     empty: "UNAVAILABLE",
@@ -126,10 +121,8 @@ export const dashboardCopy = Object.freeze({
   resources: {
     cpu: "CPU",
     memory: "MEMORY",
-    storage: "STORAGE",
+    storage: "STORAGE USED / TOTAL",
     loadAverage: "LOAD AVG",
-    uptime: "UPTIME",
-    processes: "PROCESSES",
     available: "AVAILABLE",
     free: "FREE",
     states: {
@@ -145,28 +138,20 @@ export const dashboardCopy = Object.freeze({
     interface: "INTERFACE",
     liveChartLabel: "Download and upload throughput",
   },
-  sensors: {
-    cpuTemperature: "CPU TEMP",
-    ssdTemperature: "SATA SSD",
-    power: "POWER",
+  hostTelemetry: {
     cpuLoad: "CPU LOAD",
-    fanSpeed: "FAN SPEED",
-    status: "SENSORS",
-    states: {
-      normal: "NORMAL",
-      estimated: "ESTIMATED",
-      warning: SHARED_LABELS.warning,
-      unavailable: SHARED_LABELS.unavailable,
-    },
+    loadAverage: "LOAD AVERAGE",
+    memoryAvailable: "MEMORY AVAILABLE",
+    swapUsage: "SWAP USAGE",
+    storageFree: "ROOT FS FREE / TOTAL",
+    proxmoxVersion: "PROXMOX VERSION",
+    live: "LIVE",
   },
   common: {
     unavailable: "—",
     liveLabel: SHARED_LABELS.liveData,
     units: {
       percent: "%",
-      temperature: "°C",
-      power: " W",
-      fanSpeed: " RPM",
       dataRate: " Mbps",
       storage: " GB",
       bytes: ["B", "KB", "MB", "GB", "TB", "PB"],

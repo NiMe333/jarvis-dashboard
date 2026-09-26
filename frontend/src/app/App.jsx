@@ -8,7 +8,7 @@ import RecentEventsPanel from "../components/events/RecentEventsPanel.jsx";
 import QuickActionsPanel from "../components/actions/QuickActionsPanel.jsx";
 import LiveResourcesPanel from "../components/resources/LiveResourcesPanel.jsx";
 import NetworkThroughputPanel from "../components/network/NetworkThroughputPanel.jsx";
-import TemperaturePowerPanel from "../components/sensors/TemperaturePowerPanel.jsx";
+import HostTelemetryPanel from "../components/sensors/HostTelemetryPanel.jsx";
 import { useDashboardData } from "../hooks/useDashboardData.js";
 import "./DashboardLayout.css";
 
@@ -57,14 +57,19 @@ export default function App() {
             energy="pair"
             variant="large"
           >
-            <JarvisCorePanel telemetry={data.core} />
+            <JarvisCorePanel telemetry={{ ...data.core, ...data.metrics }} />
           </HudPanel>
           <RecentEventsPanel events={data.recentEvents} dataSource={data.dataSource} className="dashboard-layout__events" />
         </div>
 
         <div className="dashboard-layout__right">
           <ServicesPanel services={data.services} className="dashboard-layout__services" />
-          <TemperaturePowerPanel data={data.metrics} dataSource={data.dataSource} className="dashboard-layout__temperature" />
+          <HostTelemetryPanel
+            data={data.metrics}
+            host={data.hostTelemetry}
+            dataSource={data.dataSource}
+            className="dashboard-layout__temperature"
+          />
           <QuickActionsPanel actions={data.quickActions} className="dashboard-layout__actions" />
         </div>
       </div>

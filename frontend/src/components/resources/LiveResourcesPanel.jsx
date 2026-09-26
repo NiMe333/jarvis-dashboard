@@ -1,4 +1,4 @@
-import { Activity, Clock3, Cpu, HardDrive, ListTree, MemoryStick } from "lucide-react";
+import { Activity, Cpu, HardDrive, MemoryStick } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
 import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
@@ -90,16 +90,6 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
         <div>
           <dt><Activity size={13} aria-hidden="true" />{dashboardCopy.resources.loadAverage}</dt>
           <dd>{loadAverage ?? dashboardCopy.common.unavailable}</dd>
-          <span className="live-resources__detail-meter" aria-hidden="true" />
-        </div>
-        <div>
-          <dt><Clock3 size={13} aria-hidden="true" />{dashboardCopy.resources.uptime}</dt>
-          <dd>{data.uptime ?? dashboardCopy.common.unavailable}</dd>
-          <span className="live-resources__detail-meter" aria-hidden="true" />
-        </div>
-        <div>
-          <dt><ListTree size={13} aria-hidden="true" />{dashboardCopy.resources.processes}</dt>
-          <dd>{data.processCount ?? dashboardCopy.common.unavailable}</dd>
           <span className="live-resources__detail-meter" aria-hidden="true" />
         </div>
       </dl>

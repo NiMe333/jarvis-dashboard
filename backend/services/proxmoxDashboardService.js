@@ -17,14 +17,29 @@ function round(value, digits = 1) {
   return Math.round(number * scale) / scale;
 }
 
-function bytesToGiB(value) {
+function bytesToGiB(value, digits = 2) {
   const bytes = finiteNumber(value);
-  return bytes === null ? null : round(bytes / GIB, 1);
+  return bytes === null ? null : round(bytes / GIB, digits);
 }
 
 function percentage(value) {
   const ratio = finiteNumber(value);
-  return ratio === null ? null : round(Math.max(0, Math.min(1, ratio)) * 100, 1);
+  return ratio === null ? null : round(Math.max(0, Math.min(1, ratio)) * 100, 2);
+}
+
+function bytesPerSecondToMbps(value) {
+  const bytesPerSecond = finiteNumber(value);
+  return bytesPerSecond === null ? null : round((bytesPerSecond * 8) / 1_000_000, 3);
+}
+
+function proxmoxVersion(snapshot) {
+  const value = snapshot.version.version
+    ?? snapshot.version.release
+    ?? snapshot.nodeStatus.pveversion
+    ?? null;
+  if (value === null) return null;
+  const match = String(value).match(/(?:pve-manager\/)?([^/]+)/);
+  return match?.[1] ?? String(value);
 }
 
 function formatUptime(totalSeconds) {
@@ -151,11 +166,12 @@ export class ProxmoxDashboardService extends DashboardService {
       this.client.get(`/nodes/${node}/lxc`),
       this.client.get(`/nodes/${node}/storage`, { enabled: 1 }),
       this.client.get(`/nodes/${node}/tasks`, { limit: 50, source: "all" }),
+      this.client.get(`/nodes/${node}/rrddata`, { timeframe: "hour" }),
       this.client.get("/version"),
       this.hostMetricsReader.read(),
     ]);
 
-    const [statusResult, qemuResult, lxcResult, storageResult, tasksResult, versionResult, hostResult] = requests;
+    const [statusResult, qemuResult, lxcResult, storageResult, tasksResult, rrdResult, versionResult, hostResult] = requests;
     if (statusResult.status === "rejected") throw statusResult.reason;
 
     const snapshot = {
@@ -165,6 +181,7 @@ export class ProxmoxDashboardService extends DashboardService {
       lxc: safeArray(lxcResult),
       storage: safeArray(storageResult),
       tasks: safeArray(tasksResult),
+      rrd: safeArray(rrdResult),
       version: safeObject(versionResult),
       host: safeObject(hostResult),
       available: {
@@ -172,6 +189,7 @@ export class ProxmoxDashboardService extends DashboardService {
         lxc: lxcResult.status === "fulfilled",
         storage: storageResult.status === "fulfilled",
         tasks: tasksResult.status === "fulfilled",
+        rrd: rrdResult.status === "fulfilled",
         version: versionResult.status === "fulfilled",
         hostMetrics: hostResult.status === "fulfilled" && hostResult.value?.available === true,
       },
@@ -208,13 +226,15 @@ export class ProxmoxDashboardService extends DashboardService {
 
   async getSystem() {
     const snapshot = await this.getSnapshot();
-    const { nodeStatus, tasks, version, host } = snapshot;
+    const { nodeStatus, tasks, host } = snapshot;
     const storage = storageTotals(snapshot.storage, nodeStatus.rootfs);
     const latestTask = [...tasks].sort((a, b) => (b.starttime ?? 0) - (a.starttime ?? 0))[0];
     const warning = host.ssdSmartHealth === false;
-    const memoryTotal = bytesToGiB(nodeStatus.memory?.total);
-    const storageTotal = bytesToGiB(storage.total);
-    const pveVersion = version.version ?? version.release ?? nodeStatus.pveversion ?? null;
+    const memoryTotal = bytesToGiB(nodeStatus.memory?.total, 1);
+    const storageTotal = bytesToGiB(storage.total, 1);
+    const pveVersion = proxmoxVersion(snapshot);
+    const bootInfo = nodeStatus["boot-info"] ?? {};
+    const currentKernel = nodeStatus["current-kernel"] ?? {};
 
     return {
       header: {
@@ -237,10 +257,18 @@ export class ProxmoxDashboardService extends DashboardService {
         state: warning ? "warning" : "nominal",
       },
       core: {
-        cpuTemperature: finiteNumber(host.cpuTemperature),
-        fanSpeed: finiteNumber(host.fanRpm),
-        systemHealth: null,
         status: warning ? "warning" : "online",
+      },
+      hostTelemetry: {
+        cpuModel: nodeStatus.cpuinfo?.model ?? null,
+        cpuFrequencyMHz: finiteNumber(nodeStatus.cpuinfo?.mhz),
+        proxmoxVersion: pveVersion,
+        kernelVersion: currentKernel.release ?? null,
+        bootMode: bootInfo.mode ? String(bootInfo.mode).toUpperCase() : null,
+        secureBoot: bootInfo.secureboot === 1
+          ? "ENABLED"
+          : bootInfo.secureboot === 0 ? "DISABLED" : null,
+        hostStatus: warning ? "WARNING" : "ONLINE",
       },
       virtualization: {
         runningVms: snapshot.available.qemu
@@ -279,6 +307,9 @@ export class ProxmoxDashboardService extends DashboardService {
       storageUsed: bytesToGiB(storage.used),
       storageTotal: bytesToGiB(storage.total),
       storageFree: bytesToGiB(storage.free),
+      rootStorageUsed: bytesToGiB(nodeStatus.rootfs?.used),
+      rootStorageTotal: bytesToGiB(nodeStatus.rootfs?.total),
+      rootStorageFree: bytesToGiB(nodeStatus.rootfs?.avail ?? nodeStatus.rootfs?.free),
       loadAverage: Array.isArray(nodeStatus.loadavg)
         ? nodeStatus.loadavg.map(finiteNumber)
         : null,
@@ -290,9 +321,18 @@ export class ProxmoxDashboardService extends DashboardService {
   async getNetwork() {
     const snapshot = await this.getSnapshot();
     const network = snapshot.host.network ?? {};
-    const downloadRate = round(network.downloadRate, 2);
-    const uploadRate = round(network.uploadRate, 2);
-    const hasRates = downloadRate !== null || uploadRate !== null;
+    const rrdPoints = snapshot.rrd
+      .filter((point) => finiteNumber(point.time) !== null)
+      .sort((a, b) => Number(a.time) - Number(b.time));
+    const latestTime = finiteNumber(rrdPoints.at(-1)?.time);
+    const networkSeries = rrdPoints.map((point) => ({
+      offsetSeconds: latestTime === null ? 0 : finiteNumber(point.time) - latestTime,
+      downloadRate: bytesPerSecondToMbps(point.netin),
+      uploadRate: bytesPerSecondToMbps(point.netout),
+    }));
+    const latestPoint = networkSeries.at(-1) ?? {};
+    const downloadRate = latestPoint.downloadRate ?? round(network.downloadRate, 3);
+    const uploadRate = latestPoint.uploadRate ?? round(network.uploadRate, 3);
 
     return {
       downloadRate,
@@ -300,9 +340,7 @@ export class ProxmoxDashboardService extends DashboardService {
       totalReceived: finiteNumber(network.received),
       totalTransmitted: finiteNumber(network.transmitted),
       networkInterface: network.interfaceName ?? null,
-      networkSeries: hasRates
-        ? [{ offsetSeconds: 0, downloadRate, uploadRate }]
-        : [],
+      networkSeries,
     };
   }
 

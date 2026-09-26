@@ -29,7 +29,7 @@ function buildPath(series, key, maximum) {
 
 export default function NetworkThroughputPanel({ data = {}, dataSource = "offline", className = "" }) {
   const series = data.networkSeries ?? [];
-  const maximum = Math.max(1, ...series.flatMap((point) => [point.downloadRate ?? 0, point.uploadRate ?? 0]));
+  const maximum = Math.max(0, ...series.flatMap((point) => [point.downloadRate ?? 0, point.uploadRate ?? 0]));
   const downloadPath = buildPath(series, "downloadRate", maximum);
   const uploadPath = buildPath(series, "uploadRate", maximum);
   const formatRate = (value) => Number.isFinite(value)

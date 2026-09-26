@@ -289,10 +289,9 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
 
   const copy = STATUS_COPY[status];
 
-  const health =
-    telemetry.systemHealth == null
-      ? dashboardCopy.common.unavailable
-      : `${Math.max(0, Math.min(100, telemetry.systemHealth))}%`;
+  const hostStatus = status === "offline"
+    ? dashboardCopy.common.unavailable
+    : status.toUpperCase();
 
   return (
     <div
@@ -303,26 +302,26 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--thermal">
         <div className="jarvis-core__metric">
           <span className="jarvis-core__telemetry-label">
-            {dashboardCopy.core.cpuTemperatureLabel}
+            {dashboardCopy.core.cpuUsageLabel}
           </span>
 
           <strong className="jarvis-core__telemetry-value">
             {displayMetric(
-              telemetry.cpuTemperature,
-              dashboardCopy.common.units.temperature,
+              telemetry.cpuUsage,
+              dashboardCopy.common.units.percent,
             )}
           </strong>
         </div>
 
         <div className="jarvis-core__metric">
           <span className="jarvis-core__telemetry-label">
-            {dashboardCopy.core.fanSpeedLabel}
+            {dashboardCopy.core.memoryAvailableLabel}
           </span>
 
           <strong className="jarvis-core__telemetry-value">
             {displayMetric(
-              telemetry.fanSpeed,
-              dashboardCopy.common.units.fanSpeed,
+              telemetry.memoryAvailable,
+              dashboardCopy.common.units.storage,
             )}
           </strong>
         </div>
@@ -330,7 +329,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
 
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--integrity">
         <span className="jarvis-core__telemetry-heading">
-          {dashboardCopy.core.integrityLabel}
+          {dashboardCopy.core.hostStatusLabel}
         </span>
 
         <div className="jarvis-core__integrity-row">
@@ -343,7 +342,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
             ))}
           </span>
 
-          <strong className="jarvis-core__integrity-value">{health}</strong>
+          <strong className="jarvis-core__integrity-value">{hostStatus}</strong>
 
           <span
             className="jarvis-core__segments jarvis-core__segments--right"
