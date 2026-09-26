@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { loadDashboardData } from "../api/dashboardApi.js";
-import { runtimeConfig } from "../config/runtimeConfig.js";
 
 const EMPTY_DASHBOARD_DATA = Object.freeze({
   header: Object.freeze({}),
@@ -46,11 +45,6 @@ export function useDashboardData() {
   const [data, setData] = useState(EMPTY_DASHBOARD_DATA);
 
   useEffect(() => {
-    if (!runtimeConfig.apiBaseUrl) {
-      setData((current) => ({ ...current, dataSource: "offline", dataError: ["configuration"] }));
-      return undefined;
-    }
-
     const controller = new AbortController();
 
     const refresh = () => loadDashboardData({ signal: controller.signal })

@@ -2,11 +2,13 @@ import { API_ENDPOINTS } from "../../../shared/data-shapes.js";
 import { runtimeConfig } from "../config/runtimeConfig.js";
 
 function apiUrl(path) {
-  if (!runtimeConfig.apiBaseUrl) {
-    throw new Error("VITE_API_BASE_URL is not configured");
-  }
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const requestPath = /\/api$/i.test(runtimeConfig.apiBaseUrl)
+    && normalizedPath.startsWith("/api/")
+    ? normalizedPath.slice(4)
+    : normalizedPath;
 
-  return `${runtimeConfig.apiBaseUrl}${path}`;
+  return `${runtimeConfig.apiBaseUrl}${requestPath}`;
 }
 
 async function fetchJson(path, { signal } = {}) {

@@ -41,7 +41,7 @@ npm run build
 The generated website is in `dist/`. The contents of that directory, rather
 than the directory itself, should be copied to the Nginx web root.
 
-## Future API configuration
+## API configuration
 
 Copy the example environment file before building:
 
@@ -49,18 +49,20 @@ Copy the example environment file before building:
 cp .env.example .env.production
 ```
 
-Set the future backend URL in `.env.production`:
+For same-origin production deployments behind the included Nginx proxy, leave
+the production value empty:
 
 ```dotenv
-VITE_API_BASE_URL=https://your-api-host.example
+VITE_API_BASE_URL=
 ```
 
-The value is available to frontend code through
-`src/config/runtimeConfig.js`. For local development the example points to the
-Node API at `http://localhost:3001`; use the externally reachable API URL for a
-production build. Vite embeds environment values during the build, so rebuild
-and redeploy after changing the URL. Do not place secrets in any `VITE_`
-variable because those values are visible in the browser bundle.
+The frontend then requests `/api/...` from the current host. Local development
+can still set `VITE_API_BASE_URL=http://localhost:3001` in `.env`.
+
+The value is available to frontend code through `src/config/runtimeConfig.js`.
+Vite embeds environment values during the build, so rebuild and redeploy after
+changing the URL. Do not place secrets in any `VITE_` variable because those
+values are visible in the browser bundle.
 
 ## Nginx deployment in the LXC container
 
