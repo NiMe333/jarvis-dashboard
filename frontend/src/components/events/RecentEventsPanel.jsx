@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
+import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./RecentEventsPanel.css";
 
 const VALID_EVENT_TYPES = new Set(Object.keys(dashboardCopy.events.typeLabels));
@@ -64,8 +64,8 @@ function useVisibleEventCount(containerRef, totalCount) {
   return visibleCount;
 }
 
-export default function RecentEventsPanel({ events = dashboardMockData.recentEvents, isMock = true, className = "" }) {
-  const sourceLabel = isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel;
+export default function RecentEventsPanel({ events = [], dataSource = "offline", className = "" }) {
+  const sourceLabel = dataSourceLabel(dataSource);
   const listRef = useRef(null);
   const dialogRef = useRef(null);
   const openButtonRef = useRef(null);

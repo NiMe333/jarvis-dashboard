@@ -3,13 +3,10 @@ import JarvisShader from "../JarvisShader.jsx";
 import {
   dashboardCopy,
 } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./JarvisCorePanel.css";
 
 const StableJarvisShader = memo(JarvisShader);
 const SEGMENTS = Array.from({ length: 7 }, (_, index) => index);
-
-export const mockCoreTelemetry = dashboardMockData.core;
 
 const displayMetric = (value, suffix = "") =>
   value == null ? dashboardCopy.common.unavailable : `${value}${suffix}`;
@@ -381,7 +378,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
   );
 });
 
-export default function JarvisCorePanel({ telemetry = mockCoreTelemetry }) {
+export default function JarvisCorePanel({ telemetry = {} }) {
   const panelRef = useRef(null);
 
   return (

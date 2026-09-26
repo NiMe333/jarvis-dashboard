@@ -1,52 +1,107 @@
 import { useEffect, useState } from "react";
 import { loadDashboardData } from "../api/dashboardApi.js";
-import { dashboardMockData } from "../config/dashboardMockData.js";
 import { runtimeConfig } from "../config/runtimeConfig.js";
 
-function mergeApiData(payload) {
-  const system = payload.system && typeof payload.system === "object"
-    ? payload.system
-    : {};
+const EMPTY_DASHBOARD_DATA = Object.freeze({
+  header: Object.freeze({}),
+  systemOverview: Object.freeze({}),
+  overviewStatus: Object.freeze({}),
+  core: Object.freeze({}),
+  virtualization: Object.freeze({}),
+  metrics: Object.freeze({}),
+  services: Object.freeze([]),
+  recentEvents: Object.freeze([]),
+  quickActions: Object.freeze([]),
+  dataSource: "loading",
+  dataError: null,
+});
+
+function mergeApiData(previous, payload) {
+  const system = payload.system && typeof payload.system === "object" ? payload.system : null;
+  const hasResources = payload.resources && typeof payload.resources === "object";
+  const hasNetwork = payload.network && typeof payload.network === "object";
+  const hasTemperature = payload.temperature && typeof payload.temperature === "object";
 
   return {
-    ...dashboardMockData,
-    ...system,
-    isMock: payload.health?.source === "mock",
+    ...previous,
+    ...(system ?? {}),
     metrics: {
-      ...dashboardMockData.metrics,
-      ...payload.resources,
-      ...payload.network,
-      ...payload.temperature,
+      ...previous.metrics,
+      ...(hasResources ? payload.resources : {}),
+      ...(hasNetwork ? payload.network : {}),
+      ...(hasTemperature ? payload.temperature : {}),
     },
     services: Array.isArray(payload.services)
       ? payload.services
-      : dashboardMockData.services,
+      : previous.services,
     recentEvents: Array.isArray(payload.events)
       ? payload.events
-      : dashboardMockData.recentEvents,
+      : previous.recentEvents,
     quickActions: Array.isArray(payload.quickActions)
       ? payload.quickActions
-      : dashboardMockData.quickActions,
+      : previous.quickActions,
   };
 }
 
 export function useDashboardData() {
-  const [data, setData] = useState(dashboardMockData);
+  const [data, setData] = useState(EMPTY_DASHBOARD_DATA);
 
   useEffect(() => {
-    if (!runtimeConfig.apiBaseUrl) return undefined;
+    if (!runtimeConfig.apiBaseUrl) {
+      setData((current) => ({ ...current, dataSource: "offline", dataError: ["configuration"] }));
+      return undefined;
+    }
 
     const controller = new AbortController();
 
-    loadDashboardData({ signal: controller.signal })
-      .then((payload) => setData(mergeApiData(payload)))
+    const refresh = () => loadDashboardData({ signal: controller.signal })
+      .then((payload) => {
+        const successfulEndpoints = Object.keys(payload).filter((key) => key !== "errors");
+        const failedEndpoints = Object.keys(payload.errors ?? {});
+        const source = successfulEndpoints.length === 0
+          ? "offline"
+          : failedEndpoints.length > 0
+            ? "partial"
+            : "live";
+
+        setData((current) => {
+          if (source === "offline") {
+            const offline = {
+              ...EMPTY_DASHBOARD_DATA,
+              dataSource: "offline",
+              dataError: failedEndpoints,
+            };
+            if (import.meta.env.DEV) console.info("[dashboard] component data", offline);
+            return offline;
+          }
+
+          const next = {
+            ...mergeApiData(current, payload),
+            dataSource: source,
+            dataError: failedEndpoints.length > 0 ? failedEndpoints : null,
+          };
+          if (import.meta.env.DEV) console.info("[dashboard] component data", next);
+          return next;
+        });
+      })
       .catch((error) => {
         if (error.name !== "AbortError") {
-          console.warn("Dashboard API unavailable; using local mock data.", error);
+          console.error("Dashboard API unavailable.", error);
+          setData(() => ({
+            ...EMPTY_DASHBOARD_DATA,
+            dataSource: "offline",
+            dataError: ["api"],
+          }));
         }
       });
 
-    return () => controller.abort();
+    refresh();
+    const refreshTimer = window.setInterval(refresh, 15_000);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+      controller.abort();
+    };
   }, []);
 
   return data;

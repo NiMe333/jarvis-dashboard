@@ -2,10 +2,9 @@ import LiveClock from "./LiveClock.jsx";
 import RotatingDirective from "./RotatingDirective.jsx";
 import SystemStatus from "./SystemStatus.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./DashboardHeader.css";
 
-export default function DashboardHeader({ data = dashboardMockData.header, className = "" }) {
+export default function DashboardHeader({ data = {}, className = "" }) {
   return (
     <header className={`dashboard-header ${className}`.trim()}>
       <section

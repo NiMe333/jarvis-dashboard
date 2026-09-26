@@ -1,18 +1,17 @@
 import "./SystemStatus.css";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
 
 const statusLabels = dashboardCopy.header.systemStates;
 
 export default function SystemStatus({
-  status = dashboardMockData.header.systemStatus,
-  alertCount = dashboardMockData.header.alertCount,
+  status = "offline",
+  alertCount,
 }) {
   const { label, detail } = statusLabels[status] ?? statusLabels.offline;
   const secondary = status === "operational" && alertCount === 0
     ? statusLabels.operational.detail
     : status === "operational"
-    ? `${alertCount} ${alertCount === 1 ? dashboardCopy.header.activeAlert : dashboardCopy.header.activeAlerts}`
+    ? `${alertCount ?? dashboardCopy.common.unavailable} ${alertCount === 1 ? dashboardCopy.header.activeAlert : dashboardCopy.header.activeAlerts}`
     : detail;
 
   return (

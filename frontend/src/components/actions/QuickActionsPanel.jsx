@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./QuickActionsPanel.css";
 
 const ACTION_ICONS = {
@@ -59,7 +58,7 @@ function QuickAction({ action }) {
   );
 }
 
-export default function QuickActionsPanel({ actions = dashboardMockData.quickActions, className = "" }) {
+export default function QuickActionsPanel({ actions = [], className = "" }) {
   return (
     <HudPanel
       title={dashboardCopy.panels.quickActions.title}
@@ -69,7 +68,9 @@ export default function QuickActionsPanel({ actions = dashboardMockData.quickAct
       energy="single"
     >
       <div className="quick-actions__grid">
-        {actions.map((action) => <QuickAction key={action.id} action={action} />)}
+        {actions.length > 0
+          ? actions.map((action) => <QuickAction key={action.id} action={action} />)
+          : <p>{dashboardCopy.common.unavailable}</p>}
       </div>
     </HudPanel>
   );

@@ -1,10 +1,8 @@
 import HudFrame from "../panel/HudFrame.jsx";
 import JarvisStatusWidget from "./status/JarvisStatusWidget.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
+import { formatNullable } from "../../utils/dashboardFormatters.js";
 import "./SystemOverview.css";
-
-export const mockSystemOverview = dashboardMockData.systemOverview;
 
 const HARDWARE_FIELDS = [
   ["hostname", "hostname"],
@@ -39,7 +37,7 @@ function VectorClock() {
 }
 
 export default function SystemOverview({
-  telemetry = mockSystemOverview,
+  telemetry = {},
   status,
 }) {
   const copy = dashboardCopy.systemOverview;
@@ -67,7 +65,7 @@ export default function SystemOverview({
             <div className="system-overview__uptime-row">
               <VectorClock />
               <div className="system-overview__uptime-copy">
-                <strong>{telemetry.uptime ?? dashboardCopy.common.unavailable}</strong>
+                <strong>{formatNullable(telemetry.uptime)}</strong>
               </div>
             </div>
           </section>
@@ -76,7 +74,7 @@ export default function SystemOverview({
             {identity.map((item) => (
               <div className="system-overview__hardware-row" key={item.label}>
                 <dt>{item.label}</dt>
-                <dd>{item.value ?? dashboardCopy.common.unavailable}</dd>
+                <dd>{formatNullable(item.value)}</dd>
               </div>
             ))}
           </dl>

@@ -1,5 +1,4 @@
 const SHARED_LABELS = Object.freeze({
-  mockData: "MOCK DATA",
   liveData: "LIVE DATA",
   unavailable: "UNAVAILABLE",
   warning: "WARNING",
@@ -92,54 +91,24 @@ export const dashboardCopy = Object.freeze({
     warning: SHARED_LABELS.warning,
   },
   services: {
-    empty: "NO SERVICES CONFIGURED",
-    mockValue: "MOCK VALUE",
+    empty: "UNAVAILABLE",
     statusLabels: {
       running: "RUNNING",
       stopped: "STOPPED",
       warning: SHARED_LABELS.warning,
       unknown: "UNKNOWN",
     },
-    catalog: {
-      "mock-hypervisor": { name: "Mock Hypervisor", description: "Virtualization host sample" },
-      "mock-container-runtime": { name: "Mock Container Runtime", description: "Container platform sample" },
-      "mock-backup-service": { name: "Mock Backup Service", description: "Snapshot workflow sample" },
-      "mock-dns-gateway": { name: "Mock DNS Gateway", description: "Network filtering sample" },
-      "mock-remote-access": { name: "Mock Remote Access", description: "Secure tunnel sample" },
-      "mock-worker-node": { name: "Mock Worker Node", description: "Background jobs sample" },
-      "mock-media-service": { name: "Mock Media Service", description: "Media streaming sample" },
-      "mock-storage-node": { name: "Mock Storage Node", description: "Shared storage sample" },
-      "mock-edge-proxy": { name: "Mock Edge Proxy", description: "Reverse proxy sample" },
-      "mock-security-agent": { name: "Mock Security Agent", description: "Threat monitor sample" },
-      "mock-database-cluster": { name: "Mock Database Cluster", description: "Application data sample" },
-      "mock-automation-engine": { name: "Mock Automation Engine", description: "Scheduled workflow sample" },
-    },
   },
   events: {
     viewAll: "VIEW ALL",
     close: "CLOSE EVENT LOG",
     dialogTitle: "RECENT EVENTS",
-    empty: "NO EVENTS RECORDED",
+    empty: "UNAVAILABLE",
     typeLabels: {
       info: "INFORMATION",
       warning: SHARED_LABELS.warning,
       error: "ERROR",
       success: "SUCCESS",
-    },
-    messages: {
-      overviewBackupCompleted: "BACKUP COMPLETED",
-      "mock-event-0012": "Mock event: container lifecycle sample completed",
-      "mock-event-0011": "Mock event: backup workflow completed successfully",
-      "mock-event-0010": "Mock event: new network device sample detected",
-      "mock-event-0009": "Mock warning: request threshold sample exceeded",
-      "mock-event-0008": "Mock event: system health check sample completed",
-      "mock-event-0007": "Mock error: storage connection sample unavailable",
-      "mock-event-0006": "Mock event: scheduled automation sample started",
-      "mock-event-0005": "Mock warning: elevated temperature sample recorded",
-      "mock-event-0004": "Mock event: security scan sample completed",
-      "mock-event-0003": "Mock event: worker queue sample synchronized",
-      "mock-event-0002": "Mock warning: remote access latency sample increased",
-      "mock-event-0001": "Mock event: daily telemetry sample archived",
     },
   },
   quickActions: {
@@ -174,7 +143,6 @@ export const dashboardCopy = Object.freeze({
     received: "RECEIVED",
     transmitted: "TRANSMITTED",
     interface: "INTERFACE",
-    chartLabel: "Mock download and upload throughput for the previous 60 seconds",
     liveChartLabel: "Download and upload throughput",
   },
   sensors: {
@@ -193,7 +161,6 @@ export const dashboardCopy = Object.freeze({
   },
   common: {
     unavailable: "—",
-    mockLabel: SHARED_LABELS.mockData,
     liveLabel: SHARED_LABELS.liveData,
     units: {
       percent: "%",

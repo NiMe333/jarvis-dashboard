@@ -35,18 +35,32 @@ export const dashboardApi = Object.freeze({
 });
 
 export async function loadDashboardData({ signal } = {}) {
-  const health = await dashboardApi.getHealth({ signal });
+  const entries = [
+    ["health", dashboardApi.getHealth],
+    ["system", dashboardApi.getSystem],
+    ["resources", dashboardApi.getResources],
+    ["network", dashboardApi.getNetwork],
+    ["temperature", dashboardApi.getTemperature],
+    ["services", dashboardApi.getServices],
+    ["events", dashboardApi.getEvents],
+    ["quickActions", dashboardApi.getQuickActions],
+  ];
+  const results = await Promise.allSettled(
+    entries.map(([, request]) => request({ signal })),
+  );
+  const payload = {};
+  const errors = {};
 
-  const [system, resources, network, temperature, services, events, quickActions] =
-    await Promise.all([
-      dashboardApi.getSystem({ signal }),
-      dashboardApi.getResources({ signal }),
-      dashboardApi.getNetwork({ signal }),
-      dashboardApi.getTemperature({ signal }),
-      dashboardApi.getServices({ signal }),
-      dashboardApi.getEvents({ signal }),
-      dashboardApi.getQuickActions({ signal }),
-    ]);
+  results.forEach((result, index) => {
+    const [name] = entries[index];
+    if (result.status === "fulfilled") {
+      payload[name] = result.value;
+      if (import.meta.env.DEV) console.info(`[dashboard-api] ${name}`, result.value);
+    } else {
+      errors[name] = result.reason;
+      if (import.meta.env.DEV) console.error(`[dashboard-api] ${name} failed`, result.reason);
+    }
+  });
 
-  return { health, system, resources, network, temperature, services, events, quickActions };
+  return { ...payload, errors };
 }

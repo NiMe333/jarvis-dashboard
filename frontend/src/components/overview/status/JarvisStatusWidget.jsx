@@ -1,20 +1,16 @@
 import "./JarvisStatusWidget.css";
 import { dashboardCopy } from "../../../config/dashboardContent.js";
-import { dashboardMockData } from "../../../config/dashboardMockData.js";
 
 const STATE_LABELS = dashboardCopy.systemOverview.statusStates;
 
-export const defaultJarvisStatusData = dashboardMockData.overviewStatus;
-
 export default function JarvisStatusWidget({ data }) {
   const supplied = data ?? {};
-  const state = STATE_LABELS[supplied.state] ? supplied.state : defaultJarvisStatusData.state;
+  const state = STATE_LABELS[supplied.state] ? supplied.state : "offline";
   const heading = supplied.heading ?? dashboardCopy.systemOverview.statusHeading;
   const status = supplied.status ?? STATE_LABELS[state];
   const value = {
     lastEventLabel: dashboardCopy.systemOverview.lastEventLabel,
     securityLabel: dashboardCopy.systemOverview.securityLabel,
-    ...defaultJarvisStatusData,
     ...supplied,
     heading,
     status,
@@ -32,9 +28,9 @@ export default function JarvisStatusWidget({ data }) {
         <div className="jarvis-status__event">
           <div className="jarvis-status__event-head">
             <span>{value.lastEventLabel}</span>
-            <time>{value.lastEventTime}</time>
+            <time>{value.lastEventTime ?? dashboardCopy.common.unavailable}</time>
           </div>
-          <strong>{value.lastEvent}</strong>
+          <strong>{value.lastEvent ?? dashboardCopy.common.unavailable}</strong>
         </div>
       </div>
 

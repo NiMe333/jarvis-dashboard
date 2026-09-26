@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
 import "./ServicesPanel.css";
 
 const VALID_STATUSES = new Set(Object.keys(dashboardCopy.services.statusLabels));
@@ -73,7 +72,7 @@ function ServiceRow({ service }) {
   );
 }
 
-export default function ServicesPanel({ services = dashboardMockData.services, className = "" }) {
+export default function ServicesPanel({ services = [], className = "" }) {
   return (
     <HudPanel
       id="services-panel"

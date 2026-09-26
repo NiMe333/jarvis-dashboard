@@ -1,11 +1,11 @@
 import { Activity, Clock3, Cpu, HardDrive, ListTree, MemoryStick } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
+import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./LiveResourcesPanel.css";
 
 function percentOf(value, total) {
-  if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return 0;
+  if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return null;
   return Math.min(100, Math.max(0, (value / total) * 100));
 }
 
@@ -20,7 +20,9 @@ function displayPair(value, total, suffix = "") {
 }
 
 function ResourceCard({ icon: Icon, label, value, detail, percent }) {
-  const normalizedPercent = Math.min(100, Math.max(0, percent ?? 0));
+  const normalizedPercent = Number.isFinite(percent)
+    ? Math.min(100, Math.max(0, percent))
+    : null;
 
   return (
     <article className="live-resources__card">
@@ -38,15 +40,15 @@ function ResourceCard({ icon: Icon, label, value, detail, percent }) {
         aria-label={label}
         aria-valuemin="0"
         aria-valuemax="100"
-        aria-valuenow={Math.round(normalizedPercent)}
+        aria-valuenow={normalizedPercent === null ? undefined : Math.round(normalizedPercent)}
       >
-        <span style={{ width: `${normalizedPercent}%` }} />
+        <span style={{ width: normalizedPercent === null ? undefined : `${normalizedPercent}%` }} />
       </div>
     </article>
   );
 }
 
-export default function LiveResourcesPanel({ data = dashboardMockData.metrics, isMock = true, className = "" }) {
+export default function LiveResourcesPanel({ data = {}, dataSource = "offline", className = "" }) {
   const units = dashboardCopy.common.units;
   const loadAverage = Array.isArray(data.loadAverage)
     ? data.loadAverage.map((value) => Number.isFinite(value) ? value.toFixed(2) : dashboardCopy.common.unavailable).join(" / ")
@@ -55,7 +57,7 @@ export default function LiveResourcesPanel({ data = dashboardMockData.metrics, i
   return (
     <HudPanel
       title={dashboardCopy.panels.liveResources.title}
-      subtitle={`${dashboardCopy.panels.liveResources.subtitle} // ${isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel}`}
+      subtitle={`${dashboardCopy.panels.liveResources.subtitle} // ${dataSourceLabel(dataSource)}`}
       className={`live-resources ${className}`.trim()}
       frameStyle="contained"
       variant="compact"

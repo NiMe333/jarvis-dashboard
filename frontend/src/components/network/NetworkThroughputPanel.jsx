@@ -1,6 +1,6 @@
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
+import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./NetworkThroughputPanel.css";
 
 const CHART_WIDTH = 100;
@@ -27,7 +27,7 @@ function buildPath(series, key, maximum) {
   }).join(" ");
 }
 
-export default function NetworkThroughputPanel({ data = dashboardMockData.metrics, isMock = true, className = "" }) {
+export default function NetworkThroughputPanel({ data = {}, dataSource = "offline", className = "" }) {
   const series = data.networkSeries ?? [];
   const maximum = Math.max(1, ...series.flatMap((point) => [point.downloadRate ?? 0, point.uploadRate ?? 0]));
   const downloadPath = buildPath(series, "downloadRate", maximum);
@@ -39,7 +39,7 @@ export default function NetworkThroughputPanel({ data = dashboardMockData.metric
   return (
     <HudPanel
       title={dashboardCopy.panels.network.title}
-      subtitle={`${dashboardCopy.panels.network.subtitle} // ${isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel}`}
+      subtitle={`${dashboardCopy.panels.network.subtitle} // ${dataSourceLabel(dataSource)}`}
       className={`network-throughput ${className}`.trim()}
       frameStyle="contained"
       variant="compact"
@@ -50,7 +50,7 @@ export default function NetworkThroughputPanel({ data = dashboardMockData.metric
       </div>
 
       <div className="network-throughput__chart">
-        <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={isMock ? dashboardCopy.network.chartLabel : dashboardCopy.network.liveChartLabel}>
+        <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={dashboardCopy.network.liveChartLabel}>
           <defs>
             <linearGradient id="network-download-fill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#55e8f2" stopOpacity="0.2" />

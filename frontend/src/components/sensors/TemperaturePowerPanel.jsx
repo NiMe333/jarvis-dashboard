@@ -1,7 +1,7 @@
 import { Cpu, HardDrive, Zap } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dashboardMockData } from "../../config/dashboardMockData.js";
+import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./TemperaturePowerPanel.css";
 
 function SensorCard({ icon: Icon, label, value, unit, state }) {
@@ -18,7 +18,7 @@ function SensorCard({ icon: Icon, label, value, unit, state }) {
   );
 }
 
-export default function TemperaturePowerPanel({ data = dashboardMockData.metrics, isMock = true, className = "" }) {
+export default function TemperaturePowerPanel({ data = {}, dataSource = "offline", className = "" }) {
   const units = dashboardCopy.common.units;
   const fanValue = Number.isFinite(data.fanRpm)
     ? `${data.fanRpm}${units.fanSpeed}`
@@ -32,7 +32,7 @@ export default function TemperaturePowerPanel({ data = dashboardMockData.metrics
   return (
     <HudPanel
       title={dashboardCopy.panels.temperature.title}
-      subtitle={`${dashboardCopy.panels.temperature.subtitle} // ${isMock ? dashboardCopy.common.mockLabel : dashboardCopy.common.liveLabel}`}
+      subtitle={`${dashboardCopy.panels.temperature.subtitle} // ${dataSourceLabel(dataSource)}`}
       className={`temperature-power ${className}`.trim()}
       frameStyle="contained"
     >
