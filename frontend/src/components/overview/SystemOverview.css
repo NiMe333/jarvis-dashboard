@@ -170,7 +170,7 @@
 .system-overview__uptime-copy strong {
   color: #d6eef0;
   font-family: var(--font-display);
-  font-size: clamp(20px, 11.5cqw, 48px);
+  font-size: clamp(18px, 9.5cqw, 40px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.025em;
