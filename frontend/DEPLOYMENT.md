@@ -81,8 +81,19 @@ sudo mkdir -p /var/www/jarvis-dashboard
 sudo rsync -a --delete dist/ /var/www/jarvis-dashboard/
 ```
 
-When building on another machine, transfer the contents of `dist/` to
-`/var/www/jarvis-dashboard/` in the LXC container instead.
+When building on another machine, build and deploy from the project root with:
+
+```bash
+npm run build
+
+rsync -av --delete \
+  frontend/dist/ \
+  root@192.168.0.30:/var/www/jarvis-dashboard/
+```
+
+This copies the contents of `frontend/dist/` to the Nginx web root. The
+`--delete` option removes old hashed assets that are no longer part of the
+current build.
 
 Install the included Nginx site configuration:
 
@@ -101,3 +112,9 @@ client-side routes work correctly.
 
 After deployment, open the LXC container's IP address in a browser. DNS and TLS
 can be added later without rebuilding the dashboard unless the API URL changes.
+
+
+nikmejak@niks-macbook-pro-m4 jarvis-dashboard % npm run build
+rsync -av --delete \
+  frontend/dist/ \
+  root@192.168.0.30:/var/www/jarvis-dashboard/
