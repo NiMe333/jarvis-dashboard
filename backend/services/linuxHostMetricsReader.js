@@ -406,6 +406,7 @@ export class LinuxHostMetricsReader {
         storage: null,
         temperatures: [],
         cpuTemperatures: [],
+        sensorsAvailable: false,
         identity: null,
       };
     }

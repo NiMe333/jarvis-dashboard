@@ -31,7 +31,7 @@ export const API_RESPONSE_FIELDS = Object.freeze({
   ],
   temperature: [
     "cpuTemperature", "ssdTemperature", "powerWatts", "fanRpm",
-    "additionalTemperatures", "cpuTemperatures", "sensorStatus", "sensorStates", "ssdSmartHealth", "ssdDevice", "ssdModel",
+    "additionalTemperatures", "cpuTemperatures", "sensorStatus", "sensorStates", "sensorSource", "ssdSmartHealth", "ssdDevice", "ssdModel",
   ],
   service: [
     "id", "name", "description", "icon", "url", "status", "statusLabel",

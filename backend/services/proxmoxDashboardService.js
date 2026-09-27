@@ -214,7 +214,7 @@ export class ProxmoxDashboardService extends DashboardService {
 
   async getHealth() {
     const snapshot = await this.getSnapshot();
-    const metrics = {
+    return {
       status: "ok",
       source: "proxmox",
       timestamp: snapshot.collectedAt.toISOString(),
@@ -239,7 +239,7 @@ export class ProxmoxDashboardService extends DashboardService {
     const bootInfo = nodeStatus["boot-info"] ?? {};
     const currentKernel = nodeStatus["current-kernel"] ?? {};
 
-    return {
+    const metrics = {
       header: {
         alertCount: host.ssdSmartHealth === false ? 1 : 0,
         systemStatus: warning ? "warning" : "operational",
@@ -298,7 +298,7 @@ export class ProxmoxDashboardService extends DashboardService {
     const cpuCount = finiteNumber(nodeStatus.cpuinfo?.cpus)
       ?? finiteNumber(nodeStatus.cpuinfo?.cores);
 
-    return {
+    const metrics = {
       cpuUsage,
       cpuCount,
       cpuState: cpuUsage !== null && cpuUsage > 0 ? "active" : "processing",
@@ -374,6 +374,10 @@ export class ProxmoxDashboardService extends DashboardService {
       ssdSmartHealth: host.ssdSmartHealth ?? null,
       ssdDevice: host.ssdDevice ?? null,
       ssdModel: host.ssdModel ?? null,
+      sensorSource: host.sensorsAvailable
+        ? "lm-sensors"
+        : host.available ? "lm-sensors unavailable"
+          : "backend is not running on the selected host",
       powerWatts,
       fanRpm,
       sensorStatus,

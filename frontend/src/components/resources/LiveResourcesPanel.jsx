@@ -93,7 +93,9 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
           icon={Thermometer}
           label="CPU TEMPERATURE"
           value={displayValue(data.cpuTemperature, " °C")}
-          detail={data.cpuTemperature === null || data.cpuTemperature === undefined ? dashboardCopy.common.unavailable : "PACKAGE SENSOR"}
+          detail={data.cpuTemperature === null || data.cpuTemperature === undefined
+            ? data.sensorSource ?? dashboardCopy.common.unavailable
+            : "PACKAGE ID 0 · LM-SENSORS"}
           percent={null}
         />
         <ResourceCard
