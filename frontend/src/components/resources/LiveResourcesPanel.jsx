@@ -48,6 +48,25 @@ function ResourceCard({ icon: Icon, label, value, detail, percent }) {
   );
 }
 
+function WarningStatus({ warnings }) {
+  const status = warnings?.status ?? "unavailable";
+  const label = status === "normal" ? "NORMAL" : status === "critical" ? "CRITICAL" : status === "warning" ? "WARNING" : "UNAVAILABLE";
+  const alerts = Array.isArray(warnings?.alerts) ? warnings.alerts : [];
+  const unavailable = Array.isArray(warnings?.unavailable) ? warnings.unavailable : [];
+  const formatAlert = (alert) => `${alert.metric}: ${typeof alert.value === "number" ? alert.value.toFixed(1) : alert.value}${alert.suffix ?? ""}`;
+
+  return (
+    <section className={`live-resources__warning live-resources__warning--${status}`} aria-live="polite">
+      <strong>HOST STATUS: {label}</strong>
+      {alerts.length > 0
+        ? <span>{alerts.map(formatAlert).join(" · ")}</span>
+        : status === "normal"
+          ? <span>LIVE READINGS WITHIN CONFIGURED LIMITS</span>
+          : <span>{unavailable.length > 0 ? `UNAVAILABLE: ${unavailable.join(", ")}` : dashboardCopy.common.unavailable}</span>}
+    </section>
+  );
+}
+
 export default function LiveResourcesPanel({ data = {}, dataSource = "offline", className = "" }) {
   const units = dashboardCopy.common.units;
   const loadAverage = Array.isArray(data.loadAverage)
@@ -134,6 +153,7 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
           </div>
         )}
       </dl>
+      <WarningStatus warnings={data.warnings} />
     </HudPanel>
   );
 }

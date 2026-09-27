@@ -25,5 +25,6 @@ export function createDashboardService(env) {
   return new ProxmoxDashboardService({
     client,
     nodeName: env.proxmox.nodeName,
+    alertConfig: env.hostAlerts,
   });
 }

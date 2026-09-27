@@ -33,6 +33,11 @@ function booleanFromEnv(value, fallback) {
   return !["0", "false", "no", "off"].includes(value.trim().toLowerCase());
 }
 
+function numberFromEnv(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
 export const env = Object.freeze({
   host: process.env.HOST?.trim() || "0.0.0.0",
   port: Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : 3001,
@@ -41,6 +46,21 @@ export const env = Object.freeze({
     .map((origin) => origin.trim())
     .filter(Boolean),
   dataSource,
+  hostAlerts: Object.freeze({
+    cpuUsageWarning: numberFromEnv(process.env.HOST_ALERT_CPU_WARNING_PERCENT, 85),
+    cpuUsageCritical: numberFromEnv(process.env.HOST_ALERT_CPU_CRITICAL_PERCENT, 95),
+    cpuSustainMs: numberFromEnv(process.env.HOST_ALERT_CPU_SUSTAIN_SECONDS, 300) * 1_000,
+    cpuTempWarning: numberFromEnv(process.env.HOST_ALERT_CPU_TEMP_WARNING_C, 80),
+    cpuTempCritical: numberFromEnv(process.env.HOST_ALERT_CPU_TEMP_CRITICAL_C, 90),
+    memoryUsageWarning: numberFromEnv(process.env.HOST_ALERT_MEMORY_WARNING_PERCENT, 90),
+    memoryUsageCritical: numberFromEnv(process.env.HOST_ALERT_MEMORY_CRITICAL_PERCENT, 96),
+    memoryAvailableWarning: numberFromEnv(process.env.HOST_ALERT_MEMORY_AVAILABLE_WARNING_GIB, 1),
+    memoryAvailableCritical: numberFromEnv(process.env.HOST_ALERT_MEMORY_AVAILABLE_CRITICAL_GIB, 0.5),
+    diskFreeWarning: numberFromEnv(process.env.HOST_ALERT_DISK_FREE_WARNING_PERCENT, 10),
+    diskFreeCritical: numberFromEnv(process.env.HOST_ALERT_DISK_FREE_CRITICAL_PERCENT, 5),
+    ssdTempWarning: numberFromEnv(process.env.HOST_ALERT_SSD_TEMP_WARNING_C, 60),
+    ssdTempCritical: numberFromEnv(process.env.HOST_ALERT_SSD_TEMP_CRITICAL_C, 70),
+  }),
   proxmox: Object.freeze({
     ...proxmoxConfig,
     tlsRejectUnauthorized: booleanFromEnv(

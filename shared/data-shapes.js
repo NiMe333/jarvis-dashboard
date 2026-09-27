@@ -23,6 +23,7 @@ export const API_RESPONSE_FIELDS = Object.freeze({
     "storageUsed", "storageTotal", "storageFree", "loadAverage", "uptime",
     "processCount", "cpuCount", "swapUsed", "swapTotal",
     "rootStorageUsed", "rootStorageTotal", "rootStorageFree",
+    "warnings",
   ],
   network: [
     "downloadRate", "uploadRate", "totalReceived", "totalTransmitted",

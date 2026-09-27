@@ -1,5 +1,6 @@
 import { DashboardService } from "./dashboardService.js";
 import { LinuxHostMetricsReader } from "./linuxHostMetricsReader.js";
+import { evaluateHostWarnings } from "./hostWarningEvaluator.js";
 import { quickActionsMockData } from "../mock-data/quickActions.js";
 
 const GIB = 1024 ** 3;
@@ -148,12 +149,14 @@ function storageTotals(storage, rootfs = {}) {
 }
 
 export class ProxmoxDashboardService extends DashboardService {
-  constructor({ client, nodeName, cacheTtlMs = 3_000 }) {
+  constructor({ client, nodeName, cacheTtlMs = 3_000, alertConfig }) {
     super();
     this.client = client;
     this.nodeName = nodeName;
     this.cacheTtlMs = cacheTtlMs;
     this.hostMetricsReader = new LinuxHostMetricsReader({ nodeName });
+    this.alertConfig = alertConfig;
+    this.cpuHighSince = null;
     this.cachedSnapshot = null;
     this.snapshotPromise = null;
   }
@@ -211,7 +214,7 @@ export class ProxmoxDashboardService extends DashboardService {
 
   async getHealth() {
     const snapshot = await this.getSnapshot();
-    return {
+    const metrics = {
       status: "ok",
       source: "proxmox",
       timestamp: snapshot.collectedAt.toISOString(),
@@ -316,6 +319,14 @@ export class ProxmoxDashboardService extends DashboardService {
       uptime: formatUptime(host.identity?.uptimeSeconds ?? nodeStatus.uptime),
       processCount: finiteNumber(host.processCount),
     };
+    const warnings = evaluateHostWarnings({
+      metrics,
+      host,
+      thresholds: this.alertConfig,
+      cpuHighSince: this.cpuHighSince,
+    });
+    this.cpuHighSince = warnings.cpuHighSince;
+    return { ...metrics, warnings: { status: warnings.status, alerts: warnings.alerts, unavailable: warnings.unavailable } };
   }
 
   async getNetwork() {

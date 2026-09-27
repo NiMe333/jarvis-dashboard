@@ -199,6 +199,30 @@
 
 .live-resources__core-temperature-list span { white-space: nowrap; }
 
+.live-resources__warning {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 1.8rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid rgb(74 226 237 / 0.24);
+  background: rgb(19 82 91 / 0.13);
+  color: #a5d9dd;
+  font: clamp(0.43rem, 0.86cqi, 0.54rem)/1.25 var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.live-resources__warning strong { color: #70dfe7; font-weight: 700; }
+.live-resources__warning span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-resources__warning--warning { border-color: rgb(244 177 79 / 0.56); background: rgb(115 74 20 / 0.18); }
+.live-resources__warning--warning strong { color: #f1b45e; }
+.live-resources__warning--critical { border-color: rgb(255 109 98 / 0.7); background: rgb(117 37 33 / 0.2); }
+.live-resources__warning--critical strong { color: #ff857c; }
+.live-resources__warning--unavailable { border-color: rgb(104 143 148 / 0.3); color: #77979b; }
+.live-resources__warning--unavailable strong { color: #8ba8ab; }
+
 @container live-resources-panel (max-width: 360px) {
   .live-resources .hud-panel__body { overflow-y: auto; scrollbar-width: thin; }
   .live-resources__primary { flex: none; grid-template-columns: minmax(0, 1fr); }
@@ -227,6 +251,8 @@
     border-right: 0;
     border-bottom: 1px solid rgb(67 191 202 / 0.14);
   }
+
+  .live-resources__warning { grid-template-columns: 1fr; gap: 0.22rem; }
 
   .live-resources__details dd { margin: 0; }
   .live-resources__detail-meter { grid-column: 1 / -1; margin-top: 0.35rem; }
