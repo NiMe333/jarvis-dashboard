@@ -37,6 +37,74 @@ function normalizeTemperature(value) {
   return number > 1000 ? number / 1000 : number;
 }
 
+async function readLmSensors() {
+  let stdout = "";
+  try {
+    ({ stdout } = await execFileAsync("sensors", ["-j"], {
+      timeout: 3_000,
+      maxBuffer: 512 * 1024,
+    }));
+  } catch {
+    return {
+      available: false,
+      cpuTemperature: null,
+      cpuTemperatures: [],
+      temperatures: [],
+      fanRpm: null,
+    };
+  }
+
+  try {
+    const chips = JSON.parse(stdout);
+    const cpuTemperatures = [];
+    const temperatures = [];
+    let cpuTemperature = null;
+    let fanRpm = null;
+
+    for (const [chipName, chip] of Object.entries(chips)) {
+      const isCoreTemp = chipName.toLowerCase().startsWith("coretemp-");
+      const isFujitsu = chipName.toLowerCase().startsWith("ftsteutates-");
+      const isPch = chipName.toLowerCase().startsWith("pch_skylake-");
+      for (const [label, values] of Object.entries(chip ?? {})) {
+        if (!values || typeof values !== "object") continue;
+        const temperature = normalizeTemperature(Object.entries(values)
+          .find(([key]) => /^temp\d+_input$/.test(key))?.[1]);
+        if (temperature !== null && isCoreTemp) {
+          const reading = { label: label.toUpperCase(), temperature };
+          cpuTemperatures.push(reading);
+          if (label.toLowerCase() === "package id 0") cpuTemperature = temperature;
+        } else if (temperature !== null && isFujitsu) {
+          temperatures.push({ sensor: "ftsteutates", channel: label, temperature });
+        } else if (temperature !== null && isPch) {
+          temperatures.push({ sensor: "pch_skylake", channel: label, temperature });
+        }
+
+        const rpm = finiteNumber(Object.entries(values)
+          .find(([key]) => /^fan\d+_input$/.test(key))?.[1]);
+        // The tested ftsteutates channels return FAULT/0. Zero is unavailable,
+        // never a valid fan speed.
+        if (rpm !== null && rpm > 0 && fanRpm === null) fanRpm = rpm;
+      }
+    }
+
+    return {
+      available: true,
+      cpuTemperature: cpuTemperature ?? cpuTemperatures[0]?.temperature ?? null,
+      cpuTemperatures,
+      temperatures,
+      fanRpm,
+    };
+  } catch {
+    return {
+      available: false,
+      cpuTemperature: null,
+      cpuTemperatures: [],
+      temperatures: [],
+      fanRpm: null,
+    };
+  }
+}
+
 async function readCpuTemperature() {
   const zones = await listDirectories("/sys/class/thermal");
   const candidates = [];
@@ -64,6 +132,82 @@ async function readCpuTemperature() {
   }
 
   return candidates[0]?.temperature ?? null;
+}
+
+async function readCpuTemperatures() {
+  const readings = [];
+  for (const hwmon of await listDirectories("/sys/class/hwmon")) {
+    const root = `/sys/class/hwmon/${hwmon}`;
+    const name = (await readText(`${root}/name`))?.toLowerCase() ?? "";
+    if (!/coretemp|k10temp|zenpower|cpu/.test(name)) continue;
+    for (const entry of (await listFileNames(root)).filter((item) => /^temp\d+_input$/.test(item))) {
+      const index = entry.match(/^temp(\d+)_input$/)?.[1];
+      const temperature = normalizeTemperature(await readText(`${root}/${entry}`));
+      if (temperature === null || !index) continue;
+      const label = await readText(`${root}/temp${index}_label`);
+      readings.push({ label: label?.toUpperCase() ?? `CPU SENSOR ${index}`, temperature });
+    }
+  }
+  return readings;
+}
+
+async function readAdditionalTemperatures() {
+  const readings = [];
+  for (const hwmon of await listDirectories("/sys/class/hwmon")) {
+    const root = `/sys/class/hwmon/${hwmon}`;
+    const name = (await readText(`${root}/name`))?.toLowerCase() ?? "";
+    if (!name || /coretemp|k10temp|zenpower|cpu/.test(name)) continue;
+    for (const entry of (await listFileNames(root)).filter((item) => /^temp\d+_input$/.test(item))) {
+      const temperature = normalizeTemperature(await readText(`${root}/${entry}`));
+      if (temperature !== null) readings.push({ sensor: name, channel: entry.replace("_input", ""), temperature });
+    }
+  }
+  return readings;
+}
+
+async function readCpuUsage() {
+  const sample = async () => {
+    const line = (await readText("/proc/stat"))?.split("\n").find((entry) => entry.startsWith("cpu "));
+    const values = line?.trim().split(/\s+/).slice(1).map(Number) ?? [];
+    const idle = (values[3] ?? 0) + (values[4] ?? 0);
+    const total = values.reduce((sum, value) => sum + (Number.isFinite(value) ? value : 0), 0);
+    return { idle, total };
+  };
+  const first = await sample();
+  await wait(250);
+  const second = await sample();
+  const total = second.total - first.total;
+  const idle = second.idle - first.idle;
+  return total > 0 ? Math.max(0, Math.min(100, (1 - idle / total) * 100)) : null;
+}
+
+async function readMemory() {
+  const values = {};
+  for (const line of (await readText("/proc/meminfo"))?.split("\n") ?? []) {
+    const match = line.match(/^(MemTotal|MemAvailable|MemFree|Buffers|Cached):\s+(\d+)/);
+    if (match) values[match[1]] = Number(match[2]) * 1024;
+  }
+  const total = finiteNumber(values.MemTotal);
+  const available = finiteNumber(values.MemAvailable);
+  return { total, available, used: total === null || available === null ? null : Math.max(0, total - available) };
+}
+
+async function readRootStorage() {
+  try {
+    const { stdout } = await execFileAsync("df", ["-P", "-k", "/"], { timeout: 2_000 });
+    const fields = stdout.trim().split("\n").at(-1)?.trim().split(/\s+/) ?? [];
+    const total = Number(fields[1]) * 1024;
+    const used = Number(fields[2]) * 1024;
+    const free = Number(fields[3]) * 1024;
+    return [total, used, free].every(Number.isFinite) ? { total, used, free, filesystem: fields[0] } : null;
+  } catch { return null; }
+}
+
+async function readSystemIdentity() {
+  const [hostname, uptime, kernel] = await Promise.all([
+    readText("/etc/hostname"), readText("/proc/uptime"), readText("/proc/sys/kernel/osrelease"),
+  ]);
+  return { hostname: hostname || os.hostname(), uptimeSeconds: finiteNumber(uptime?.split(/\s+/)[0]), kernelVersion: kernel };
 }
 
 async function listFileNames(path) {
@@ -142,7 +286,7 @@ async function readSsdMetrics() {
   const devices = (await listDirectories("/sys/block"))
     .filter((name) => /^(sd[a-z]+|nvme\d+n\d+)$/.test(name))
     .slice(0, 8);
-  if (devices.length === 0) return { temperature: null, smartHealth: null, device: null };
+  if (devices.length === 0) return { temperature: null, smartHealth: null, device: null, model: null };
 
   const smartctl = await locateSmartctl();
   for (const device of devices) {
@@ -165,15 +309,21 @@ async function readSsdMetrics() {
       const smartHealth = typeof payload?.smart_status?.passed === "boolean"
         ? payload.smart_status.passed
         : null;
-      if (temperature !== null || smartHealth !== null) {
-        return { temperature, smartHealth, device: `/dev/${device}` };
+      const model = typeof payload?.model_name === "string" ? payload.model_name : null;
+      if (temperature !== null || smartHealth !== null || model !== null) {
+        return {
+          temperature,
+          smartHealth,
+          device: `/dev/${device}`,
+          model,
+        };
       }
     } catch {
       // Unsupported devices or incomplete output are unavailable.
     }
   }
 
-  return { temperature: null, smartHealth: null, device: null };
+  return { temperature: null, smartHealth: null, device: null, model: null };
 }
 
 async function defaultNetworkInterface() {
@@ -246,33 +396,51 @@ export class LinuxHostMetricsReader {
         ssdTemperature: null,
         ssdSmartHealth: null,
         ssdDevice: null,
+        ssdModel: null,
         fanRpm: null,
         powerWatts: null,
         processCount: null,
         network: null,
+        cpuUsage: null,
+        memory: { total: null, used: null, available: null },
+        storage: null,
+        temperatures: [],
+        cpuTemperatures: [],
+        identity: null,
       };
     }
 
-    const [cpuTemperature, ssd, fanRpm, powerWatts, processCount, network] =
+    const [sensors, ssd, powerWatts, processCount, network, cpuUsage, memory, storage, identity] =
       await Promise.all([
-        readCpuTemperature(),
+        readLmSensors(),
         readSsdMetrics(),
-        readFanRpm(),
         readRaplPowerWatts(),
         readProcessCount(),
         readNetworkMetrics(),
+        readCpuUsage(),
+        readMemory(),
+        readRootStorage(),
+        readSystemIdentity(),
       ]);
 
     return {
       available: true,
-      cpuTemperature,
+      cpuTemperature: sensors.cpuTemperature,
       ssdTemperature: ssd.temperature,
       ssdSmartHealth: ssd.smartHealth,
       ssdDevice: ssd.device,
-      fanRpm,
+      ssdModel: ssd.model,
+      fanRpm: sensors.fanRpm,
       powerWatts,
       processCount,
       network,
+      cpuUsage,
+      memory,
+      storage,
+      temperatures: sensors.temperatures,
+      cpuTemperatures: sensors.cpuTemperatures,
+      sensorsAvailable: sensors.available,
+      identity,
     };
   }
 }

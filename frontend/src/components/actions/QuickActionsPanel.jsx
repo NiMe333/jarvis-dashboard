@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
+import { dashboardApi } from "../../api/dashboardApi.js";
 import "./QuickActionsPanel.css";
 
 const ACTION_ICONS = {
@@ -20,7 +21,10 @@ const ACTION_ICONS = {
   update: Download,
 };
 
+import { useState } from "react";
+
 function QuickAction({ action }) {
+  const [state, setState] = useState("idle");
   const Icon = ACTION_ICONS[action.icon] ?? CircleHelp;
   const hasDestination = Boolean(action.url?.trim());
   const content = (
@@ -46,6 +50,17 @@ function QuickAction({ action }) {
     );
   }
 
+  if (action.id === "restart-service") {
+    const restart = async () => {
+      setState("loading");
+      try { await dashboardApi.restart(); setState("success"); }
+      catch { setState("error"); }
+    };
+    return <button type="button" className="quick-actions__button quick-actions__button--active" onClick={restart} disabled={state === "loading"}>
+      {content}<small className="quick-actions__feedback">{state === "loading" ? "RESTARTING…" : state === "success" ? "ACCEPTED" : state === "error" ? "FAILED" : "RESTART SERVER"}</small>
+    </button>;
+  }
+
   return (
     <button
       type="button"
@@ -59,6 +74,7 @@ function QuickAction({ action }) {
 }
 
 export default function QuickActionsPanel({ actions = [], className = "" }) {
+  const visibleActions = actions.filter((action) => ["restart-service", "open-proxmox"].includes(action.id));
   return (
     <HudPanel
       title={dashboardCopy.panels.quickActions.title}
@@ -68,8 +84,8 @@ export default function QuickActionsPanel({ actions = [], className = "" }) {
       energy="single"
     >
       <div className="quick-actions__grid">
-        {actions.length > 0
-          ? actions.map((action) => <QuickAction key={action.id} action={action} />)
+        {visibleActions.length > 0
+          ? visibleActions.map((action) => <QuickAction key={action.id} action={action} />)
           : <p>{dashboardCopy.common.unavailable}</p>}
       </div>
     </HudPanel>

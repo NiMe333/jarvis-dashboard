@@ -126,7 +126,10 @@ Proxmox node: the short local hostname must match `PROXMOX_NODE_NAME` and
 
 Direct-host collection uses these read-only sources:
 
-- `/sys/class/thermal` and `/sys/class/hwmon` for CPU temperature and fan RPM
+- `lm-sensors` via `sensors -j` for CPU, Fujitsu board and fan readings. The
+  `coretemp` `Package id 0` reading is the CPU package temperature and its
+  `Core N` readings remain separately labelled. `ftsteutates` temperatures
+  remain generic channels; `FAULT` and zero-RPM fan values are unavailable.
 - `/sys/class/powercap/intel-rapl:*` for measured package power
 - `/proc/net/route` and `/proc/net/dev` for interface counters and rates
 - `smartctl -j -a` for SATA/NVMe temperature and SMART health

@@ -25,14 +25,22 @@ async function fetchJson(path, { signal } = {}) {
   return response.json();
 }
 
+async function postJson(path) {
+  const response = await fetch(apiUrl(path), { method: "POST", headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`Dashboard API returned ${response.status} for ${path}`);
+  return response.json();
+}
+
 export const dashboardApi = Object.freeze({
   getHealth: (options) => fetchJson(API_ENDPOINTS.health, options),
   getSystem: (options) => fetchJson(API_ENDPOINTS.system, options),
   getResources: (options) => fetchJson(API_ENDPOINTS.resources, options),
   getNetwork: (options) => fetchJson(API_ENDPOINTS.network, options),
+  getTemperature: (options) => fetchJson(API_ENDPOINTS.temperature, options),
   getServices: (options) => fetchJson(API_ENDPOINTS.services, options),
   getEvents: (options) => fetchJson(API_ENDPOINTS.events, options),
   getQuickActions: (options) => fetchJson(API_ENDPOINTS.quickActions, options),
+  restart: () => postJson(API_ENDPOINTS.restart),
 });
 
 export async function loadDashboardData({ signal } = {}) {
@@ -41,6 +49,7 @@ export async function loadDashboardData({ signal } = {}) {
     ["system", dashboardApi.getSystem],
     ["resources", dashboardApi.getResources],
     ["network", dashboardApi.getNetwork],
+    ["temperature", dashboardApi.getTemperature],
     ["services", dashboardApi.getServices],
     ["events", dashboardApi.getEvents],
     ["quickActions", dashboardApi.getQuickActions],

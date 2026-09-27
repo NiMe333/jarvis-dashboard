@@ -54,4 +54,5 @@ export class MockDashboardService extends DashboardService {
   }
   async getEvents() { return copy(eventsMockData); }
   async getQuickActions() { return copy(quickActionsMockData); }
+  async restart() { return { accepted: false, reason: "Restart unavailable in mock mode" }; }
 }

@@ -372,7 +372,7 @@
 .jarvis-core__telemetry-group--status {
   display: grid;
   justify-content: end;
-  gap: 7px;
+  gap: 5px;
   padding-bottom: 2px;
 }
 
@@ -382,6 +382,11 @@
   gap: 7px;
   color: #82b5ba;
   letter-spacing: 0.08em;
+}
+
+.jarvis-core__status-line--temperature {
+  color: #b9e9ed;
+  font-size: clamp(6px, 0.44vw, 8px);
 }
 
 .jarvis-core__status-line i {

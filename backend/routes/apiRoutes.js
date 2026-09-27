@@ -10,5 +10,6 @@ export function createApiRoutes(service) {
     [API_ENDPOINTS.services, () => service.getServices()],
     [API_ENDPOINTS.events, () => service.getEvents()],
     [API_ENDPOINTS.quickActions, () => service.getQuickActions()],
+    [API_ENDPOINTS.restart, () => service.restart()],
   ]);
 }

@@ -1,4 +1,4 @@
-import { Activity, Cpu, HardDrive, MemoryStick } from "lucide-react";
+import { Activity, Cpu, HardDrive, MemoryStick, Thermometer, CheckCircle } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
 import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
@@ -71,6 +71,27 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
           percent={data.cpuUsage}
         />
         <ResourceCard
+          icon={Thermometer}
+          label="CPU TEMPERATURE"
+          value={displayValue(data.cpuTemperature, " °C")}
+          detail={data.cpuTemperature === null || data.cpuTemperature === undefined ? dashboardCopy.common.unavailable : "PACKAGE SENSOR"}
+          percent={null}
+        />
+        <ResourceCard
+          icon={Thermometer}
+          label="SSD TEMPERATURE"
+          value={displayValue(data.ssdTemperature, " °C")}
+          detail={data.ssdSmartHealth === true ? "SMART PASSED" : data.ssdSmartHealth === false ? "SMART WARNING" : dashboardCopy.common.unavailable}
+          percent={null}
+        />
+        <ResourceCard
+          icon={CheckCircle}
+          label="SMART STATUS"
+          value={data.ssdSmartHealth === true ? "PASSED" : data.ssdSmartHealth === false ? "FAILED" : dashboardCopy.common.unavailable}
+          detail={data.ssdModel ?? data.ssdDevice ?? dashboardCopy.common.unavailable}
+          percent={null}
+        />
+        <ResourceCard
           icon={MemoryStick}
           label={dashboardCopy.resources.memory}
           value={displayPair(data.memoryUsed, data.memoryTotal, units.storage)}
@@ -92,6 +113,26 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
           <dd>{loadAverage ?? dashboardCopy.common.unavailable}</dd>
           <span className="live-resources__detail-meter" aria-hidden="true" />
         </div>
+        <div className="live-resources__core-temperatures">
+          <dt><Thermometer size={13} aria-hidden="true" />CPU CORE TEMPERATURES</dt>
+          {Array.isArray(data.cpuTemperatures) && data.cpuTemperatures.length > 0 ? (
+            <dd className="live-resources__core-temperature-list">
+              {data.cpuTemperatures.map((reading, index) => (
+                <span key={`${reading.label}-${index}`}>{reading.label}: {displayValue(reading.temperature, " °C")}</span>
+              ))}
+            </dd>
+          ) : <dd>{dashboardCopy.common.unavailable}</dd>}
+        </div>
+        {Array.isArray(data.additionalTemperatures) && data.additionalTemperatures.length > 0 && (
+          <div className="live-resources__core-temperatures">
+            <dt><Thermometer size={13} aria-hidden="true" />BOARD SENSORS</dt>
+            <dd className="live-resources__core-temperature-list">
+              {data.additionalTemperatures.map((reading, index) => (
+                <span key={`${reading.sensor}-${reading.channel}-${index}`}>{reading.sensor} / {reading.channel}: {displayValue(reading.temperature, " °C")}</span>
+              ))}
+            </dd>
+          </div>
+        )}
       </dl>
     </HudPanel>
   );

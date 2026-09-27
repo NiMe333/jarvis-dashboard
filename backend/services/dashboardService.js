@@ -12,4 +12,5 @@ export class DashboardService {
   getServices() { throw new Error("getServices() is not implemented"); }
   getEvents() { throw new Error("getEvents() is not implemented"); }
   getQuickActions() { throw new Error("getQuickActions() is not implemented"); }
+  restart() { throw new Error("restart() is not implemented"); }
 }

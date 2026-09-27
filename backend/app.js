@@ -36,7 +36,8 @@ export function createApp({ service, allowedOrigins }) {
       return;
     }
 
-    if (request.method !== "GET") {
+    const url = new URL(request.url ?? "/", "http://localhost");
+    if (request.method !== "GET" && !(request.method === "POST" && url.pathname === "/api/actions/restart")) {
       sendJson(response, 405, { error: "Method not allowed" }, {
         ...headers,
         Allow: "GET, OPTIONS",
@@ -44,7 +45,6 @@ export function createApp({ service, allowedOrigins }) {
       return;
     }
 
-    const url = new URL(request.url ?? "/", "http://localhost");
     const path = url.pathname.length > 1
       ? url.pathname.replace(/\/+$/, "")
       : url.pathname;

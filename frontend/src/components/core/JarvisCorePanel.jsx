@@ -372,6 +372,20 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
           <i />
           {dashboardCopy.core.monitoringLabel}
         </span>
+
+        {Array.isArray(telemetry.cpuTemperatures) && telemetry.cpuTemperatures.length > 0
+          ? telemetry.cpuTemperatures.map((reading, index) => (
+            <span className="jarvis-core__status-line jarvis-core__status-line--temperature" key={`${reading.label}-${index}`}>
+              <i />
+              {reading.label}: {displayMetric(reading.temperature, " °C")}
+            </span>
+          ))
+          : (
+            <span className="jarvis-core__status-line jarvis-core__status-line--temperature">
+              <i />
+              CPU: {displayMetric(telemetry.cpuTemperature, " °C")}
+            </span>
+          )}
       </div>
     </div>
   );
@@ -391,7 +405,7 @@ export default function JarvisCorePanel({ telemetry = {} }) {
 
       <div className="jarvis-core-panel__viewport">
         <div className="jarvis-core-panel__shader-shell">
-          <StableJarvisShader quality="balanced" />
+          <StableJarvisShader quality="high" />
         </div>
       </div>
 

@@ -12,6 +12,7 @@ export const API_ENDPOINTS = Object.freeze({
   services: "/api/services",
   events: "/api/events",
   quickActions: "/api/quick-actions",
+  restart: "/api/actions/restart",
 });
 
 export const API_RESPONSE_FIELDS = Object.freeze({
@@ -29,7 +30,7 @@ export const API_RESPONSE_FIELDS = Object.freeze({
   ],
   temperature: [
     "cpuTemperature", "ssdTemperature", "powerWatts", "fanRpm",
-    "sensorStatus", "sensorStates", "ssdSmartHealth", "ssdDevice",
+    "additionalTemperatures", "cpuTemperatures", "sensorStatus", "sensorStates", "ssdSmartHealth", "ssdDevice", "ssdModel",
   ],
   service: [
     "id", "name", "description", "icon", "url", "status", "statusLabel",

@@ -286,10 +286,12 @@ export class ProxmoxDashboardService extends DashboardService {
   async getResources() {
     const snapshot = await this.getSnapshot();
     const { nodeStatus, host } = snapshot;
-    const memoryTotalBytes = finiteNumber(nodeStatus.memory?.total);
-    const memoryUsedBytes = finiteNumber(nodeStatus.memory?.used);
+    const localMemory = host.memory ?? {};
+    const localStorage = host.storage ?? {};
+    const memoryTotalBytes = finiteNumber(localMemory.total) ?? finiteNumber(nodeStatus.memory?.total);
+    const memoryUsedBytes = finiteNumber(localMemory.used) ?? finiteNumber(nodeStatus.memory?.used);
     const storage = storageTotals(snapshot.storage, nodeStatus.rootfs);
-    const cpuUsage = percentage(nodeStatus.cpu);
+    const cpuUsage = round(host.cpuUsage, 2) ?? percentage(nodeStatus.cpu);
     const cpuCount = finiteNumber(nodeStatus.cpuinfo?.cpus)
       ?? finiteNumber(nodeStatus.cpuinfo?.cores);
 
@@ -299,21 +301,19 @@ export class ProxmoxDashboardService extends DashboardService {
       cpuState: cpuUsage !== null && cpuUsage > 0 ? "active" : "processing",
       memoryUsed: bytesToGiB(memoryUsedBytes),
       memoryTotal: bytesToGiB(memoryTotalBytes),
-      memoryAvailable: memoryTotalBytes !== null && memoryUsedBytes !== null
-        ? bytesToGiB(Math.max(0, memoryTotalBytes - memoryUsedBytes))
-        : null,
+      memoryAvailable: bytesToGiB(localMemory.available),
       swapUsed: bytesToGiB(nodeStatus.swap?.used),
       swapTotal: bytesToGiB(nodeStatus.swap?.total),
-      storageUsed: bytesToGiB(storage.used),
-      storageTotal: bytesToGiB(storage.total),
-      storageFree: bytesToGiB(storage.free),
-      rootStorageUsed: bytesToGiB(nodeStatus.rootfs?.used),
-      rootStorageTotal: bytesToGiB(nodeStatus.rootfs?.total),
-      rootStorageFree: bytesToGiB(nodeStatus.rootfs?.avail ?? nodeStatus.rootfs?.free),
+      storageUsed: bytesToGiB(localStorage.used ?? storage.used),
+      storageTotal: bytesToGiB(localStorage.total ?? storage.total),
+      storageFree: bytesToGiB(localStorage.free ?? storage.free),
+      rootStorageUsed: bytesToGiB(localStorage.used ?? nodeStatus.rootfs?.used),
+      rootStorageTotal: bytesToGiB(localStorage.total ?? nodeStatus.rootfs?.total),
+      rootStorageFree: bytesToGiB(localStorage.free ?? nodeStatus.rootfs?.avail ?? nodeStatus.rootfs?.free),
       loadAverage: Array.isArray(nodeStatus.loadavg)
         ? nodeStatus.loadavg.map(finiteNumber)
         : null,
-      uptime: formatUptime(nodeStatus.uptime),
+      uptime: formatUptime(host.identity?.uptimeSeconds ?? nodeStatus.uptime),
       processCount: finiteNumber(host.processCount),
     };
   }
@@ -362,15 +362,19 @@ export class ProxmoxDashboardService extends DashboardService {
       ssdTemperature,
       ssdSmartHealth: host.ssdSmartHealth ?? null,
       ssdDevice: host.ssdDevice ?? null,
+      ssdModel: host.ssdModel ?? null,
       powerWatts,
       fanRpm,
       sensorStatus,
+      additionalTemperatures: Array.isArray(host.temperatures) ? host.temperatures : [],
+      cpuTemperatures: Array.isArray(host.cpuTemperatures) ? host.cpuTemperatures : [],
       sensorStates: {
         cpuTemperature: cpuTemperature === null ? "unavailable" : "normal",
         ssdTemperature: host.ssdSmartHealth === false
           ? "warning"
           : ssdTemperature === null ? "unavailable" : "normal",
         powerWatts: powerWatts === null ? "unavailable" : "normal",
+        fans: fanRpm === null ? "unavailable" : "normal",
       },
     };
   }
@@ -397,6 +401,12 @@ export class ProxmoxDashboardService extends DashboardService {
   }
 
   async getQuickActions() {
-    return structuredClone(quickActionsMockData);
+    return structuredClone(quickActionsMockData).filter((action) => ["restart-service", "open-proxmox"].includes(action.id)).map((action) =>
+      action.id === "open-proxmox" ? { ...action, label: "Open Proxmox", url: this.client.baseUrl } : { ...action, label: "Restart", description: "Restart the server" });
+  }
+
+  async restart() {
+    setTimeout(() => process.kill(process.pid, "SIGTERM"), 250);
+    return { accepted: true };
   }
 }

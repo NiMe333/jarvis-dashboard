@@ -20,6 +20,7 @@ function mergeApiData(previous, payload) {
   const system = payload.system && typeof payload.system === "object" ? payload.system : null;
   const hasResources = payload.resources && typeof payload.resources === "object";
   const hasNetwork = payload.network && typeof payload.network === "object";
+  const hasTemperature = payload.temperature && typeof payload.temperature === "object";
 
   return {
     ...previous,
@@ -28,6 +29,7 @@ function mergeApiData(previous, payload) {
       ...previous.metrics,
       ...(hasResources ? payload.resources : {}),
       ...(hasNetwork ? payload.network : {}),
+      ...(hasTemperature ? payload.temperature : {}),
     },
     services: Array.isArray(payload.services)
       ? payload.services
