@@ -334,7 +334,7 @@
 .jarvis-core__integrity-value {
   min-width: 4ch;
   color: #7de3ea;
-  font-size: clamp(21px, 1.7vw, 28px);
+  font-size: clamp(10px, 1.7vw, 14px);
   font-weight: 300;
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -455,7 +455,7 @@
   }
 
   .jarvis-core__integrity-value {
-    font-size: 18px;
+    font-size: 10px;
   }
 
   .jarvis-core__segments {
