@@ -137,7 +137,7 @@
   min-width: 0;
   min-height: 0;
   place-items: center;
-  padding-top: clamp(8px, 1.8cqh, 18px);
+  padding: clamp(4px, 1cqh, 10px) 0 0;
   overflow: visible;
   container-type: size;
   container-name: jarvis-core-viewport;
@@ -146,7 +146,7 @@
 .jarvis-core-panel__shader-shell {
   position: relative;
   z-index: 1;
-  width: min(104cqw, 104cqh, 725px);
+  width: min(96cqw, 96cqh, 725px);
   max-width: 725px;
   max-height: 725px;
   min-width: 0;
@@ -223,16 +223,13 @@
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns:
-    minmax(108px, 1fr)
-    minmax(190px, 1.55fr)
-    minmax(100px, 0.9fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   width: 100%;
-  min-height: clamp(76px, 14cqh, 104px);
+  min-height: clamp(104px, 17cqh, 132px);
   flex: none;
   align-items: center;
-  gap: clamp(8px, 1vw, 18px);
-  padding: 22px clamp(12px, 1.5vw, 22px) 8px;
+  gap: clamp(18px, 2vw, 28px);
+  padding: 20px clamp(22px, 2.4vw, 32px) 10px;
   background: linear-gradient(
     to bottom,
     rgba(2, 14, 20, 0.18) 0%,
@@ -272,20 +269,21 @@
 
 .jarvis-core__telemetry-group--thermal {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(6px, 0.7vw, 11px);
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .jarvis-core__metric {
   display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
   min-width: 0;
-  gap: 4px;
+  gap: 12px;
 }
 
 .jarvis-core__telemetry-label,
 .jarvis-core__telemetry-heading,
-.jarvis-core__integrity-status,
-.jarvis-core__status-line {
+.jarvis-core__integrity-status {
   color: var(--text-secondary);
   font-size: clamp(7px, 0.48vw, 9px);
   line-height: 1;
@@ -300,6 +298,7 @@
   font-weight: 400;
   line-height: 1;
   white-space: nowrap;
+  text-align: right;
   text-shadow: 0 0 5px rgba(70, 221, 232, 0.24);
   transition:
     color 180ms ease,
@@ -371,70 +370,45 @@
 
 .jarvis-core__telemetry-group--status {
   display: grid;
-  justify-content: end;
-  gap: 5px;
-  padding-bottom: 2px;
+  align-content: center;
+  gap: 8px;
+  padding: 0;
 }
 
-.jarvis-core__status-line {
+.jarvis-core__state-row {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: #82b5ba;
-  letter-spacing: 0.08em;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.jarvis-core__status-line--temperature {
+.jarvis-core__state-value {
   color: #b9e9ed;
-  font-size: clamp(6px, 0.44vw, 8px);
-}
-
-.jarvis-core__status-line i {
-  width: 5px;
-  height: 5px;
-  flex: none;
-  border-radius: 50%;
-  background: #27dce7;
-  box-shadow: 0 0 5px rgba(39, 220, 231, 0.62);
+  font-size: clamp(8px, 0.56vw, 10px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-align: right;
 }
 
 .jarvis-core__telemetry[data-status="warning"] .jarvis-core__integrity-value,
 .jarvis-core__telemetry[data-status="warning"] .jarvis-core__integrity-status,
 .jarvis-core__telemetry[data-status="warning"]
-  .jarvis-core__status-line--primary {
+  .jarvis-core__state-value {
   color: #efad54;
-}
-
-.jarvis-core__telemetry[data-status="warning"]
-  .jarvis-core__status-line--primary
-  i {
-  background: #efad54;
-  box-shadow: 0 0 5px rgba(239, 173, 84, 0.54);
 }
 
 .jarvis-core__telemetry[data-status="critical"] .jarvis-core__integrity-value,
 .jarvis-core__telemetry[data-status="critical"] .jarvis-core__integrity-status,
 .jarvis-core__telemetry[data-status="critical"]
-  .jarvis-core__status-line--primary {
+  .jarvis-core__state-value {
   color: #ff756e;
-}
-
-.jarvis-core__telemetry[data-status="critical"]
-  .jarvis-core__status-line--primary
-  i {
-  background: #ff756e;
-  box-shadow: 0 0 5px rgba(255, 117, 110, 0.52);
 }
 
 .jarvis-core__telemetry[data-status="offline"] .jarvis-core__integrity-value,
 .jarvis-core__telemetry[data-status="offline"] .jarvis-core__integrity-status,
-.jarvis-core__telemetry[data-status="offline"] .jarvis-core__status-line {
+.jarvis-core__telemetry[data-status="offline"] .jarvis-core__state-value {
   color: #567378;
-}
-
-.jarvis-core__telemetry[data-status="offline"] .jarvis-core__status-line i {
-  background: #567378;
-  box-shadow: none;
 }
 
 @container jarvis-core-panel (max-width: 480px) {
@@ -447,28 +421,19 @@
   }
 
   .jarvis-core__telemetry {
-    grid-template-columns:
-      minmax(0, 1fr)
-      minmax(130px, 1.25fr)
-      minmax(0, 1fr);
-    min-height: 82px;
+    grid-template-columns: 1fr;
+    min-height: 0;
     gap: 4px;
-    padding: 16px 6px 6px;
+    padding: 16px 10px 8px;
   }
 
   .jarvis-core__telemetry-group--thermal {
-    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(0, 1fr));
     gap: 5px;
   }
 
-  .jarvis-core__metric {
-    display: flex;
-    justify-content: space-between;
-    gap: 3px;
-  }
-
   .jarvis-core__telemetry-label,
-  .jarvis-core__status-line {
+  .jarvis-core__state-value {
     font-size: 6px;
     letter-spacing: 0.025em;
   }
@@ -503,7 +468,7 @@
 
 @container jarvis-core-panel (max-height: 430px) {
   .jarvis-core__telemetry {
-    min-height: 78px;
+    min-height: 104px;
     padding-top: 14px;
   }
 }

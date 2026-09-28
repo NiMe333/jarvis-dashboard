@@ -85,6 +85,40 @@
 .hud-panel--frame-core .hud-frame__segment--br::after { height: 25px; width: 2px; }
 .hud-panel--frame-core .hud-frame__tick { width: 8px; height: 2px; }
 
+.hud-panel--frame-core::before,
+.hud-panel--frame-core::after {
+  position: absolute;
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(255, 174, 83, 0.9);
+  content: "";
+  pointer-events: none;
+  filter: none;
+}
+
+.hud-panel--frame-core::before {
+  top: 8px;
+  left: 8px;
+  width: 20px;
+  height: 20px;
+  border-width: 1px;
+  border-right: 0;
+  border-bottom: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 14%, 16% 14%, 16% 100%, 0 100%);
+}
+
+.hud-panel--frame-core::after {
+  right: 8px;
+  bottom: 8px;
+  width: 20px;
+  height: 20px;
+  border-width: 1px;
+  border-top: 0;
+  border-left: 0;
+  clip-path: polygon(84% 0, 100% 0, 100% 100%, 0 100%, 0 86%, 84% 86%);
+}
+
 .hud-frame__energy {
   position: absolute;
   z-index: 2;
@@ -98,6 +132,7 @@
 }
 .hud-frame__energy--tl { top: 1px; left: 1px; }
 .hud-frame__energy--br { right: 1px; bottom: 1px; }
+.hud-panel--frame-core .hud-frame__energy { display: none; }
 .hud-frame__energy--single { top: 1px; right: 1px; }
 .hud-panel--frame-core .hud-frame__energy { width: 2px; height: 2px; box-shadow: 0 0 4px 2px #ffa248, 0 0 13px 5px #f68b3b77; }
 

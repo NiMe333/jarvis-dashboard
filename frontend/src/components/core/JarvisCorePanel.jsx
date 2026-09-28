@@ -11,6 +11,16 @@ const SEGMENTS = Array.from({ length: 7 }, (_, index) => index);
 const displayMetric = (value, suffix = "") =>
   value == null ? dashboardCopy.common.unavailable : `${value}${suffix}`;
 
+const coreTemperature = (readings, index) => {
+  if (!Array.isArray(readings)) return dashboardCopy.common.unavailable;
+
+  const reading = readings.find(({ label }) =>
+    new RegExp(`^CORE\\s*0*${index}$`, "i").test(String(label ?? "")),
+  );
+
+  return displayMetric(reading?.temperature, " °C");
+};
+
 const STATUS_COPY = dashboardCopy.core.states;
 
 function CorePanelDecoration({ panelRef }) {
@@ -293,6 +303,28 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
     ? dashboardCopy.common.unavailable
     : status.toUpperCase();
 
+  const health = telemetry.warnings?.status;
+  const monitoring = telemetry.dataSource === "offline"
+    ? "INACTIVE"
+    : telemetry.dataSource === "live" || telemetry.dataSource === "partial"
+      ? "ACTIVE"
+      : "UNKNOWN";
+  const operationalStates = [
+    {
+      label: "CORE",
+      value: status === "online" ? "ONLINE" : status === "offline" ? "OFFLINE" : "UNKNOWN",
+    },
+    {
+      label: "TELEMETRY",
+      value: telemetry.dataSource === "live" ? "LIVE" : telemetry.dataSource === "partial" ? "STALE" : "UNAVAILABLE",
+    },
+    { label: "MONITORING", value: monitoring },
+    {
+      label: "HEALTH",
+      value: health === "normal" ? "NORMAL" : health === "warning" ? "WARNING" : health === "critical" ? "CRITICAL" : "UNKNOWN",
+    },
+  ];
+
   return (
     <div
       className="jarvis-core-panel__telemetry jarvis-core__telemetry"
@@ -300,38 +332,14 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
       aria-label={dashboardCopy.accessibility.coreTelemetry}
     >
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--thermal">
-        <div className="jarvis-core__metric">
-          <span className="jarvis-core__telemetry-label">
-            {dashboardCopy.core.cpuUsageLabel}
-          </span>
-
-          <strong className="jarvis-core__telemetry-value">
-            {displayMetric(
-              telemetry.cpuUsage,
-              dashboardCopy.common.units.percent,
-            )}
-          </strong>
-        </div>
-
-        <div className="jarvis-core__metric">
-          <span className="jarvis-core__telemetry-label">CPU TEMPERATURE</span>
-          <strong className="jarvis-core__telemetry-value">
-            {displayMetric(telemetry.cpuTemperature, " °C")}
-          </strong>
-        </div>
-
-        <div className="jarvis-core__metric">
-          <span className="jarvis-core__telemetry-label">
-            {dashboardCopy.core.memoryAvailableLabel}
-          </span>
-
-          <strong className="jarvis-core__telemetry-value">
-            {displayMetric(
-              telemetry.memoryAvailable,
-              dashboardCopy.common.units.storage,
-            )}
-          </strong>
-        </div>
+        {[0, 1, 2, 3].map((index) => (
+          <div className="jarvis-core__metric" key={index}>
+            <span className="jarvis-core__telemetry-label">CORE {index + 1}</span>
+            <strong className="jarvis-core__telemetry-value">
+              {coreTemperature(telemetry.cpuTemperatures, index)}
+            </strong>
+          </div>
+        ))}
       </div>
 
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--integrity">
@@ -365,20 +373,12 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
       </div>
 
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--status">
-        <span className="jarvis-core__status-line jarvis-core__status-line--primary">
-          <i />
-          {copy.core}
-        </span>
-
-        <span className="jarvis-core__status-line">
-          <i />
-          {dashboardCopy.core.secureLabel}
-        </span>
-
-        <span className="jarvis-core__status-line">
-          <i />
-          {dashboardCopy.core.monitoringLabel}
-        </span>
+        {operationalStates.map(({ label, value }) => (
+          <div className="jarvis-core__state-row" key={label}>
+            <span className="jarvis-core__telemetry-label">{label}</span>
+            <strong className="jarvis-core__state-value">{value}</strong>
+          </div>
+        ))}
 
       </div>
     </div>
