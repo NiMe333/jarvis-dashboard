@@ -108,12 +108,8 @@ export const dashboardCopy = Object.freeze({
     destinationMissing: "DESTINATION NOT CONFIGURED",
     opensNewTab: "OPENS IN A NEW TAB",
     labels: {
-      "start-vm": "Start VM",
-      "restart-service": "Restart Service",
+      "restart-service": "Restart Server",
       "open-proxmox": "Open Proxmox",
-      "open-home-assistant": "Open Home Assistant",
-      "view-logs": "View Logs",
-      "system-update": "System Update",
     },
   },
   resources: {

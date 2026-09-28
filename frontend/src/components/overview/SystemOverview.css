@@ -38,7 +38,7 @@
 .system-overview__header h2 {
   color: #c8e8eb;
   font-family: var(--font-display);
-  font-size: clamp(18px, 4.3cqw, 25px);
+  font-size: clamp(18px, 4.45cqw, 26px);
   letter-spacing: 0.13em;
   line-height: 1;
   text-shadow: 0 0 6px rgba(81, 219, 229, 0.18);
@@ -48,7 +48,7 @@
   margin-top: 7px;
   color: #55b9c2;
   font-family: var(--font-mono);
-  font-size: clamp(9px, 2.35cqw, 13px);
+  font-size: clamp(9px, 2.45cqw, 14px);
   letter-spacing: 0.12em;
   line-height: 1;
 }
@@ -100,7 +100,7 @@
 .system-overview__uptime-label,
 .system-overview__hardware dt {
   color: #5d8f95;
-  font-size: clamp(8px, 3.4cqw, 12px);
+  font-size: clamp(8px, 3.5cqw, 13px);
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.06em;
@@ -170,7 +170,7 @@
 .system-overview__uptime-copy strong {
   color: #d6eef0;
   font-family: var(--font-display);
-  font-size: clamp(19px, 8cqw, 32px);
+  font-size: clamp(19px, 8.15cqw, 33px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.025em;
@@ -210,7 +210,7 @@
   overflow: hidden;
   color: #bfdadd;
   font-family: var(--font-display);
-  font-size: clamp(10px, 4.8cqw, 15px);
+  font-size: clamp(10px, 4.95cqw, 16px);
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: 0;
@@ -252,7 +252,7 @@
 @media (max-width: 600px) {
   .system-overview {
     height: auto;
-    min-height: 620px;
+    min-height: 360px;
   }
 
   .system-overview__body {
@@ -261,6 +261,6 @@
   }
 
   .system-overview__status {
-    min-height: 280px;
+    min-height: 5.5rem;
   }
 }

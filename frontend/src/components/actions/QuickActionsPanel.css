@@ -2,6 +2,7 @@
   container-name: quick-actions-panel;
   container-type: inline-size;
   overflow: hidden;
+  padding: 0.65rem 0.75rem;
 }
 
 .quick-actions::before {
@@ -16,7 +17,8 @@
 }
 
 .quick-actions .hud-panel__header {
-  padding-bottom: 0.55rem;
+  min-height: 1.5rem;
+  padding-bottom: 0.35rem;
 }
 
 .quick-actions .hud-panel__header::after {
@@ -27,25 +29,24 @@
 
 .quick-actions__grid {
   display: grid;
-  min-height: max-content;
+  min-height: 0;
   flex: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: max-content;
-  gap: clamp(0.42rem, 1.7cqi, 0.72rem);
-  padding-top: 0.25rem;
+  grid-template-rows: auto;
+  gap: 0.5rem;
 }
 
 .quick-actions__button {
   position: relative;
-  display: grid;
+  display: flex;
   width: 100%;
   min-width: 0;
-  min-height: 2.7rem;
-  height: max-content;
-  grid-template-columns: 1.75rem minmax(0, 1fr);
   align-items: center;
-  gap: clamp(0.4rem, 1.5cqi, 0.65rem);
-  padding: 0.48rem clamp(0.45rem, 1.7cqi, 0.72rem);
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 3.75rem;
+  height: 3.75rem;
+  padding: 0.45rem 0.55rem;
   border: 1px solid rgb(73 211 222 / 0.28);
   border-radius: 2px 8px 2px 8px;
   background:
@@ -53,7 +54,7 @@
     rgb(4 24 31 / 0.36);
   color: var(--text-primary);
   font: inherit;
-  text-align: left;
+  text-align: center;
   text-decoration: none;
 }
 
@@ -98,8 +99,9 @@
 
 .quick-actions__icon {
   display: grid;
-  width: 1.7rem;
-  height: 1.7rem;
+  flex: none;
+  width: 1.625rem;
+  height: 1.625rem;
   place-items: center;
   border: 1px solid rgb(76 218 229 / 0.38);
   border-radius: 50%;
@@ -111,26 +113,34 @@
 .quick-actions__label {
   min-width: 0;
   overflow: hidden;
-  font-size: clamp(0.62rem, 1.35cqi, 0.76rem);
+  font-size: 0.68rem;
   font-weight: 500;
-  letter-spacing: 0.045em;
-  line-height: 1.15;
+  letter-spacing: 0.035em;
+  line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-@container quick-actions-panel (max-width: 270px) {
+.quick-actions__feedback {
+  min-height: 0.75rem;
+  margin: 0;
+  padding: 0.1rem 0.45rem 0.15rem;
+  color: var(--accent-cyan);
+  font: 0.54rem/1.1 var(--font-mono);
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.quick-actions__feedback[data-state="error"] {
+  color: var(--accent-amber);
+}
+
+@container quick-actions-panel (max-width: 360px) {
   .quick-actions__grid {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: repeat(6, minmax(2.6rem, auto));
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-color: rgb(55 213 225 / 0.5) transparent;
-    scrollbar-width: thin;
-  }
-
-  .quick-actions__button {
-    min-height: 2.6rem;
+    grid-template-rows: repeat(2, 3.75rem);
   }
 }
 

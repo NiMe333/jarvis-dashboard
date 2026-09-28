@@ -2,8 +2,6 @@
   container-name: temperature-power-panel;
   container-type: inline-size;
   overflow: hidden;
-  height: max-content;
-
 }
 
 .temperature-power .hud-panel__header { min-height: 1.75rem; padding-bottom: 0.34rem; }
@@ -17,8 +15,9 @@
 .temperature-power__cards {
   display: grid;
   min-height: 0;
-  flex: none;
+  flex: 1;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   gap: clamp(0.3rem, 1.1cqi, 0.62rem);
   padding-top: 0.35rem;
 }
@@ -27,7 +26,7 @@
   position: relative;
   display: flex;
   min-width: 0;
-  height: max-content;
+  min-height: 0;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
