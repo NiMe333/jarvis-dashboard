@@ -61,10 +61,10 @@ export default function SystemOverview({
             className="system-overview__uptime"
             aria-label={dashboardCopy.accessibility.serverUptime}
           >
-            <span className="system-overview__uptime-label">{copy.uptimeLabel}</span>
             <div className="system-overview__uptime-row">
               <VectorClock />
               <div className="system-overview__uptime-copy">
+                <span className="system-overview__uptime-label">{copy.uptimeLabel}</span>
                 <strong>{formatNullable(telemetry.uptime)}</strong>
               </div>
             </div>

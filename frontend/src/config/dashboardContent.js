@@ -61,14 +61,12 @@ export const dashboardCopy = Object.freeze({
       storage: "STORAGE",
     },
     statusStates: {
-      nominal: "NOMINAL",
+      nominal: "ONLINE",
       warning: "ATTENTION",
       critical: "CRITICAL",
-      offline: "OFFLINE",
+      offline: "UNREACHABLE",
     },
     statusHeading: "SYSTEM STATUS",
-    lastEventLabel: "LAST EVENT",
-    securityLabel: "SECURITY ARMED",
   },
   core: {
     title: "CORE",

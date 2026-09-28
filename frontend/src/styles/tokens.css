@@ -18,7 +18,7 @@
   --panel-chamfer: 11px;
   --panel-padding: 1rem;
   --dashboard-gap: 0.75rem;
-  --dashboard-header-height: clamp(104px, 10.5vh, 112px);
+  --dashboard-header-height: clamp(94px, 9vh, 102px);
   --dashboard-footer-height: 2.5rem;
   --accent-cyan: #55e8f2;
   --accent-cyan-dim: #4699a5;

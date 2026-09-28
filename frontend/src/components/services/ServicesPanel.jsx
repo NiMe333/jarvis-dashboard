@@ -26,6 +26,19 @@ function normalizeStatus(status) {
   return VALID_STATUSES.has(status) ? status : "unknown";
 }
 
+function formatNumber(value, digits = 2) {
+  return value === null || value === undefined || value === ""
+    ? dashboardCopy.common.unavailable
+    : Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : dashboardCopy.common.unavailable;
+}
+
+function serviceSecondaryLine(service) {
+  if (service.kind || service.node) {
+    return `${service.kind ? service.kind.toUpperCase() : "SERVICE"}${service.node ? ` · ${service.node}` : ""}`;
+  }
+  return service.description ?? dashboardCopy.common.unavailable;
+}
+
 function ServiceRow({ service }) {
   const status = normalizeStatus(service.status);
   const Icon = SERVICE_ICONS[service.icon] ?? CircleHelp;
@@ -38,20 +51,38 @@ function ServiceRow({ service }) {
 
   const content = (
     <>
-      <span className="services-panel__icon" aria-hidden="true">
-        <Icon size={17} strokeWidth={1.7} />
-      </span>
-      <span className="services-panel__identity">
-        <strong>{service.name}</strong>
-        <small>{service.description}</small>
-      </span>
-      <span className="services-panel__state">
-        <span className="services-panel__state-line">
-          <span className="services-panel__state-dot" aria-hidden="true" />
-          <span>{statusLabel}</span>
+      <div className="services-panel__card-head">
+        <span className="services-panel__icon" aria-hidden="true">
+          <Icon size={18} strokeWidth={1.55} />
         </span>
-        {service.statusDetails && <small>{service.statusDetails}</small>}
-      </span>
+        <span className="services-panel__identity">
+          <strong>{service.name ?? dashboardCopy.common.unavailable}</strong>
+          <small>{serviceSecondaryLine(service)}</small>
+        </span>
+        <span className="services-panel__state">
+          <span className="services-panel__state-line">
+            <span className="services-panel__state-dot" aria-hidden="true" />
+            <span>{statusLabel}</span>
+          </span>
+        </span>
+      </div>
+
+      <div className="services-panel__resources" aria-label={`${service.name ?? "Service"} resources`}>
+        <div className="services-panel__resource">
+          <span className="services-panel__resource-label">CPU</span>
+          <strong>{formatNumber(service.cpuUsage)}<small>%</small></strong>
+          <span className="services-panel__resource-detail">LIVE USAGE</span>
+        </div>
+        <div className="services-panel__resource">
+          <span className="services-panel__resource-label">RAM</span>
+          <strong>
+            {service.memoryUsed == null || service.memoryTotal == null
+              ? dashboardCopy.common.unavailable
+              : `${formatNumber(service.memoryUsed)} / ${formatNumber(service.memoryTotal)} GB`}
+          </strong>
+          <span className="services-panel__resource-detail">USED / ALLOCATED</span>
+        </div>
+      </div>
     </>
   );
 

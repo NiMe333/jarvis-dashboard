@@ -9,8 +9,6 @@ export default function JarvisStatusWidget({ data }) {
   const heading = supplied.heading ?? dashboardCopy.systemOverview.statusHeading;
   const status = supplied.status ?? STATE_LABELS[state];
   const value = {
-    lastEventLabel: dashboardCopy.systemOverview.lastEventLabel,
-    securityLabel: dashboardCopy.systemOverview.securityLabel,
     ...supplied,
     heading,
     status,
@@ -24,20 +22,6 @@ export default function JarvisStatusWidget({ data }) {
         <strong className="jarvis-status__value">{status}</strong>
       </div>
 
-      <div className="jarvis-status__events">
-        <div className="jarvis-status__event">
-          <div className="jarvis-status__event-head">
-            <span>{value.lastEventLabel}</span>
-            <time>{value.lastEventTime ?? dashboardCopy.common.unavailable}</time>
-          </div>
-          <strong>{value.lastEvent ?? dashboardCopy.common.unavailable}</strong>
-        </div>
-      </div>
-
-      <div className="jarvis-status__security">
-        <i aria-hidden="true" />
-        <span>{value.securityLabel}</span>
-      </div>
     </section>
   );
 }
