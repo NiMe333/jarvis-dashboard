@@ -321,7 +321,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
     { label: "MONITORING", value: monitoring },
     {
       label: "HEALTH",
-      value: health === "normal" ? "NORMAL" : health === "warning" ? "WARNING" : health === "critical" ? "CRITICAL" : "UNKNOWN",
+      value: health === "normal" ? "NOMINAL" : health === "warning" ? "WARNING" : health === "critical" ? "CRITICAL" : "UNKNOWN",
     },
   ];
 
