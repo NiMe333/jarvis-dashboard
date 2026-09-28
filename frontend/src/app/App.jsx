@@ -41,7 +41,10 @@ export default function App() {
     <DashboardShell>
       <DevelopmentDataStatus data={data} />
       <div className="dashboard-layout">
-        <DashboardHeader data={data.header} className="dashboard-layout__header" />
+        <DashboardHeader
+          data={{ ...data.header, dataSource: data.dataSource, isRetrying: data.isRetrying }}
+          className="dashboard-layout__header"
+        />
 
         <div className="dashboard-layout__left">
           <SystemOverview telemetry={data.systemOverview} status={data.overviewStatus} />

@@ -14,6 +14,7 @@ const EMPTY_DASHBOARD_DATA = Object.freeze({
   quickActions: Object.freeze([]),
   dataSource: "loading",
   dataError: null,
+  isRetrying: false,
 });
 
 function mergeApiData(previous, payload) {
@@ -49,7 +50,12 @@ export function useDashboardData() {
   useEffect(() => {
     const controller = new AbortController();
 
-    const refresh = () => loadDashboardData({ signal: controller.signal })
+    const refresh = () => {
+      setData((current) => current.dataSource === "offline"
+        ? { ...current, isRetrying: true }
+        : current);
+
+      return loadDashboardData({ signal: controller.signal })
       .then((payload) => {
         const successfulEndpoints = Object.keys(payload).filter((key) => key !== "errors");
         const failedEndpoints = Object.keys(payload.errors ?? {});
@@ -65,6 +71,7 @@ export function useDashboardData() {
               ...EMPTY_DASHBOARD_DATA,
               dataSource: "offline",
               dataError: failedEndpoints,
+              isRetrying: false,
             };
             if (import.meta.env.DEV) console.info("[dashboard] component data", offline);
             return offline;
@@ -74,6 +81,7 @@ export function useDashboardData() {
             ...mergeApiData(current, payload),
             dataSource: source,
             dataError: failedEndpoints.length > 0 ? failedEndpoints : null,
+            isRetrying: false,
           };
           if (import.meta.env.DEV) console.info("[dashboard] component data", next);
           return next;
@@ -86,9 +94,11 @@ export function useDashboardData() {
             ...EMPTY_DASHBOARD_DATA,
             dataSource: "offline",
             dataError: ["api"],
+            isRetrying: false,
           }));
         }
       });
+    };
 
     refresh();
     const refreshTimer = window.setInterval(refresh, 15_000);

@@ -6,8 +6,7 @@ const directives = dashboardCopy.header.directives;
 function DirectiveLines({ directive, className, hidden = false }) {
   return (
     <span className={className} aria-hidden={hidden || undefined}>
-      <span>{directive.first}</span>
-      <span>{directive.second}</span>
+      {`${directive.first}, ${directive.second}.`}
     </span>
   );
 }
@@ -70,7 +69,7 @@ export default function RotatingDirective() {
 
   return (
     <div className="rotating-directive">
-      <span className="rotating-directive__meta">{dashboardCopy.header.directiveLabel}</span>
+      <span className="rotating-directive__meta">DIRECTIVE</span>
       <span
         className="rotating-directive__messages"
         aria-live="polite"
@@ -88,6 +87,7 @@ export default function RotatingDirective() {
           className="rotating-directive__message rotating-directive__message--active"
         />
       </span>
+      <span className="rotating-directive__rail" aria-hidden="true" />
     </div>
   );
 }
