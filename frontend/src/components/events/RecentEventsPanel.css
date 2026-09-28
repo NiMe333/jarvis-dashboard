@@ -8,6 +8,11 @@
   padding-bottom: 0.42rem;
 }
 
+.recent-events .hud-panel__subtitle {
+  color: var(--accent-cyan);
+  opacity: 0.82;
+}
+
 .recent-events .hud-panel__header::after {
   width: 100%;
   background: linear-gradient(90deg, var(--accent-cyan), rgb(85 217 227 / 0.14) 55%, transparent);
@@ -36,10 +41,11 @@
 }
 
 .recent-events__list {
-  --event-row-height: 29px;
+  --event-row-height: 23px;
   min-height: 0;
   flex: 1;
-  padding-left: 5px;
+  width: 100%;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -49,6 +55,7 @@
   grid-template-columns: 0.55rem 3.15rem minmax(0, 1fr);
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
   padding-inline: 0.15rem;
   border-bottom: 1px solid rgb(59 188 199 / 0.12);
   color: var(--event-accent, var(--accent-cyan));
@@ -71,7 +78,8 @@
 .recent-events__message {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-primary);
+  color: var(--accent-cyan);
+  opacity: 0.88;
   font-size: clamp(0.64rem, 1.3cqi, 0.75rem);
   letter-spacing: 0.025em;
   text-overflow: ellipsis;

@@ -285,7 +285,7 @@
 .jarvis-core__telemetry-heading,
 .jarvis-core__integrity-status {
   color: var(--text-secondary);
-  font-size: clamp(7px, 0.48vw, 9px);
+  font-size: clamp(8px, 0.56vw, 10px);
   line-height: 1;
   letter-spacing: 0.1em;
   white-space: nowrap;
@@ -333,8 +333,8 @@
 
 .jarvis-core__integrity-value {
   min-width: 4ch;
-  color: #d7fbfc;
-  font-size: clamp(18px, 1.5vw, 25px);
+  color: #7de3ea;
+  font-size: clamp(21px, 1.7vw, 28px);
   font-weight: 300;
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -366,7 +366,7 @@
 
 .jarvis-core__integrity-status {
   color: #56b7c0;
-  font-size: clamp(6px, 0.42vw, 8px);
+  font-size: clamp(8px, 0.52vw, 10px);
   letter-spacing: 0.13em;
 }
 
@@ -385,7 +385,7 @@
 }
 
 .jarvis-core__state-value {
-  color: #b9e9ed;
+  color: #69cdd7;
   max-width: 11ch;
   overflow: hidden;
   font-size: clamp(7px, 0.5vw, 9px);
@@ -414,7 +414,7 @@
 .jarvis-core__telemetry[data-status="offline"] .jarvis-core__integrity-value,
 .jarvis-core__telemetry[data-status="offline"] .jarvis-core__integrity-status,
 .jarvis-core__telemetry[data-status="offline"] .jarvis-core__state-value {
-  color: #567378;
+  color: #67cbd4;
 }
 
 @container jarvis-core-panel (max-width: 480px) {

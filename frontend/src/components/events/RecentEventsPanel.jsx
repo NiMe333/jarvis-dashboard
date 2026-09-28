@@ -1,7 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./RecentEventsPanel.css";
 
 const VALID_EVENT_TYPES = new Set(Object.keys(dashboardCopy.events.typeLabels));
@@ -50,7 +49,7 @@ function useVisibleEventCount(containerRef, totalCount) {
         getComputedStyle(container).getPropertyValue("--event-row-height"),
       );
       const nextCount = rowHeight > 0
-        ? Math.min(totalCount, Math.floor(container.clientHeight / rowHeight))
+        ? Math.min(totalCount, Math.max(4, Math.floor(container.clientHeight / rowHeight)))
         : totalCount;
       setVisibleCount(nextCount);
     };
@@ -64,8 +63,7 @@ function useVisibleEventCount(containerRef, totalCount) {
   return visibleCount;
 }
 
-export default function RecentEventsPanel({ events = [], dataSource = "offline", className = "" }) {
-  const sourceLabel = dataSourceLabel(dataSource);
+export default function RecentEventsPanel({ events = [], className = "" }) {
   const listRef = useRef(null);
   const dialogRef = useRef(null);
   const openButtonRef = useRef(null);
@@ -96,7 +94,7 @@ export default function RecentEventsPanel({ events = [], dataSource = "offline",
     <>
       <HudPanel
         title={dashboardCopy.panels.recentEvents.title}
-        subtitle={`${dashboardCopy.panels.recentEvents.subtitle} // ${sourceLabel}`}
+        subtitle={dashboardCopy.panels.recentEvents.subtitle}
         className={`recent-events ${className}`.trim()}
         frameStyle="contained"
         variant="compact"
@@ -132,7 +130,7 @@ export default function RecentEventsPanel({ events = [], dataSource = "offline",
         <div className="recent-events-dialog__frame">
           <header className="recent-events-dialog__header">
             <div>
-              <p>{dashboardCopy.panels.recentEvents.subtitle} // {sourceLabel}</p>
+              <p>{dashboardCopy.panels.recentEvents.subtitle}</p>
               <h2 id="recent-events-dialog-title">{dashboardCopy.events.dialogTitle}</h2>
             </div>
             <button
