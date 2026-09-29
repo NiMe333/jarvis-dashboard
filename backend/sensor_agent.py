@@ -26,6 +26,9 @@ PORT = int(env("SENSOR_AGENT_PORT", "3100"))
 CACHE_SECONDS = 3
 CACHE = None
 CACHE_LOCK = threading.Lock()
+MEMORY_HISTORY = []
+VMSTAT_SAMPLE = None
+MEMORY_HARDWARE = None
 
 if len(TOKEN) < 32:
     raise RuntimeError("SENSOR_AGENT_TOKEN must contain at least 32 characters")
@@ -242,11 +245,138 @@ def cpu_usage():
 def memory():
     values = {}
     for line in (read_text("/proc/meminfo") or "").splitlines():
-        match = re.match(r"^(MemTotal|MemAvailable):\s+(\d+)", line)
+        match = re.match(r"^(MemTotal|MemAvailable|MemFree|Buffers|Cached|Slab|SReclaimable|SUnreclaim|Active|Inactive|Shmem|Dirty|Writeback|SwapTotal|SwapFree):\s+(\d+)", line)
         if match:
             values[match.group(1)] = int(match.group(2)) * 1024
     total, available = values.get("MemTotal"), values.get("MemAvailable")
-    return {"total": total, "available": available, "used": total - available if total is not None and available is not None else None}
+    swap_total, swap_free = values.get("SwapTotal"), values.get("SwapFree")
+    return {
+        "total": total,
+        "available": available,
+        "used": total - available if total is not None and available is not None else None,
+        "free": values.get("MemFree"),
+        "cached": values.get("Cached"),
+        "buffers": values.get("Buffers"),
+        "slab": values.get("Slab"),
+        "slabReclaimable": values.get("SReclaimable"),
+        "slabUnreclaimable": values.get("SUnreclaim"),
+        "active": values.get("Active"),
+        "inactive": values.get("Inactive"),
+        "shared": values.get("Shmem"),
+        "dirty": values.get("Dirty"),
+        "writeback": values.get("Writeback"),
+        "swapTotal": swap_total,
+        "swapFree": swap_free,
+        "swapUsed": swap_total - swap_free if swap_total is not None and swap_free is not None else None,
+        "usedDefinition": "MemTotal - MemAvailable",
+    }
+
+
+def memory_pressure():
+    result = {}
+    for line in (read_text("/proc/pressure/memory") or "").splitlines():
+        parts = line.split()
+        if not parts or parts[0] not in {"some", "full"}:
+            continue
+        values = {key: number(value) for key, value in (field.split("=", 1) for field in parts[1:] if "=" in field)}
+        result[parts[0]] = {"avg10": values.get("avg10"), "avg60": values.get("avg60"), "avg300": values.get("avg300")}
+    return result or None
+
+
+def vmstat_values():
+    wanted = {"pswpin", "pswpout"}
+    values = {}
+    for line in (read_text("/proc/vmstat") or "").splitlines():
+        key, *rest = line.split()
+        if key in wanted and rest:
+            values[key] = number(rest[0])
+    return values
+
+
+def swap_activity():
+    global VMSTAT_SAMPLE
+    now = time.monotonic()
+    counters = vmstat_values()
+    previous = VMSTAT_SAMPLE
+    VMSTAT_SAMPLE = {"at": now, **counters}
+    if not previous or not counters:
+        return {"inPerSecond": None, "outPerSecond": None}
+    elapsed = now - previous["at"]
+    page_size = os.sysconf("SC_PAGE_SIZE")
+    if elapsed <= 0:
+        return {"inPerSecond": None, "outPerSecond": None}
+    def rate(key):
+        current, before = counters.get(key), previous.get(key)
+        return max(0, (current - before) * page_size / elapsed) if current is not None and before is not None and current >= before else None
+    return {"inPerSecond": rate("pswpin"), "outPerSecond": rate("pswpout")}
+
+
+def process_workload():
+    count, running, blocked = 0, 0, 0
+    for path in Path("/proc").iterdir():
+        if not path.name.isdigit():
+            continue
+        count += 1
+        state = re.match(r"^\d+\s+\(.+\)\s+([A-Z])", read_text(path / "stat") or "")
+        if state:
+            running += state.group(1) == "R"
+            blocked += state.group(1) == "D"
+    try:
+        result = subprocess.run(["ps", "-eo", "pid=,rss=,comm=", "--sort=-rss"], capture_output=True, text=True, timeout=3, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return {"count": count, "running": running, "blocked": blocked, "topMemory": []}
+    top = []
+    for line in result.stdout.splitlines()[:3]:
+        parts = line.split(maxsplit=2)
+        if len(parts) == 3:
+            top.append({"pid": number(parts[0]), "rss": (number(parts[1]) or 0) * 1024, "name": parts[2]})
+    return {"count": count, "running": running, "blocked": blocked, "topMemory": top}
+
+
+def memory_hardware():
+    global MEMORY_HARDWARE
+    if MEMORY_HARDWARE is not None:
+        return MEMORY_HARDWARE
+    empty = {"installedTotal": None, "memoryType": None, "configuredSpeed": None, "nominalSpeed": None, "slotsUsed": None, "slotsTotal": None, "ecc": None, "modules": []}
+    dmidecode = executable("dmidecode", ("/usr/sbin/dmidecode", "/sbin/dmidecode"))
+    if not dmidecode:
+        MEMORY_HARDWARE = empty
+        return MEMORY_HARDWARE
+    try:
+        output = subprocess.run([dmidecode, "--type", "memory"], capture_output=True, text=True, timeout=5, check=False).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        MEMORY_HARDWARE = empty
+        return MEMORY_HARDWARE
+    blocks = [block for block in output.split("\n\n") if "Memory Device" in block]
+    modules, slots_total, ecc = [], 0, None
+    for block in blocks:
+        fields = dict(re.findall(r"^\s*([^:]+):\s*(.+)$", block, re.M))
+        if "Size" not in fields:
+            continue
+        slots_total += 1
+        size = fields.get("Size", "")
+        if size.lower() in {"no module installed", "unknown"}:
+            continue
+        size_match = re.match(r"(\d+)\s*(MB|GB|TB)", size, re.I)
+        capacity = None
+        if size_match:
+            capacity = int(size_match.group(1)) * {"MB": 1024 ** 2, "GB": 1024 ** 3, "TB": 1024 ** 4}[size_match.group(2).upper()]
+        modules.append({"slot": fields.get("Locator") or fields.get("Bank Locator"), "capacity": capacity, "manufacturer": fields.get("Manufacturer"), "model": fields.get("Part Number"), "type": fields.get("Type"), "configuredSpeed": fields.get("Configured Memory Speed"), "speed": fields.get("Speed")})
+    if "Error Correction Type: Multi-bit ECC" in output or "Error Correction Type: Single-bit ECC" in output:
+        ecc = True
+    elif "Error Correction Type: None" in output:
+        ecc = False
+    first = modules[0] if modules else {}
+    recognized_slots = len(modules)
+    MEMORY_HARDWARE = {**empty, "installedTotal": sum(module["capacity"] for module in modules if module["capacity"] is not None) or None, "memoryType": first.get("type"), "configuredSpeed": first.get("configuredSpeed"), "nominalSpeed": first.get("speed"), "slotsUsed": recognized_slots, "slotsTotal": recognized_slots or slots_total or None, "ecc": ecc, "modules": modules}
+    return MEMORY_HARDWARE
+
+
+def record_memory_history(metrics):
+    now = time.time()
+    MEMORY_HISTORY.append({"timestamp": now, "used": metrics.get("used"), "total": metrics.get("total")})
+    del MEMORY_HISTORY[:-90]
+    return MEMORY_HISTORY
 
 
 def root_storage():
@@ -289,6 +419,7 @@ def collect():
         return unavailable()
     sensor_data = sensors()
     storage_devices_data = storage_devices()
+    memory_data = memory()
     legacy_ssd = next((disk for disk in storage_devices_data if disk["role"] == "data"), storage_devices_data[0] if storage_devices_data else {})
     return {
         "available": True,
@@ -302,7 +433,12 @@ def collect():
         "processCount": process_count(),
         "network": None,
         "cpuUsage": cpu_usage(),
-        "memory": memory(),
+        "memory": memory_data,
+        "swap": swap_activity(),
+        "memoryPressure": memory_pressure(),
+        "memoryHistory": record_memory_history(memory_data),
+        "memoryHardware": memory_hardware(),
+        "workload": process_workload(),
         "storage": root_storage(),
         "storageDevices": storage_devices_data,
         "temperatures": sensor_data["temperatures"],
@@ -313,7 +449,7 @@ def collect():
 
 
 def unavailable():
-    return {"available": False, "cpuTemperature": None, "ssdTemperature": None, "ssdSmartHealth": None, "ssdDevice": None, "ssdModel": None, "fanRpm": None, "powerWatts": None, "processCount": None, "network": None, "cpuUsage": None, "memory": {"total": None, "used": None, "available": None}, "storage": None, "storageDevices": [], "temperatures": [], "cpuTemperatures": [], "sensorsAvailable": False, "identity": None}
+    return {"available": False, "cpuTemperature": None, "ssdTemperature": None, "ssdSmartHealth": None, "ssdDevice": None, "ssdModel": None, "fanRpm": None, "powerWatts": None, "processCount": None, "network": None, "cpuUsage": None, "memory": {"total": None, "used": None, "available": None}, "swap": {"inPerSecond": None, "outPerSecond": None}, "memoryPressure": None, "memoryHistory": [], "memoryHardware": None, "workload": None, "storage": None, "storageDevices": [], "temperatures": [], "cpuTemperatures": [], "sensorsAvailable": False, "identity": None}
 
 
 def metrics():

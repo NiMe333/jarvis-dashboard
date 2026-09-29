@@ -1,7 +1,6 @@
 import { HardDrive, ShieldAlert, ShieldCheck, Thermometer } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./LiveResourcesPanel.css";
 
 const unavailable = dashboardCopy.common.unavailable;
@@ -129,7 +128,7 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
   return (
     <HudPanel
       title={dashboardCopy.panels.liveResources.title}
-      subtitle={`${dashboardCopy.panels.liveResources.subtitle} // ${dataSourceLabel(dataSource)}`}
+      subtitle={dashboardCopy.panels.liveResources.subtitle}
       className={`storage-overview ${className}`.trim()}
       frameStyle="contained"
       variant="compact"
