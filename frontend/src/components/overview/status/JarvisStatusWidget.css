@@ -20,6 +20,7 @@
 
 .jarvis-status__readout {
   display: grid;
+  width: 100%;
   justify-items: center;
   gap: 9px;
   min-width: 0;
@@ -27,16 +28,20 @@
 
 .jarvis-status__heading {
   color: color-mix(in srgb, var(--status-accent) 62%, #78959a);
-  font: 500 clamp(11px, 5.8cqw, 18px)/1 var(--font-mono);
-  letter-spacing: 0.11em;
+  font: 500 clamp(7px, 7.5cqw, 10px)/1 var(--font-mono);
+  letter-spacing: 0.1em;
   white-space: nowrap;
 }
 
 .jarvis-status__value {
+  display: block;
+  width: 100%;
   max-width: 100%;
+  overflow: hidden;
   color: var(--status-text);
-  font: 400 clamp(30px, 12.5cqw, 52px)/1 var(--font-mono);
-  letter-spacing: 0.06em;
+  font: 400 clamp(10px, var(--status-value-fluid-size, 22cqw), 28px)/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-align: center;
   text-shadow: 0 0 6px color-mix(in srgb, var(--status-accent) 22%, transparent);
   white-space: nowrap;
 }

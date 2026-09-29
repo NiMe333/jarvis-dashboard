@@ -38,14 +38,15 @@
 .system-overview__header h2 {
   color: #c8e8eb;
   font-family: var(--font-display);
-  font-size: clamp(22px, 5.8cqw, 34px);
+  font-size: 0.8rem;
+  font-weight: 500;
   letter-spacing: 0.13em;
-  line-height: 1;
+  line-height: 1.25;
   text-shadow: 0 0 6px rgba(81, 219, 229, 0.18);
 }
 
 .system-overview__header p {
-  margin-top: 7px;
+  margin-top: 0.2rem;
   color: #55b9c2;
   font-family: var(--font-mono);
   font-size: clamp(11px, 3.15cqw, 18px);
@@ -59,11 +60,11 @@
   display: grid;
   min-width: 0;
   min-height: 0;
-  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  grid-template-columns: minmax(0, 1fr) 130px;
   align-items: stretch;
-  gap: clamp(22px, 4cqw, 34px);
+  gap: clamp(12px, 2cqw, 20px);
   padding: clamp(14px, 2cqh, 22px) clamp(18px, 3cqw, 28px)
-    clamp(18px, 2.5cqh, 26px);
+    clamp(16px, 2.5cqh, 24px);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   overflow: hidden;
@@ -87,8 +88,16 @@
 .system-overview__status {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   overflow: hidden;
+}
+
+.system-overview__status .jarvis-status {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-inline: 0;
+  justify-items: center;
 }
 
 .system-overview__uptime {
@@ -189,9 +198,9 @@
 .system-overview__hardware {
   display: grid;
   min-width: 0;
-  grid-template-columns: minmax(110px, max-content) minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: baseline;
-  column-gap: clamp(22px, 5cqw, 38px);
+  column-gap: 10px;
   row-gap: clamp(7px, 1.2cqh, 12px);
   margin: clamp(20px, 3.5cqh, 30px) 0 0;
 }
@@ -207,14 +216,14 @@
 
 .system-overview__hardware dd {
   min-width: 0;
-  overflow: visible;
+  overflow: hidden;
   color: #bfdadd;
   font-family: var(--font-display);
-  font-size: clamp(13px, 5.9cqw, 21px);
+  font-size: clamp(12px, 3.8cqw, 16px);
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: 0;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

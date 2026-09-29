@@ -14,9 +14,16 @@ export default function JarvisStatusWidget({ data }) {
     status,
     state,
   };
+  const statusLength = Math.max(Array.from(String(status)).length, 1);
+  const statusFluidSize = `${Math.min(22, 156.25 / statusLength)}cqw`;
 
   return (
-    <section className="jarvis-status" data-state={state} aria-label={`${heading}: ${status}`}>
+    <section
+      className="jarvis-status"
+      data-state={state}
+      aria-label={`${heading}: ${status}`}
+      style={{ "--status-value-fluid-size": statusFluidSize }}
+    >
       <div className="jarvis-status__readout">
         <span className="jarvis-status__heading">{heading}</span>
         <strong className="jarvis-status__value">{status}</strong>
