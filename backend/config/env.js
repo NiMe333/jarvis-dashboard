@@ -20,6 +20,11 @@ const proxmoxConfig = {
   restartEnabled: booleanFromEnv(process.env.PROXMOX_RESTART_ENABLED, false),
 };
 
+const remoteHostMetricsConfig = {
+  url: process.env.HOST_METRICS_AGENT_URL?.trim().replace(/\/+$/, "") || "",
+  token: process.env.HOST_METRICS_AGENT_TOKEN?.trim() || "",
+};
+
 const requiredProxmoxVariables = {
   PROXMOX_API_URL: proxmoxConfig.apiUrl,
   PROXMOX_TOKEN_ID: proxmoxConfig.tokenId,
@@ -71,5 +76,9 @@ export const env = Object.freeze({
     ),
     isConfigured: missingVariables.length === 0,
     missingVariables,
+  }),
+  remoteHostMetrics: Object.freeze({
+    ...remoteHostMetricsConfig,
+    isConfigured: Boolean(remoteHostMetricsConfig.url && remoteHostMetricsConfig.token),
   }),
 });

@@ -1,0 +1,21 @@
+[Unit]
+Description=JARVIS Proxmox host sensor agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/jarvis-sensor-agent
+EnvironmentFile=/etc/jarvis-sensor-agent.env
+ExecStart=/usr/bin/python3 /opt/jarvis-sensor-agent/sensor_agent.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/run
+
+[Install]
+WantedBy=multi-user.target

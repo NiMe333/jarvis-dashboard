@@ -178,14 +178,22 @@ function storageTotals(storage, rootfs = {}) {
 }
 
 export class ProxmoxDashboardService extends DashboardService {
-  constructor({ client, nodeName, webUrl = "", restartEnabled = false, cacheTtlMs = 3_000, alertConfig }) {
+  constructor({
+    client,
+    nodeName,
+    webUrl = "",
+    restartEnabled = false,
+    cacheTtlMs = 3_000,
+    alertConfig,
+    hostMetricsReader = new LinuxHostMetricsReader({ nodeName }),
+  }) {
     super();
     this.client = client;
     this.nodeName = nodeName;
     this.webUrl = webUrl;
     this.restartEnabled = restartEnabled;
     this.cacheTtlMs = cacheTtlMs;
-    this.hostMetricsReader = new LinuxHostMetricsReader({ nodeName });
+    this.hostMetricsReader = hostMetricsReader;
     this.alertConfig = alertConfig;
     this.cpuHighSince = null;
     this.cachedSnapshot = null;
@@ -318,6 +326,7 @@ export class ProxmoxDashboardService extends DashboardService {
         totalContainers: snapshot.available.lxc ? snapshot.lxc.length : null,
       },
     };
+    return metrics;
   }
 
   async getResources() {

@@ -1,6 +1,7 @@
 import { ProxmoxClient } from "../clients/proxmoxClient.js";
 import { MockDashboardService } from "./mockDashboardService.js";
 import { ProxmoxDashboardService } from "./proxmoxDashboardService.js";
+import { RemoteHostMetricsReader } from "./remoteHostMetricsReader.js";
 
 export function createDashboardService(env) {
   if (env.dataSource !== "proxmox") {
@@ -28,5 +29,8 @@ export function createDashboardService(env) {
     webUrl: env.proxmox.webUrl,
     restartEnabled: env.proxmox.restartEnabled,
     alertConfig: env.hostAlerts,
+    hostMetricsReader: env.remoteHostMetrics.isConfigured
+      ? new RemoteHostMetricsReader(env.remoteHostMetrics)
+      : undefined,
   });
 }

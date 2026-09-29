@@ -38,7 +38,7 @@
 .system-overview__header h2 {
   color: #c8e8eb;
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: clamp(12px, 2.3cqw, 16px);
   font-weight: 500;
   letter-spacing: 0.13em;
   line-height: 1.25;
@@ -49,7 +49,7 @@
   margin-top: 0.2rem;
   color: #55b9c2;
   font-family: var(--font-mono);
-  font-size: clamp(11px, 3.15cqw, 18px);
+  font-size: clamp(11px, 2.7cqw, 15px);
   letter-spacing: 0.12em;
   line-height: 1;
 }
@@ -109,7 +109,7 @@
 .system-overview__uptime-label,
 .system-overview__hardware dt {
   color: #5d8f95;
-  font-size: clamp(10px, 4.2cqw, 16px);
+  font-size: clamp(9px, 2.8cqw, 13px);
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.06em;
@@ -124,8 +124,8 @@
 }
 
 .system-overview__clock {
-  width: clamp(42px, 11cqw, 58px);
-  height: clamp(42px, 11cqw, 58px);
+  width: clamp(40px, 9cqw, 52px);
+  height: clamp(40px, 9cqw, 52px);
   overflow: visible;
 }
 
@@ -179,7 +179,7 @@
 .system-overview__uptime-copy strong {
   color: #d6eef0;
   font-family: var(--font-display);
-  font-size: clamp(25px, 10.5cqw, 44px);
+  font-size: clamp(22px, 7.5cqw, 35px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.025em;
@@ -201,8 +201,8 @@
   grid-template-columns: max-content minmax(0, 1fr);
   align-items: baseline;
   column-gap: 10px;
-  row-gap: clamp(7px, 1.2cqh, 12px);
-  margin: clamp(20px, 3.5cqh, 30px) 0 0;
+  row-gap: clamp(5px, 0.9cqh, 8px);
+  margin: clamp(14px, 2.4cqh, 20px) 0 0;
 }
 
 .system-overview__hardware-row {
@@ -219,7 +219,7 @@
   overflow: hidden;
   color: #bfdadd;
   font-family: var(--font-display);
-  font-size: clamp(12px, 3.8cqw, 16px);
+  font-size: clamp(11px, 3cqw, 14px);
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: 0;

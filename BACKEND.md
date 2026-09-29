@@ -146,6 +146,40 @@ disk device. Do not grant broader device or root access to a dashboard running
 inside an LXC merely to obtain sensors; leaving these fields unavailable is the
 safer configuration.
 
+### Remote sensor agent for an LXC dashboard backend
+
+When the dashboard backend runs outside the Proxmox host, use the included
+sensor agent rather than exposing host `/sys`, `/dev`, or `/proc` into the LXC.
+The agent has a single authenticated read-only endpoint and restricts requests
+to the dashboard LXC IP address.
+
+On the Proxmox host, place `backend/sensor_agent.py` at
+`/opt/jarvis-sensor-agent/sensor_agent.py` and create
+`/etc/jarvis-sensor-agent.env` from
+`backend/.sensor-agent.env.example`. Set `SENSOR_AGENT_ALLOWED_IPS` to the
+dashboard LXC address, set a unique random token of at least 32 characters,
+and use the same token in the dashboard backend's `HOST_METRICS_AGENT_TOKEN`.
+Then install `backend/deploy/jarvis-sensor-agent.service` in
+`/etc/systemd/system/` and enable it with `systemctl enable --now
+jarvis-sensor-agent`.
+
+For a standard deployment, copy the `backend/` directory to the Proxmox host
+and run `sudo backend/deploy/install-sensor-agent.sh 192.168.0.30 jarvis`.
+The installer writes the agent token to `/etc/jarvis-sensor-agent.env` with
+root-only permissions and enables the systemd service.
+
+The dashboard backend uses the agent only when both of the following settings
+are configured in its `.env` file:
+
+```dotenv
+HOST_METRICS_AGENT_URL=http://192.168.0.11:3100
+HOST_METRICS_AGENT_TOKEN=the-same-long-random-token
+```
+
+The agent is intentionally not a general remote-command service. It only
+returns collected hardware metrics at `GET /metrics` to the permitted LXC IP
+when the bearer token matches.
+
 ## Endpoints and response shapes
 
 All endpoints accept `GET` and return JSON. Values come from the selected data

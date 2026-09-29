@@ -1,0 +1,131 @@
+# JARVIS dashboard: posodobitve in produkcijsko okolje
+
+Ta vodič velja za trenutno postavitev:
+
+| Del | Lokacija | Namen |
+| --- | --- | --- |
+| Lokalni projekt | `jarvis-dashboard/` na Macu | Izvorna koda in build frontend aplikacije |
+| Dashboard LXC | `root@192.168.0.30` | Nginx, frontend in Node.js backend |
+| Frontend datoteke | `/var/www/jarvis-dashboard/` | Statični Vite build, ki ga streže Nginx |
+| Backend | `/opt/jarvis-dashboard/backend/` | Node.js API, systemd storitev `jarvis-backend` |
+| Proxmox host | `jarvis` / `192.168.0.11` | Proxmox API in fizični senzorji |
+| Sensor agent | `/opt/jarvis-sensor-agent/sensor_agent.py` na Proxmox hostu | Read-only meritve CPU, SSD/SMART in moči |
+
+## Običajna posodobitev
+
+Iz korena lokalnega projekta najprej zgradi frontend:
+
+```bash
+npm run build
+```
+
+Nato posodobi statični frontend na dashboard LXC:
+
+```bash
+rsync -av --delete \
+  frontend/dist/ \
+  root@192.168.0.30:/var/www/jarvis-dashboard/
+```
+
+Za spremembe backenda prenesi kodo, vendar ohrani produkcijski `.env` in nameščene pakete:
+
+```bash
+rsync -av --delete \
+  --exclude 'node_modules/' \
+  --exclude '.env' \
+  backend/ \
+  root@192.168.0.30:/opt/jarvis-dashboard/backend/
+```
+
+Po backend posodobitvi se prijavi v dashboard LXC in ponovno zaženi API:
+
+```bash
+ssh root@192.168.0.30
+systemctl restart jarvis-backend
+systemctl status jarvis-backend --no-pager
+```
+
+Po frontend posodobitvi v brskalniku uporabi `Cmd + Shift + R`, da se naložijo nove hashane datoteke.
+
+## Preverjanje po objavi
+
+V dashboard LXC preveri API:
+
+```bash
+curl -s http://127.0.0.1:3001/api/health
+curl -s http://127.0.0.1:3001/api/system
+curl -s http://127.0.0.1:3001/api/temperature
+curl -s http://127.0.0.1:3001/api/quick-actions
+```
+
+`/api/health` mora vrniti `"source":"proxmox"` in
+`"hostMetricsAvailable":true`. Prek brskalnika isti API preveri na
+`http://jarvis-dashboard/api/health`.
+
+Če backend ne deluje, poglej zadnje loge:
+
+```bash
+journalctl -u jarvis-backend -n 100 --no-pager
+```
+
+## Produkcijski backend `.env`
+
+Datoteka je samo na dashboard LXC: `/opt/jarvis-dashboard/backend/.env`.
+Nikoli je ne kopiraj v Git ali v frontend okoljske spremenljivke.
+
+Za Proxmox in senzorje morajo biti nastavljene vsaj naslednje vrednosti:
+
+```dotenv
+DASHBOARD_DATA_SOURCE=proxmox
+PROXMOX_API_URL=https://192.168.0.11:8006
+PROXMOX_NODE_NAME=jarvis
+PROXMOX_WEB_URL=https://jarvis.taile46e9c.ts.net/#v1:0:18:4:::::::
+HOST_METRICS_AGENT_URL=http://192.168.0.11:3100
+HOST_METRICS_AGENT_TOKEN=<isti-token-kot-v-/etc/jarvis-sensor-agent.env>
+```
+
+`PROXMOX_WEB_URL` določa gumb **Open Proxmox**. Brez te nastavitve gumb uporabi
+interni naslov `https://192.168.0.11:8006`.
+
+Gumb **Restart Server** je privzeto onemogočen. Vključi ga le, če namerno
+želiš dovoliti reboot hosta in ima API token dovoljenje `Sys.PowerMgmt` na
+izbranem Proxmox node-u:
+
+```dotenv
+PROXMOX_RESTART_ENABLED=true
+```
+
+Po vsaki spremembi `.env` zaženi:
+
+```bash
+systemctl restart jarvis-backend
+```
+
+## Sensor agent na Proxmox hostu
+
+Agent teče kot systemd storitev na `jarvis` in ga preveriš tako:
+
+```bash
+ssh jarvis
+sudo systemctl status jarvis-sensor-agent --no-pager
+sudo journalctl -u jarvis-sensor-agent -n 100 --no-pager
+```
+
+Njegova konfiguracija je v `/etc/jarvis-sensor-agent.env`. Dostop je omejen
+na dashboard LXC IP in bearer token. Ne spreminjaj `SENSOR_AGENT_TOKEN`, ne da
+bi istočasno posodobil `HOST_METRICS_AGENT_TOKEN` v dashboard backend `.env`.
+
+Ko spremeniš `sensor_agent.py` ali systemd unit, kopiraj posodobljene datoteke
+na Proxmox host, nato:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart jarvis-sensor-agent
+```
+
+## Kaj se sme brisati z `--delete`
+
+`--delete` pri `frontend/dist/` je zaželen: odstrani stare hashane assete.
+Pri backend kopiji sta `.env` in `node_modules/` izrecno izključena, zato
+produkcijske skrivnosti in paketi ostanejo na strežniku. Ne dodajaj
+`--delete-excluded`, ker bi s tem izbrisal produkcijski `.env`.
