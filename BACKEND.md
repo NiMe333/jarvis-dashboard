@@ -68,13 +68,17 @@ CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 
 DASHBOARD_DATA_SOURCE=proxmox
 PROXMOX_API_URL=https://proxmox.example.local:8006
+PROXMOX_WEB_URL=https://proxmox.example.local:8006
 PROXMOX_TOKEN_ID=dashboard@pve!jarvis-readonly
 PROXMOX_TOKEN_SECRET=replace-with-token-secret
 PROXMOX_NODE_NAME=pve
 PROXMOX_TLS_REJECT_UNAUTHORIZED=true
+PROXMOX_RESTART_ENABLED=false
 ```
 
 `PROXMOX_API_URL` is the Proxmox origin and port, without `/api2/json`.
+`PROXMOX_WEB_URL` is the browser destination used by the Open Proxmox action;
+it may be a separate Tailscale or reverse-proxy URL.
 `PROXMOX_NODE_NAME` must exactly match the node name shown by Proxmox. The
 backend sends the token as a `PVEAPIToken` authorization header; credentials
 never enter the frontend bundle or API responses.
@@ -112,8 +116,10 @@ pveum user permissions dashboard@pve
 pveum user token permissions dashboard@pve jarvis-readonly
 ```
 
-The integration only performs `GET` requests. It does not expose routes that
-start, stop, restart, migrate, update, or reconfigure guests or the node.
+The integration performs only read operations by default. Setting
+`PROXMOX_RESTART_ENABLED=true` enables the confirmed node-reboot action. The
+API token and its user must both have `Sys.PowerMgmt` on the selected node when
+token privilege separation is enabled. Keep this disabled for read-only tokens.
 
 ### Host hardware sensors
 
@@ -219,11 +225,17 @@ Supported event types are `info`, `success`, `warning`, and `error`.
 ### `GET /api/quick-actions`
 
 ```js
-[{ id, label, icon, url }]
+[{ id, label, icon, url, description, enabled }]
 ```
 
 An empty URL keeps the action disabled. This endpoint does not execute system
 operations.
+
+### `POST /api/actions/restart`
+
+Requests a reboot of the configured Proxmox node. The backend accepts this
+only when `PROXMOX_RESTART_ENABLED=true`; Proxmox still enforces the API token's
+`Sys.PowerMgmt` permission.
 
 ## Provider boundary
 
@@ -239,10 +251,12 @@ Current environment variables:
 - `CORS_ORIGIN`: comma-separated allowed frontend origins
 - `DASHBOARD_DATA_SOURCE`: `mock` or `proxmox`
 - `PROXMOX_API_URL`: Proxmox HTTPS origin, normally port 8006
+- `PROXMOX_WEB_URL`: browser URL used by Open Proxmox
 - `PROXMOX_TOKEN_ID`: full `user@realm!token-name` identifier
 - `PROXMOX_TOKEN_SECRET`: API token secret
 - `PROXMOX_NODE_NAME`: target Proxmox node
 - `PROXMOX_TLS_REJECT_UNAUTHORIZED`: certificate validation, default `true`
+- `PROXMOX_RESTART_ENABLED`: enables confirmed Proxmox node reboot, default `false`
 - `VITE_API_BASE_URL`: frontend build-time API base URL
 
 Keep secrets only in the backend environment. Never expose them through a

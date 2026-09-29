@@ -114,7 +114,14 @@ After deployment, open the LXC container's IP address in a browser. DNS and TLS
 can be added later without rebuilding the dashboard unless the API URL changes.
 
 
-nikmejak@niks-macbook-pro-m4 jarvis-dashboard % npm run build
+npm run build
+
 rsync -av --delete \
   frontend/dist/ \
   root@192.168.0.30:/var/www/jarvis-dashboard/
+
+rsync -av --delete \
+  --exclude 'node_modules/' \
+  --exclude '.env' \
+  backend/ \
+  root@192.168.0.30:/opt/jarvis-dashboard/backend/

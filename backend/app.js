@@ -18,7 +18,7 @@ function corsHeaders(request, allowedOrigins) {
 
   return {
     "Access-Control-Allow-Origin": allowedOrigins.includes("*") ? "*" : origin,
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",
   };
@@ -40,7 +40,7 @@ export function createApp({ service, allowedOrigins }) {
     if (request.method !== "GET" && !(request.method === "POST" && url.pathname === "/api/actions/restart")) {
       sendJson(response, 405, { error: "Method not allowed" }, {
         ...headers,
-        Allow: "GET, OPTIONS",
+        Allow: "GET, POST, OPTIONS",
       });
       return;
     }
@@ -59,7 +59,7 @@ export function createApp({ service, allowedOrigins }) {
       sendJson(response, 200, await handler(), headers);
     } catch (error) {
       console.error("Dashboard API request failed", error);
-      sendJson(response, 500, { error: "Internal server error" }, headers);
+      sendJson(response, 500, { error: error?.message || "Internal server error" }, headers);
     }
   };
 }

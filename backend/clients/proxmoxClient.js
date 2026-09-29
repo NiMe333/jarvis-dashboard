@@ -20,7 +20,7 @@ export class ProxmoxClient {
     this.timeoutMs = timeoutMs;
   }
 
-  async get(path, query = {}) {
+  async request(method, path, { query = {}, body = null } = {}) {
     const url = new URL(`${this.baseUrl}/api2/json${path}`);
     Object.entries(query).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== "") {
@@ -29,13 +29,25 @@ export class ProxmoxClient {
     });
 
     const transport = url.protocol === "https:" ? https : http;
+    const encodedBody = body
+      ? new URLSearchParams(Object.entries(body)
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => [key, String(value)]))
+        .toString()
+      : "";
 
     return new Promise((resolve, reject) => {
       const request = transport.request(url, {
-        method: "GET",
+        method,
         headers: {
           Accept: "application/json",
           Authorization: this.authorization,
+          ...(encodedBody
+            ? {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "Content-Length": Buffer.byteLength(encodedBody),
+            }
+            : {}),
         },
         ...(url.protocol === "https:"
           ? { rejectUnauthorized: this.tlsRejectUnauthorized }
@@ -85,7 +97,15 @@ export class ProxmoxClient {
         request.destroy(new ProxmoxApiError("Proxmox request timed out", { path }));
       });
       request.on("error", reject);
-      request.end();
+      request.end(encodedBody);
     });
+  }
+
+  get(path, query = {}) {
+    return this.request("GET", path, { query });
+  }
+
+  post(path, body = {}) {
+    return this.request("POST", path, { body });
   }
 }

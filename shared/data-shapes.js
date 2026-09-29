@@ -40,5 +40,5 @@ export const API_RESPONSE_FIELDS = Object.freeze({
     "networkReceived", "networkTransmitted", "uptime",
   ],
   event: ["id", "timestamp", "message", "type", "serviceId"],
-  quickAction: ["id", "label", "icon", "url"],
+  quickAction: ["id", "label", "icon", "url", "description", "enabled"],
 });

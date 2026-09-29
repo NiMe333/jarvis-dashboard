@@ -22,10 +22,15 @@ const ACTION_ICONS = {
   update: Download,
 };
 
+const PROXMOX_WEB_URL = "https://jarvis.taile46e9c.ts.net/#v1:0:18:4:::::::";
+
 function QuickAction({ action, restartState, onRestart }) {
   const Icon = ACTION_ICONS[action.icon] ?? CircleHelp;
   const label = dashboardCopy.quickActions.labels[action.id] ?? action.label;
-  const hasDestination = Boolean(action.url?.trim());
+  const destination = action.id === "open-proxmox"
+    ? action.url?.trim() || PROXMOX_WEB_URL
+    : action.url?.trim();
+  const hasDestination = Boolean(destination);
   const content = (
     <>
       <span className="quick-actions__icon" aria-hidden="true">
@@ -39,7 +44,7 @@ function QuickAction({ action, restartState, onRestart }) {
     return (
       <a
         className="quick-actions__button quick-actions__button--active"
-        href={action.url}
+        href={destination}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${label} — ${dashboardCopy.quickActions.opensNewTab}`}
@@ -50,12 +55,14 @@ function QuickAction({ action, restartState, onRestart }) {
   }
 
   if (action.id === "restart-service") {
+    const restartDisabled = action.enabled === false;
     return (
       <button
         type="button"
         className="quick-actions__button quick-actions__button--active"
         onClick={onRestart}
-        disabled={restartState === "loading"}
+        disabled={restartState === "loading" || restartDisabled}
+        title={restartDisabled ? "RESTART DISABLED IN BACKEND CONFIGURATION" : undefined}
       >
         {content}
       </button>
@@ -76,21 +83,26 @@ function QuickAction({ action, restartState, onRestart }) {
 
 export default function QuickActionsPanel({ actions = [], className = "" }) {
   const [restartState, setRestartState] = useState("idle");
+  const [restartFeedback, setRestartFeedback] = useState("");
   const visibleActions = actions.filter((action) => ["restart-service", "open-proxmox"].includes(action.id));
   const restart = async () => {
+    const confirmed = window.confirm(
+      "Restart the Proxmox host? All running services and guests may be interrupted.",
+    );
+    if (!confirmed) return;
+
     setRestartState("loading");
+    setRestartFeedback("RESTARTING…");
     try {
-      await dashboardApi.restart();
+      const result = await dashboardApi.restart();
+      if (!result?.accepted) throw new Error(result?.reason || "Restart was not accepted");
       setRestartState("success");
-    } catch {
+      setRestartFeedback("REBOOT ACCEPTED");
+    } catch (error) {
       setRestartState("error");
+      setRestartFeedback(error?.message || "RESTART FAILED");
     }
   };
-  const feedback = {
-    loading: "RESTARTING…",
-    success: "ACCEPTED",
-    error: "FAILED",
-  }[restartState] ?? "";
 
   return (
     <HudPanel
@@ -113,7 +125,7 @@ export default function QuickActionsPanel({ actions = [], className = "" }) {
           : <p>{dashboardCopy.common.unavailable}</p>}
       </div>
       <p className="quick-actions__feedback" aria-live="polite" data-state={restartState}>
-        {feedback}
+        {restartFeedback}
       </p>
     </HudPanel>
   );

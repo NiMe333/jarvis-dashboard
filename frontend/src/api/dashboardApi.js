@@ -27,8 +27,11 @@ async function fetchJson(path, { signal } = {}) {
 
 async function postJson(path) {
   const response = await fetch(apiUrl(path), { method: "POST", headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`Dashboard API returned ${response.status} for ${path}`);
-  return response.json();
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || `Dashboard API returned ${response.status} for ${path}`);
+  }
+  return payload;
 }
 
 export const dashboardApi = Object.freeze({

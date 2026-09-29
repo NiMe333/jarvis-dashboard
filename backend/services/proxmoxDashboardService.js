@@ -178,10 +178,12 @@ function storageTotals(storage, rootfs = {}) {
 }
 
 export class ProxmoxDashboardService extends DashboardService {
-  constructor({ client, nodeName, cacheTtlMs = 3_000, alertConfig }) {
+  constructor({ client, nodeName, webUrl = "", restartEnabled = false, cacheTtlMs = 3_000, alertConfig }) {
     super();
     this.client = client;
     this.nodeName = nodeName;
+    this.webUrl = webUrl;
+    this.restartEnabled = restartEnabled;
     this.cacheTtlMs = cacheTtlMs;
     this.hostMetricsReader = new LinuxHostMetricsReader({ nodeName });
     this.alertConfig = alertConfig;
@@ -457,11 +459,18 @@ export class ProxmoxDashboardService extends DashboardService {
 
   async getQuickActions() {
     return structuredClone(quickActionsMockData).filter((action) => ["restart-service", "open-proxmox"].includes(action.id)).map((action) =>
-      action.id === "open-proxmox" ? { ...action, label: "Open Proxmox", url: this.client.baseUrl } : { ...action, label: "Restart", description: "Restart the server" });
+      action.id === "open-proxmox"
+        ? { ...action, label: "Open Proxmox", url: this.webUrl || this.client.baseUrl }
+        : { ...action, label: "Restart", description: "Restart the Proxmox host", enabled: this.restartEnabled });
   }
 
   async restart() {
-    setTimeout(() => process.kill(process.pid, "SIGTERM"), 250);
-    return { accepted: true };
+    if (!this.restartEnabled) {
+      return { accepted: false, reason: "Proxmox restart is disabled in the backend configuration" };
+    }
+
+    const node = encodeURIComponent(this.nodeName);
+    const task = await this.client.post(`/nodes/${node}/status`, { command: "reboot" });
+    return { accepted: true, task };
   }
 }

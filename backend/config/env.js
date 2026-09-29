@@ -13,9 +13,11 @@ const dataSource = ["mock", "proxmox"].includes(requestedDataSource)
 
 const proxmoxConfig = {
   apiUrl: process.env.PROXMOX_API_URL?.trim() || "",
+  webUrl: process.env.PROXMOX_WEB_URL?.trim() || "",
   tokenId: process.env.PROXMOX_TOKEN_ID?.trim() || "",
   tokenSecret: process.env.PROXMOX_TOKEN_SECRET?.trim() || "",
   nodeName: process.env.PROXMOX_NODE_NAME?.trim() || "",
+  restartEnabled: booleanFromEnv(process.env.PROXMOX_RESTART_ENABLED, false),
 };
 
 const requiredProxmoxVariables = {
