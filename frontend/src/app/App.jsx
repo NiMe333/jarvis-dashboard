@@ -60,7 +60,12 @@ export default function App() {
             energy="pair"
             variant="large"
           >
-            <JarvisCorePanel telemetry={{ ...data.core, ...data.metrics, dataSource: data.dataSource }} />
+            <JarvisCorePanel telemetry={{
+              ...data.core,
+              ...data.metrics,
+              ...data.hostTelemetry,
+              dataSource: data.dataSource,
+            }} />
           </HudPanel>
           <RecentEventsPanel events={data.recentEvents} dataSource={data.dataSource} className="dashboard-layout__events" />
         </div>

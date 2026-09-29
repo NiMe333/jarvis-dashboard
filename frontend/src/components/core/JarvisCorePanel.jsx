@@ -21,6 +21,29 @@ const coreTemperature = (readings, index) => {
   return displayMetric(reading?.temperature, " °C");
 };
 
+const roundedMetric = (value, suffix, digits = 1) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? `${number.toFixed(digits)}${suffix}` : dashboardCopy.common.unavailable;
+};
+
+const averageCpuTemperature = (readings) => {
+  if (!Array.isArray(readings)) return dashboardCopy.common.unavailable;
+  const values = readings
+    .filter(({ label }) => /^CORE\s+\d+$/i.test(String(label ?? "")))
+    .map(({ temperature }) => Number(temperature))
+    .filter(Number.isFinite);
+  if (values.length === 0) return dashboardCopy.common.unavailable;
+  return `${(values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1)} °C`;
+};
+
+const cpuClock = (megahertz) => {
+  const value = Number(megahertz);
+  if (!Number.isFinite(value)) return dashboardCopy.common.unavailable;
+  return value >= 1_000
+    ? `${(value / 1_000).toFixed(2)} GHz`
+    : `${Math.round(value)} MHz`;
+};
+
 const STATUS_COPY = dashboardCopy.core.states;
 
 function CorePanelDecoration({ panelRef }) {
@@ -303,25 +326,22 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
     ? dashboardCopy.common.unavailable
     : status.toUpperCase();
 
-  const health = telemetry.warnings?.status;
-  const monitoring = telemetry.dataSource === "offline"
-    ? "INACTIVE"
-    : telemetry.dataSource === "live" || telemetry.dataSource === "partial"
-      ? "ACTIVE"
-      : "UNKNOWN";
-  const operationalStates = [
+  const cpuMetrics = [
     {
-      label: "CORE",
-      value: status === "online" ? "ONLINE" : status === "offline" ? "OFFLINE" : "UNKNOWN",
+      label: dashboardCopy.core.cpuUsageLabel,
+      value: roundedMetric(telemetry.cpuUsage, " %", 1),
     },
     {
-      label: "TELEMETRY",
-      value: telemetry.dataSource === "live" ? "LIVE" : telemetry.dataSource === "partial" ? "STALE" : "UNAVAILABLE",
+      label: dashboardCopy.core.cpuAverageTempLabel,
+      value: averageCpuTemperature(telemetry.cpuTemperatures),
     },
-    { label: "MONITORING", value: monitoring },
     {
-      label: "HEALTH",
-      value: health === "normal" ? "NOMINAL" : health === "warning" ? "WARNING" : health === "critical" ? "CRITICAL" : "UNKNOWN",
+      label: dashboardCopy.core.cpuPowerLabel,
+      value: roundedMetric(telemetry.powerWatts, " W", 1),
+    },
+    {
+      label: dashboardCopy.core.cpuClockLabel,
+      value: cpuClock(telemetry.cpuFrequencyMHz),
     },
   ];
 
@@ -373,7 +393,7 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
       </div>
 
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--status">
-        {operationalStates.map(({ label, value }) => (
+        {cpuMetrics.map(({ label, value }) => (
           <div className="jarvis-core__state-row" key={label}>
             <span className="jarvis-core__telemetry-label">{label}</span>
             <strong className="jarvis-core__state-value">{value}</strong>
