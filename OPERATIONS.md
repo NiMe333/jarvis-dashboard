@@ -101,6 +101,29 @@ Po vsaki spremembi `.env` zaženi:
 systemctl restart jarvis-backend
 ```
 
+Za token s privilege separation mora imeti dovoljenje tako uporabnik kot token.
+Ker ACL neposredno na `/nodes/jarvis` postane najnatančnejša vloga za node
+endpoint, mora vključevati tudi audit pravice, ki jih dashboard uporablja za
+branje statusa. Na Proxmox hostu ustvari združeno read/reboot vlogo in jo
+dodeli samo node-u:
+
+```bash
+sudo pveum role add JARVISReboot -privs 'Datastore.Audit Mapping.Audit Pool.Audit SDN.Audit Sys.Audit VM.Audit VM.GuestAgent.Audit Sys.PowerMgmt'
+sudo pveum acl modify /nodes/jarvis -user dashboard@pve -role JARVISReboot
+sudo pveum acl modify /nodes/jarvis -token 'dashboard@pve!jarvis-readonly' -role JARVISReboot
+sudo pveum user token permissions dashboard@pve jarvis-readonly
+```
+
+Če vloga `JARVISReboot` že obstaja, namesto prve vrstice uporabi:
+
+```bash
+sudo pveum role modify JARVISReboot -privs 'Datastore.Audit Mapping.Audit Pool.Audit SDN.Audit Sys.Audit VM.Audit VM.GuestAgent.Audit Sys.PowerMgmt'
+```
+
+S tem token ne dobi splošne administratorske vloge; dobi samo pravico za
+reboot ciljnega node-a. Gumb v dashboardu še vedno pokaže potrditev pred
+pošiljanjem zahteve za reboot.
+
 ## Sensor agent na Proxmox hostu
 
 Agent teče kot systemd storitev na `jarvis` in ga preveriš tako:

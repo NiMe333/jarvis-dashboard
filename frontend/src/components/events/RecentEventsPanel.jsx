@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useMemo, useRef, useState } from "react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
 import "./RecentEventsPanel.css";
@@ -7,6 +7,12 @@ const VALID_EVENT_TYPES = new Set(Object.keys(dashboardCopy.events.typeLabels));
 const TIME_FORMATTER = new Intl.DateTimeFormat([], {
   hour: "2-digit",
   minute: "2-digit",
+});
+const DATE_FORMATTER = new Intl.DateTimeFormat([], {
+  weekday: "short",
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
 });
 
 function normalizeEventType(type) {
@@ -18,6 +24,22 @@ function formatEventTime(timestamp) {
   return Number.isNaN(parsedTimestamp.getTime())
     ? dashboardCopy.common.unavailable
     : TIME_FORMATTER.format(parsedTimestamp);
+}
+
+function eventDayKey(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return null;
+  return [date.getFullYear(), date.getMonth(), date.getDate()].join("-");
+}
+
+function isToday(timestamp) {
+  return eventDayKey(timestamp) === eventDayKey(new Date());
+}
+
+function formatEventDate(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return dashboardCopy.common.unavailable;
+  return isToday(timestamp) ? "TODAY" : DATE_FORMATTER.format(date).toUpperCase();
 }
 
 function EventRow({ event, expanded = false }) {
@@ -35,6 +57,28 @@ function EventRow({ event, expanded = false }) {
       )}
     </article>
   );
+}
+
+function EventList({ events, expanded = false }) {
+  let previousDay = null;
+
+  return events.map((event) => {
+    const day = eventDayKey(event.timestamp);
+    const startsNewDay = day !== previousDay;
+    previousDay = day;
+    const showDate = startsNewDay && (expanded || !isToday(event.timestamp));
+
+    return (
+      <Fragment key={event.id}>
+        {showDate && (
+          <div className="recent-events__date-divider" role="separator">
+            {formatEventDate(event.timestamp)}
+          </div>
+        )}
+        <EventRow event={event} expanded={expanded} />
+      </Fragment>
+    );
+  });
 }
 
 function useVisibleEventCount(containerRef, totalCount) {
@@ -115,7 +159,7 @@ export default function RecentEventsPanel({ events = [], className = "" }) {
           {sortedEvents.length === 0 ? (
             <p className="recent-events__empty">{dashboardCopy.events.empty}</p>
           ) : (
-            visibleEvents.map((event) => <EventRow key={event.id} event={event} />)
+            <EventList events={visibleEvents} />
           )}
         </div>
       </HudPanel>
@@ -148,7 +192,7 @@ export default function RecentEventsPanel({ events = [], className = "" }) {
             {sortedEvents.length === 0 ? (
               <p className="recent-events__empty">{dashboardCopy.events.empty}</p>
             ) : (
-              sortedEvents.map((event) => <EventRow key={event.id} event={event} expanded />)
+              <EventList events={sortedEvents} expanded />
             )}
           </div>
         </div>
