@@ -1,6 +1,6 @@
 .dashboard-layout {
   display: grid;
-  grid-template-columns: minmax(0, 30fr) minmax(0, 39fr) minmax(0, 31fr);
+  grid-template-columns: minmax(0, 33fr) minmax(0, 36fr) minmax(0, 31fr);
   grid-template-rows: var(--dashboard-header-height) minmax(0, 1fr);
   grid-template-areas:
     "header header header"
@@ -20,8 +20,8 @@
 }
 
 .dashboard-layout__header { grid-area: header; }
-.dashboard-layout__left { grid-area: left; display: grid; grid-template-rows: minmax(0, 29fr) minmax(0, 38fr) minmax(0, 33fr); gap: clamp(7px, 0.55vh, 11px); }
-.dashboard-layout__center { grid-area: center; display: grid; grid-template-rows: minmax(0, 78fr) minmax(140px, 22fr); gap: clamp(7px, 0.55vh, 11px); }
+.dashboard-layout__left { grid-area: left; display: grid; grid-template-rows: minmax(0, 32fr) minmax(0, 43fr) minmax(0, 25fr); gap: clamp(7px, 0.55vh, 11px); }
+.dashboard-layout__center { grid-area: center; display: grid; grid-template-rows: minmax(0, 81fr) minmax(118px, 19fr); gap: clamp(7px, 0.55vh, 11px); }
 .dashboard-layout__right { grid-area: right; display: grid; grid-template-rows: minmax(0, 34fr) minmax(0, 28fr) max-content; align-content: start; gap: clamp(7px, 0.55vh, 11px); }
 
 .dashboard-layout__header .hud-frame__segment--left,
@@ -89,7 +89,7 @@
   .dashboard-layout__left,
   .dashboard-layout__right { display: contents; }
   .dashboard-layout__overview { order: 3; min-height: 360px; }
-  .dashboard-layout__resource { order: 4; min-height: 180px; }
+  .dashboard-layout__resource { order: 4; min-height: 320px; }
   .dashboard-layout__services { order: 5; min-height: 190px; }
   .dashboard-layout__temperature { order: 6; min-height: 165px; }
   .dashboard-layout__network { order: 7; min-height: 165px; }

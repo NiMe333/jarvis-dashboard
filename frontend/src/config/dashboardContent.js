@@ -42,7 +42,7 @@ export const dashboardCopy = Object.freeze({
     activeAlerts: "ACTIVE ALERTS",
   },
   panels: {
-    liveResources: { title: "LIVE RESOURCES", subtitle: "/ 1 SEC" },
+    liveResources: { title: "STORAGE OVERVIEW", subtitle: "/ PHYSICAL SSDs" },
     network: { title: "NETWORK THROUGHPUT", subtitle: "REAL-TIME" },
     recentEvents: { title: "RECENT EVENTS", subtitle: "/ SYSTEM LOG" },
     services: { title: "SERVICES & CONTAINERS", subtitle: "/ CORE SERVICES" },

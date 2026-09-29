@@ -44,7 +44,7 @@ def read_text(path):
 
 def number(value):
     try:
-        return float(value)
+        return float(str(value).strip().lstrip("<>"))
     except (TypeError, ValueError):
         return None
 
@@ -59,6 +59,10 @@ def command_json(arguments, timeout):
         return json.loads(result.stdout) if result.stdout else None
     except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
         return None
+
+
+def executable(name, locations=()):
+    return shutil.which(name) or next((path for path in locations if Path(path).is_file()), None)
 
 
 def sensors():
@@ -92,9 +96,10 @@ def sensors():
 
 
 def smart_metrics():
-    smartctl = shutil.which("smartctl")
+    smartctl = executable("smartctl", ("/usr/sbin/smartctl", "/usr/bin/smartctl"))
+    metrics = {}
     if not smartctl:
-        return {"temperature": None, "smartHealth": None, "device": None, "model": None}
+        return metrics
     devices = [path.name for path in Path("/sys/block").iterdir() if re.fullmatch(r"(?:sd[a-z]+|nvme\d+n\d+)", path.name)][:8]
     for device in devices:
         payload = command_json([smartctl, "-j", "-a", f"/dev/{device}"], 5)
@@ -109,9 +114,117 @@ def smart_metrics():
         smart_health = (payload.get("smart_status") or {}).get("passed")
         smart_health = smart_health if isinstance(smart_health, bool) else None
         model = payload.get("model_name") if isinstance(payload.get("model_name"), str) else None
-        if temperature is not None or smart_health is not None or model is not None:
-            return {"temperature": temperature, "smartHealth": smart_health, "device": f"/dev/{device}", "model": model}
-    return {"temperature": None, "smartHealth": None, "device": None, "model": None}
+        metrics[f"/dev/{device}"] = {"temperature": temperature, "smartHealth": smart_health, "model": model}
+    return metrics
+
+
+def block_disks():
+    lsblk = executable("lsblk", ("/usr/bin/lsblk", "/bin/lsblk"))
+    payload = command_json([lsblk, "--json", "--bytes", "--output", "NAME,PATH,TYPE,SIZE,MODEL,MOUNTPOINTS"], 4) if lsblk else None
+    return (payload or {}).get("blockdevices") if isinstance(payload, dict) else []
+
+
+def descendants(device):
+    yield device
+    for child in device.get("children") or []:
+        yield from descendants(child)
+
+
+def disk_for_mount(disks, mount_point):
+    for disk in disks:
+        for item in descendants(disk):
+            if mount_point in (item.get("mountpoints") or []):
+                return disk
+    return None
+
+
+def filesystem_usage(mount_point, label):
+    try:
+        usage = shutil.disk_usage(mount_point)
+        used_percent = usage.used / usage.total * 100 if usage.total else None
+        return {
+            "label": label,
+            "used": usage.used,
+            "total": usage.total,
+            "free": usage.free,
+            "percent": used_percent,
+        }
+    except OSError:
+        return None
+
+
+def lvm_thin_pool_usage():
+    lvs = executable("lvs", ("/usr/sbin/lvs", "/sbin/lvs"))
+    payload = command_json([lvs, "--reportformat", "json", "--units", "b", "--nosuffix", "-o", "lv_name,lv_size,data_percent,lv_attr"], 4) if lvs else None
+    reports = (payload or {}).get("report") if isinstance(payload, dict) else []
+    logical_volumes = reports[0].get("lv") if reports and isinstance(reports[0], dict) else []
+    if not isinstance(logical_volumes, list):
+        return None
+    pool = next((item for item in logical_volumes if item.get("lv_name") == "data" and str(item.get("lv_attr", "")).startswith("t")), None)
+    if not pool:
+        pool = next((item for item in logical_volumes if str(item.get("lv_attr", "")).startswith("t")), None)
+    if not pool:
+        return None
+    total = number(pool.get("lv_size"))
+    percent = number(pool.get("data_percent"))
+    if total is None or percent is None:
+        return None
+    total_bytes = int(total)
+    used = total_bytes * percent / 100
+    return {
+        "label": "PROXMOX LVM THIN POOL",
+        "used": used,
+        "total": total_bytes,
+        "free": max(0, total_bytes - used),
+        "percent": percent,
+    }
+
+
+def proxmox_system_usage():
+    root = filesystem_usage("/", "ROOT FILESYSTEM")
+    pool = lvm_thin_pool_usage()
+    if not root or not pool:
+        return pool or root
+    total = root["total"] + pool["total"]
+    used = root["used"] + pool["used"]
+    return {
+        "label": "PROXMOX ROOT + THIN POOL",
+        "used": used,
+        "total": total,
+        "free": root["free"] + pool["free"],
+        "percent": used / total * 100 if total else None,
+    }
+
+
+def storage_devices():
+    disks = block_disks()
+    smart = smart_metrics()
+    system_disk = disk_for_mount(disks, "/")
+    data_disk = disk_for_mount(disks, "/mnt/storage")
+    definitions = [
+        ("system", "SYSTEM SSD", system_disk, "/ + local-lvm", proxmox_system_usage()),
+        ("data", "DATA SSD", data_disk, "/mnt/storage", filesystem_usage("/mnt/storage", "MOUNTED FILESYSTEM")),
+    ]
+    result = []
+    for role, name, disk, mount_point, usage in definitions:
+        if not isinstance(disk, dict):
+            continue
+        device = disk.get("path")
+        smart_data = smart.get(device, {})
+        physical_total = number(disk.get("size"))
+        result.append({
+            "id": role,
+            "role": role,
+            "name": name,
+            "device": device,
+            "model": smart_data.get("model") or disk.get("model") or None,
+            "physicalTotal": physical_total,
+            "mountPoint": mount_point,
+            "usage": usage,
+            "temperature": smart_data.get("temperature"),
+            "smartHealth": smart_data.get("smartHealth"),
+        })
+    return result
 
 
 def cpu_usage():
@@ -175,14 +288,15 @@ def collect():
     if local_host != NODE_NAME.split(".")[0] or not Path("/etc/pve").is_dir():
         return unavailable()
     sensor_data = sensors()
-    ssd = smart_metrics()
+    storage_devices_data = storage_devices()
+    legacy_ssd = next((disk for disk in storage_devices_data if disk["role"] == "data"), storage_devices_data[0] if storage_devices_data else {})
     return {
         "available": True,
         "cpuTemperature": sensor_data["cpuTemperature"],
-        "ssdTemperature": ssd["temperature"],
-        "ssdSmartHealth": ssd["smartHealth"],
-        "ssdDevice": ssd["device"],
-        "ssdModel": ssd["model"],
+        "ssdTemperature": legacy_ssd.get("temperature"),
+        "ssdSmartHealth": legacy_ssd.get("smartHealth"),
+        "ssdDevice": legacy_ssd.get("device"),
+        "ssdModel": legacy_ssd.get("model"),
         "fanRpm": sensor_data["fanRpm"],
         "powerWatts": rapl_power(),
         "processCount": process_count(),
@@ -190,6 +304,7 @@ def collect():
         "cpuUsage": cpu_usage(),
         "memory": memory(),
         "storage": root_storage(),
+        "storageDevices": storage_devices_data,
         "temperatures": sensor_data["temperatures"],
         "cpuTemperatures": sensor_data["cpuTemperatures"],
         "sensorsAvailable": sensor_data["available"],
@@ -198,7 +313,7 @@ def collect():
 
 
 def unavailable():
-    return {"available": False, "cpuTemperature": None, "ssdTemperature": None, "ssdSmartHealth": None, "ssdDevice": None, "ssdModel": None, "fanRpm": None, "powerWatts": None, "processCount": None, "network": None, "cpuUsage": None, "memory": {"total": None, "used": None, "available": None}, "storage": None, "temperatures": [], "cpuTemperatures": [], "sensorsAvailable": False, "identity": None}
+    return {"available": False, "cpuTemperature": None, "ssdTemperature": None, "ssdSmartHealth": None, "ssdDevice": None, "ssdModel": None, "fanRpm": None, "powerWatts": None, "processCount": None, "network": None, "cpuUsage": None, "memory": {"total": None, "used": None, "available": None}, "storage": None, "storageDevices": [], "temperatures": [], "cpuTemperatures": [], "sensorsAvailable": False, "identity": None}
 
 
 def metrics():

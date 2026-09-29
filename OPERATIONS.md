@@ -138,12 +138,21 @@ Njegova konfiguracija je v `/etc/jarvis-sensor-agent.env`. Dostop je omejen
 na dashboard LXC IP in bearer token. Ne spreminjaj `SENSOR_AGENT_TOKEN`, ne da
 bi istočasno posodobil `HOST_METRICS_AGENT_TOKEN` v dashboard backend `.env`.
 
-Ko spremeniš `sensor_agent.py` ali systemd unit, kopiraj posodobljene datoteke
-na Proxmox host, nato:
+Ko spremeniš `backend/sensor_agent.py`, ga iz korena lokalnega projekta kopiraj
+na Proxmox host in ponovno zaženi agent:
+
+```bash
+scp backend/sensor_agent.py nik@192.168.0.11:/tmp/jarvis-sensor-agent.py
+ssh jarvis
+sudo install -m 755 /tmp/jarvis-sensor-agent.py /opt/jarvis-sensor-agent/sensor_agent.py
+sudo systemctl restart jarvis-sensor-agent
+sudo systemctl status jarvis-sensor-agent --no-pager
+```
+
+Če spremeniš še systemd unit, kopiraj tudi njega in pred restartom uporabi:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl restart jarvis-sensor-agent
 ```
 
 ## Kaj se sme brisati z `--delete`

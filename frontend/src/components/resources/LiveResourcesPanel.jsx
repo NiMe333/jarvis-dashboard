@@ -1,161 +1,143 @@
-import { Activity, Cpu, HardDrive, MemoryStick, Thermometer, CheckCircle } from "lucide-react";
+import { HardDrive, ShieldAlert, ShieldCheck, Thermometer } from "lucide-react";
 import HudPanel from "../panel/HudPanel.jsx";
 import { dashboardCopy } from "../../config/dashboardContent.js";
 import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./LiveResourcesPanel.css";
 
-function percentOf(value, total) {
-  if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return null;
-  return Math.min(100, Math.max(0, (value / total) * 100));
+const unavailable = dashboardCopy.common.unavailable;
+
+function formatBytes(value) {
+  if (!Number.isFinite(value) || value < 0) return unavailable;
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const index = Math.min(Math.floor(Math.log(value || 1) / Math.log(1024)), units.length - 1);
+  const amount = value / (1024 ** index);
+  return `${amount.toLocaleString(undefined, { maximumFractionDigits: amount >= 100 ? 0 : 1 })} ${units[index]}`;
 }
 
-function displayValue(value, suffix = "") {
-  return Number.isFinite(value) ? `${value}${suffix}` : dashboardCopy.common.unavailable;
+function byteParts(value) {
+  if (!Number.isFinite(value) || value < 0) return null;
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const index = Math.min(Math.floor(Math.log(value || 1) / Math.log(1024)), units.length - 1);
+  const amount = value / (1024 ** index);
+  return {
+    amount: amount.toLocaleString(undefined, { maximumFractionDigits: amount >= 100 ? 0 : 1 }),
+    unit: units[index],
+  };
 }
 
-function displayPair(value, total, suffix = "") {
-  return Number.isFinite(value) && Number.isFinite(total)
-    ? `${value} / ${total}${suffix}`
-    : dashboardCopy.common.unavailable;
+function capacityPair(used, total) {
+  const usedParts = byteParts(used);
+  const totalParts = byteParts(total);
+  if (!usedParts || !totalParts) return unavailable;
+  return usedParts.unit === totalParts.unit
+    ? <>{usedParts.amount} <em>/</em> {totalParts.amount} {totalParts.unit}</>
+    : <>{usedParts.amount} {usedParts.unit} <em>/</em> {totalParts.amount} {totalParts.unit}</>;
 }
 
-function ResourceCard({ icon: Icon, label, value, detail, percent }) {
-  const normalizedPercent = Number.isFinite(percent)
-    ? Math.min(100, Math.max(0, percent))
-    : null;
+function statusLabel(value) {
+  if (value === true) return "PASSED";
+  if (value === false) return "WARNING";
+  return unavailable;
+}
+
+function normalizedPercent(usage) {
+  const value = Number.isFinite(usage?.percent)
+    ? usage.percent
+    : Number.isFinite(usage?.used) && Number.isFinite(usage?.total) && usage.total > 0
+      ? (usage.used / usage.total) * 100
+      : null;
+  return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : null;
+}
+
+function fallbackDisk(role) {
+  return {
+    id: role,
+    role,
+    name: role === "system" ? "SYSTEM SSD" : "DATA SSD",
+    device: null,
+    model: null,
+    physicalTotal: null,
+    mountPoint: role === "system" ? "/ + local-lvm" : "/mnt/storage",
+    usage: null,
+    temperature: null,
+    smartHealth: null,
+  };
+}
+
+function StorageCard({ disk }) {
+  const usage = disk.usage ?? {};
+  const percent = normalizedPercent(usage);
+  const online = disk.smartHealth !== false;
+  const SmartIcon = disk.smartHealth === false ? ShieldAlert : ShieldCheck;
 
   return (
-    <article className="live-resources__card">
-      <header>
-        <span className="live-resources__icon" aria-hidden="true"><Icon size={16} /></span>
-        <span>{label}</span>
+    <article className="storage-overview__card">
+      <header className="storage-overview__card-header">
+        <span className="storage-overview__disk-icon" aria-hidden="true"><HardDrive /></span>
+        <span className="storage-overview__name-wrap">
+          <strong>{disk.name}</strong>
+          <small title={disk.model ?? undefined}>
+            <span>{disk.model ?? unavailable}</span>
+            {disk.device && <b>{disk.device}</b>}
+          </small>
+        </span>
+        <span className={`storage-overview__status ${online ? "" : "storage-overview__status--warning"}`}>
+          <i aria-hidden="true" />{online ? "ONLINE" : "SMART ALERT"}
+        </span>
       </header>
-      <strong>{value}</strong>
-      <small className="live-resources__card-detail">
-        <span aria-hidden="true" />{detail}
-      </small>
-      <div
-        className="live-resources__progress"
-        role="progressbar"
-        aria-label={label}
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-valuenow={normalizedPercent === null ? undefined : Math.round(normalizedPercent)}
-      >
-        <span style={{ width: normalizedPercent === null ? undefined : `${normalizedPercent}%` }} />
-      </div>
+
+      <section className="storage-overview__capacity" aria-label={`${disk.name} capacity`}>
+        <span>{usage.label ?? "USAGE"}</span>
+        <strong>{capacityPair(usage.used, usage.total)}</strong>
+        <div
+          className="storage-overview__meter"
+          role="progressbar"
+          aria-label={`${disk.name} usage`}
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={percent === null ? undefined : Math.round(percent)}
+        >
+          <span style={{ width: percent === null ? "0%" : `${percent}%` }} />
+        </div>
+        <div className="storage-overview__free"><span>{formatBytes(usage.free)} FREE</span><span>{percent === null ? unavailable : `${percent.toFixed(1)}%`}</span></div>
+      </section>
+
+      <dl className="storage-overview__health">
+        <div>
+          <dt><Thermometer aria-hidden="true" />TEMPERATURE</dt>
+          <dd>{Number.isFinite(disk.temperature) ? `${disk.temperature.toFixed(0)} °C` : unavailable}</dd>
+        </div>
+        <div>
+          <dt><SmartIcon aria-hidden="true" />SMART STATUS</dt>
+          <dd className={disk.smartHealth === false ? "storage-overview__health-alert" : ""}>{statusLabel(disk.smartHealth)}</dd>
+        </div>
+      </dl>
+
+      <footer className="storage-overview__footer">
+        <span>{disk.mountPoint ?? unavailable}</span>
+        <span>PHYSICAL: {formatBytes(disk.physicalTotal)}</span>
+      </footer>
     </article>
   );
 }
 
-function WarningStatus({ warnings }) {
-  const status = warnings?.status ?? "unavailable";
-  const label = status === "normal" ? "NORMAL" : status === "critical" ? "CRITICAL" : status === "warning" ? "WARNING" : "UNAVAILABLE";
-  const alerts = Array.isArray(warnings?.alerts) ? warnings.alerts : [];
-  const unavailable = Array.isArray(warnings?.unavailable) ? warnings.unavailable : [];
-  const formatAlert = (alert) => `${alert.metric}: ${typeof alert.value === "number" ? alert.value.toFixed(1) : alert.value}${alert.suffix ?? ""}`;
-
-  return (
-    <section className={`live-resources__warning live-resources__warning--${status}`} aria-live="polite">
-      <strong>HOST STATUS: {label}</strong>
-      {alerts.length > 0
-        ? <span>{alerts.map(formatAlert).join(" · ")}</span>
-        : status === "normal"
-          ? <span>LIVE READINGS WITHIN CONFIGURED LIMITS</span>
-          : <span>{unavailable.length > 0 ? `UNAVAILABLE: ${unavailable.join(", ")}` : dashboardCopy.common.unavailable}</span>}
-    </section>
-  );
-}
-
 export default function LiveResourcesPanel({ data = {}, dataSource = "offline", className = "" }) {
-  const units = dashboardCopy.common.units;
-  const loadAverage = Array.isArray(data.loadAverage)
-    ? data.loadAverage.map((value) => Number.isFinite(value) ? value.toFixed(2) : dashboardCopy.common.unavailable).join(" / ")
-    : data.loadAverage;
+  const storageDevices = Array.isArray(data.storageDevices) ? data.storageDevices : [];
+  const system = storageDevices.find((disk) => disk?.role === "system") ?? fallbackDisk("system");
+  const dataDisk = storageDevices.find((disk) => disk?.role === "data") ?? fallbackDisk("data");
 
   return (
     <HudPanel
       title={dashboardCopy.panels.liveResources.title}
       subtitle={`${dashboardCopy.panels.liveResources.subtitle} // ${dataSourceLabel(dataSource)}`}
-      className={`live-resources ${className}`.trim()}
+      className={`storage-overview ${className}`.trim()}
       frameStyle="contained"
       variant="compact"
     >
-      <div className="live-resources__primary">
-        <ResourceCard
-          icon={Cpu}
-          label={dashboardCopy.resources.cpu}
-          value={displayValue(data.cpuUsage, units.percent)}
-          detail={dashboardCopy.resources.states[data.cpuState] ?? dashboardCopy.common.unavailable}
-          percent={data.cpuUsage}
-        />
-        <ResourceCard
-          icon={Thermometer}
-          label="CPU TEMPERATURE"
-          value={displayValue(data.cpuTemperature, " °C")}
-          detail={data.cpuTemperature === null || data.cpuTemperature === undefined
-            ? data.sensorSource ?? dashboardCopy.common.unavailable
-            : "PACKAGE ID 0 · LM-SENSORS"}
-          percent={null}
-        />
-        <ResourceCard
-          icon={Thermometer}
-          label="SSD TEMPERATURE"
-          value={displayValue(data.ssdTemperature, " °C")}
-          detail={data.ssdSmartHealth === true ? "SMART PASSED" : data.ssdSmartHealth === false ? "SMART WARNING" : dashboardCopy.common.unavailable}
-          percent={null}
-        />
-        <ResourceCard
-          icon={CheckCircle}
-          label="SMART STATUS"
-          value={data.ssdSmartHealth === true ? "PASSED" : data.ssdSmartHealth === false ? "FAILED" : dashboardCopy.common.unavailable}
-          detail={data.ssdModel ?? data.ssdDevice ?? dashboardCopy.common.unavailable}
-          percent={null}
-        />
-        <ResourceCard
-          icon={MemoryStick}
-          label={dashboardCopy.resources.memory}
-          value={displayPair(data.memoryUsed, data.memoryTotal, units.storage)}
-          detail={Number.isFinite(data.memoryAvailable) ? `${data.memoryAvailable}${units.storage} ${dashboardCopy.resources.available}` : dashboardCopy.common.unavailable}
-          percent={percentOf(data.memoryUsed, data.memoryTotal)}
-        />
-        <ResourceCard
-          icon={HardDrive}
-          label={dashboardCopy.resources.storage}
-          value={displayPair(data.storageUsed, data.storageTotal, units.storage)}
-          detail={Number.isFinite(data.storageFree) ? `${data.storageFree}${units.storage} ${dashboardCopy.resources.free}` : dashboardCopy.common.unavailable}
-          percent={percentOf(data.storageUsed, data.storageTotal)}
-        />
+      <div className="storage-overview__grid">
+        <StorageCard disk={system} />
+        <StorageCard disk={dataDisk} />
       </div>
-
-      <dl className="live-resources__details">
-        <div>
-          <dt><Activity size={13} aria-hidden="true" />{dashboardCopy.resources.loadAverage}</dt>
-          <dd>{loadAverage ?? dashboardCopy.common.unavailable}</dd>
-          <span className="live-resources__detail-meter" aria-hidden="true" />
-        </div>
-        <div className="live-resources__core-temperatures">
-          <dt><Thermometer size={13} aria-hidden="true" />CPU CORE TEMPERATURES</dt>
-          {Array.isArray(data.cpuTemperatures) && data.cpuTemperatures.length > 0 ? (
-            <dd className="live-resources__core-temperature-list">
-              {data.cpuTemperatures.map((reading, index) => (
-                <span key={`${reading.label}-${index}`}>{reading.label}: {displayValue(reading.temperature, " °C")}</span>
-              ))}
-            </dd>
-          ) : <dd>{dashboardCopy.common.unavailable}</dd>}
-        </div>
-        {Array.isArray(data.additionalTemperatures) && data.additionalTemperatures.length > 0 && (
-          <div className="live-resources__core-temperatures">
-            <dt><Thermometer size={13} aria-hidden="true" />BOARD SENSORS</dt>
-            <dd className="live-resources__core-temperature-list">
-              {data.additionalTemperatures.map((reading, index) => (
-                <span key={`${reading.sensor}-${reading.channel}-${index}`}>{reading.sensor} / {reading.channel}: {displayValue(reading.temperature, " °C")}</span>
-              ))}
-            </dd>
-          </div>
-        )}
-      </dl>
-      <WarningStatus warnings={data.warnings} />
     </HudPanel>
   );
 }

@@ -425,6 +425,7 @@ export class ProxmoxDashboardService extends DashboardService {
       ssdSmartHealth: host.ssdSmartHealth ?? null,
       ssdDevice: host.ssdDevice ?? null,
       ssdModel: host.ssdModel ?? null,
+      storageDevices: Array.isArray(host.storageDevices) ? host.storageDevices : [],
       sensorSource: host.sensorsAvailable
         ? "lm-sensors"
         : host.available ? "lm-sensors unavailable"

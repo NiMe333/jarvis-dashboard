@@ -109,7 +109,7 @@
 .system-overview__uptime-label,
 .system-overview__hardware dt {
   color: #5d8f95;
-  font-size: clamp(9px, 2.8cqw, 13px);
+  font-size: clamp(9px, 2.8cqw, 15px);
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.06em;
@@ -179,7 +179,7 @@
 .system-overview__uptime-copy strong {
   color: #d6eef0;
   font-family: var(--font-display);
-  font-size: clamp(22px, 7.5cqw, 35px);
+  font-size: clamp(22px, 7.5cqw, 39px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.025em;
@@ -219,7 +219,7 @@
   overflow: hidden;
   color: #bfdadd;
   font-family: var(--font-display);
-  font-size: clamp(11px, 3cqw, 14px);
+  font-size: clamp(11px, 3.2cqw, 18px);
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: 0;
@@ -255,6 +255,19 @@
   .system-overview__hardware {
     margin-top: 14px;
     row-gap: 5px;
+  }
+}
+
+@container system-overview-panel (max-width: 440px) {
+  .system-overview__body {
+    grid-template-columns: minmax(0, 1fr) minmax(102px, 0.7fr);
+    gap: 10px;
+  }
+  .system-overview__hardware {
+    column-gap: 7px;
+  }
+  .system-overview__hardware dd {
+    font-size: clamp(10px, 3cqw, 14px);
   }
 }
 

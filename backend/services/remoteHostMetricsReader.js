@@ -12,6 +12,7 @@ const EMPTY_HOST_METRICS = Object.freeze({
   cpuUsage: null,
   memory: Object.freeze({ total: null, used: null, available: null }),
   storage: null,
+  storageDevices: Object.freeze([]),
   temperatures: Object.freeze([]),
   cpuTemperatures: Object.freeze([]),
   sensorsAvailable: false,
