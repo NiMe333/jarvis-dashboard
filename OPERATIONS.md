@@ -9,7 +9,25 @@ Ta vodič velja za trenutno postavitev:
 | Frontend datoteke | `/var/www/jarvis-dashboard/` | Statični Vite build, ki ga streže Nginx |
 | Backend | `/opt/jarvis-dashboard/backend/` | Node.js API, systemd storitev `jarvis-backend` |
 | Proxmox host | `jarvis` / `192.168.0.11` | Proxmox API in fizični senzorji |
-| Sensor agent | `/opt/jarvis-sensor-agent/sensor_agent.py` na Proxmox hostu | Read-only meritve CPU, SSD/SMART in moči |
+| Sensor agent | `/opt/jarvis-sensor-agent/sensor_agent.py` na Proxmox hostu | Read-only CPU, disk, RAM, PSI, swap in process meritve hosta |
+
+## Kje se kaj popravlja
+
+| Če spreminjaš | Lokalne datoteke | Kaj nato objaviš |
+| --- | --- | --- |
+| Videz, postavitev ali tekst dashboarda | `frontend/src/` | `npm run build` in samo `frontend/dist/` |
+| Proxmox API, transformacije ali fallbacki | `backend/services/`, `backend/routes/` | `backend/` in restart `jarvis-backend` |
+| Fizične diske, RAM, PSI, SMART ali procese hosta | `backend/sensor_agent.py` | `backend/sensor_agent.py` na Proxmox host in restart agenta |
+| Produkcijske URL-je, tokene ali reboot dovoljenje | samo LXC `/opt/jarvis-dashboard/backend/.env` | restart `jarvis-backend`; `.env` se ne rsynca |
+
+Najpomembnejši UI paneli:
+
+- `frontend/src/components/resources/LiveResourcesPanel.jsx` in `.css`: **STORAGE OVERVIEW**.
+- `frontend/src/components/sensors/HostTelemetryPanel.jsx` in `TemperaturePowerPanel.css`: **MEMORY & WORKLOAD**.
+- `frontend/src/components/overview/`: **SYSTEM OVERVIEW**.
+- `frontend/src/components/core/`: centralni shader, CPU telemetry in HOST STATUS.
+
+Podatkovni tok je: `sensor_agent.py` na Proxmox hostu → `RemoteHostMetricsReader` v LXC backendu → `/api/resources` in `/api/temperature` → frontend polling na 5 sekund.
 
 ## Običajna posodobitev
 
@@ -67,6 +85,34 @@ curl -s http://127.0.0.1:3001/api/quick-actions
 ```bash
 journalctl -u jarvis-backend -n 100 --no-pager
 ```
+
+Za popolnejši hiter pregled iz Maca:
+
+```bash
+curl -s http://jarvis-dashboard/api/health
+curl -s http://jarvis-dashboard/api/resources
+curl -s http://jarvis-dashboard/api/temperature
+ssh jarvis 'systemctl is-active jarvis-sensor-agent'
+ssh root@192.168.0.30 'systemctl is-active jarvis-backend'
+```
+
+Pri normalnem stanju pričakuj:
+
+- `health`: `source` je `proxmox` in `hostMetricsAvailable` je `true`.
+- `resources`: ima `memoryDetails`, `memoryPressure`, `memoryHardware` in `workload`.
+- `temperature`: ima dve vrednosti v `storageDevices` (`system` in `data`).
+- Obe systemd storitvi vrneta `active`.
+
+## Kako delujejo fallbacki
+
+Če Proxmox API ali sensor agent začasno nista dosegljiva, backend ne sme pasti:
+
+- `RemoteHostMetricsReader` po timeoutu vrne prazne/null meritve.
+- Frontend za nedostopne meritve pokaže `N/A`; ne prikazuje izmišljenih ničel.
+- PSI `0.00%` in swap `0 B/s` sta veljavni samo, kadar jih host dejansko vrne.
+- `CACHE_SECONDS` v agentu omeji obremenitev hosta; zgodovina RAM porabe se hrani samo v pomnilniku agenta in se po restartu začne zbirati znova.
+
+Po večji nadgradnji Proxmoxa ali Node.js vedno zaženi preverjanje iz prejšnjega poglavja. Če se spremeni topologija diskov, mount point `/mnt/storage`, IP dashboard LXC ali API token, preveri tudi `.env` in agentovo `/etc/jarvis-sensor-agent.env`.
 
 ## Produkcijski backend `.env`
 
