@@ -43,7 +43,7 @@ export const dashboardCopy = Object.freeze({
   },
   panels: {
     liveResources: { title: "LIVE RESOURCES", subtitle: "/ 1 SEC" },
-    network: { title: "NETWORK THROUGHPUT", subtitle: "/ REAL-TIME // 1 MIN" },
+    network: { title: "NETWORK THROUGHPUT", subtitle: "REAL-TIME" },
     recentEvents: { title: "RECENT EVENTS", subtitle: "/ SYSTEM LOG" },
     services: { title: "SERVICES & CONTAINERS", subtitle: "/ CORE SERVICES" },
     hostTelemetry: { title: "HOST TELEMETRY", subtitle: "/ PROXMOX NODE" },

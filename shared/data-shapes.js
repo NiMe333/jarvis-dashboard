@@ -27,7 +27,7 @@ export const API_RESPONSE_FIELDS = Object.freeze({
   ],
   network: [
     "downloadRate", "uploadRate", "totalReceived", "totalTransmitted",
-    "networkInterface", "networkSeries",
+    "totalsWindow", "networkInterface", "networkSeries",
   ],
   temperature: [
     "cpuTemperature", "ssdTemperature", "powerWatts", "fanRpm",

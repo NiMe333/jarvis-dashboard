@@ -33,6 +33,35 @@ function bytesPerSecondToMbps(value) {
   return bytesPerSecond === null ? null : round((bytesPerSecond * 8) / 1_000_000, 3);
 }
 
+function accumulatedBytes(points, key) {
+  let total = 0;
+  let hasSamples = false;
+  for (let index = 1; index < points.length; index += 1) {
+    const previousTime = finiteNumber(points[index - 1]?.time);
+    const currentTime = finiteNumber(points[index]?.time);
+    const previousRate = finiteNumber(points[index - 1]?.[key]);
+    const currentRate = finiteNumber(points[index]?.[key]);
+    if (previousTime === null || currentTime === null || previousRate === null || currentRate === null) continue;
+    const elapsedSeconds = Math.max(0, currentTime - previousTime);
+    hasSamples = true;
+    total += ((previousRate + currentRate) / 2) * elapsedSeconds;
+  }
+  return hasSamples ? Math.round(total) : null;
+}
+
+function preferredNetworkInterface(interfaces) {
+  return [...interfaces]
+    .filter((item) => item?.iface && item.iface !== "lo")
+    .sort((left, right) => {
+      const score = (item) =>
+        (item.active ? 8 : 0)
+        + (item.autostart ? 4 : 0)
+        + (item.type === "bridge" ? 3 : 0)
+        + (item.type === "bond" ? 2 : 0);
+      return score(right) - score(left);
+    })[0]?.iface ?? null;
+}
+
 function proxmoxVersion(snapshot) {
   const value = snapshot.version.version
     ?? snapshot.version.release
@@ -170,11 +199,12 @@ export class ProxmoxDashboardService extends DashboardService {
       this.client.get(`/nodes/${node}/storage`, { enabled: 1 }),
       this.client.get(`/nodes/${node}/tasks`, { limit: 50, source: "all" }),
       this.client.get(`/nodes/${node}/rrddata`, { timeframe: "hour" }),
+      this.client.get(`/nodes/${node}/network`),
       this.client.get("/version"),
       this.hostMetricsReader.read(),
     ]);
 
-    const [statusResult, qemuResult, lxcResult, storageResult, tasksResult, rrdResult, versionResult, hostResult] = requests;
+    const [statusResult, qemuResult, lxcResult, storageResult, tasksResult, rrdResult, networkResult, versionResult, hostResult] = requests;
     if (statusResult.status === "rejected") throw statusResult.reason;
 
     const snapshot = {
@@ -185,6 +215,7 @@ export class ProxmoxDashboardService extends DashboardService {
       storage: safeArray(storageResult),
       tasks: safeArray(tasksResult),
       rrd: safeArray(rrdResult),
+      network: safeArray(networkResult),
       version: safeObject(versionResult),
       host: safeObject(hostResult),
       available: {
@@ -193,6 +224,7 @@ export class ProxmoxDashboardService extends DashboardService {
         storage: storageResult.status === "fulfilled",
         tasks: tasksResult.status === "fulfilled",
         rrd: rrdResult.status === "fulfilled",
+        network: networkResult.status === "fulfilled",
         version: versionResult.status === "fulfilled",
         hostMetrics: hostResult.status === "fulfilled" && hostResult.value?.available === true,
       },
@@ -338,6 +370,7 @@ export class ProxmoxDashboardService extends DashboardService {
     const latestTime = finiteNumber(rrdPoints.at(-1)?.time);
     const networkSeries = rrdPoints.map((point) => ({
       offsetSeconds: latestTime === null ? 0 : finiteNumber(point.time) - latestTime,
+      timestamp: new Date(Number(point.time) * 1000).toISOString(),
       downloadRate: bytesPerSecondToMbps(point.netin),
       uploadRate: bytesPerSecondToMbps(point.netout),
     }));
@@ -345,12 +378,19 @@ export class ProxmoxDashboardService extends DashboardService {
     const downloadRate = latestPoint.downloadRate ?? round(network.downloadRate, 3);
     const uploadRate = latestPoint.uploadRate ?? round(network.uploadRate, 3);
 
+    const directReceived = finiteNumber(network.received);
+    const directTransmitted = finiteNumber(network.transmitted);
+    const totalReceived = directReceived ?? accumulatedBytes(rrdPoints, "netin");
+    const totalTransmitted = directTransmitted ?? accumulatedBytes(rrdPoints, "netout");
+
     return {
       downloadRate,
       uploadRate,
-      totalReceived: finiteNumber(network.received),
-      totalTransmitted: finiteNumber(network.transmitted),
-      networkInterface: network.interfaceName ?? null,
+      totalReceived,
+      totalTransmitted,
+      totalsWindow: directReceived === null && directTransmitted === null
+        && (totalReceived !== null || totalTransmitted !== null) ? "1H" : null,
+      networkInterface: network.interfaceName ?? preferredNetworkInterface(snapshot.network),
       networkSeries,
     };
   }

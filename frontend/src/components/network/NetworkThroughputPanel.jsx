@@ -1,7 +1,6 @@
 import HudPanel from "../panel/HudPanel.jsx";
 import { useState } from "react";
 import { dashboardCopy } from "../../config/dashboardContent.js";
-import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./NetworkThroughputPanel.css";
 
 const CHART_WIDTH = 100;
@@ -34,6 +33,38 @@ function pointPosition(series, index, key, maximum) {
   return { x, y };
 }
 
+function measurementTime(point) {
+  const explicit = Date.parse(point?.timestamp);
+  const measuredAt = Number.isFinite(explicit)
+    ? new Date(explicit)
+    : new Date(Date.now() + Number(point?.offsetSeconds ?? 0) * 1000);
+  return measuredAt.toLocaleTimeString("sl-SI", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+}
+
+function pointTime(point) {
+  const explicit = Date.parse(point?.timestamp);
+  return Number.isFinite(explicit) ? explicit : Number(point?.offsetSeconds ?? 0) * 1000;
+}
+
+function transferredBytes(series, key) {
+  let total = 0;
+  let hasSamples = false;
+  for (let index = 1; index < series.length; index += 1) {
+    const previousRate = series[index - 1]?.[key];
+    const currentRate = series[index]?.[key];
+    const elapsedSeconds = Math.max(0, (pointTime(series[index]) - pointTime(series[index - 1])) / 1000);
+    if (!Number.isFinite(previousRate) || !Number.isFinite(currentRate) || elapsedSeconds <= 0) continue;
+    total += ((previousRate + currentRate) / 2) * 1_000_000 / 8 * elapsedSeconds;
+    hasSamples = true;
+  }
+  return hasSamples ? total : null;
+}
+
 export default function NetworkThroughputPanel({ data = {}, dataSource = "offline", className = "" }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const series = data.networkSeries ?? [];
@@ -41,6 +72,16 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
   const downloadPath = buildPath(series, "downloadRate", maximum);
   const uploadPath = buildPath(series, "uploadRate", maximum);
   const hoveredPoint = hoveredIndex === null ? null : series[hoveredIndex];
+  const received = Number.isFinite(data.totalReceived)
+    ? data.totalReceived
+    : transferredBytes(series, "downloadRate");
+  const transmitted = Number.isFinite(data.totalTransmitted)
+    ? data.totalTransmitted
+    : transferredBytes(series, "uploadRate");
+  const totalsSuffix = data.totalsWindow || (!Number.isFinite(data.totalReceived) && received !== null)
+    ? " · 1H"
+    : "";
+  const latestPoint = series.at(-1);
   const formatRate = (value) => Number.isFinite(value)
     ? `${value}${dashboardCopy.common.units.dataRate}`
     : dashboardCopy.common.unavailable;
@@ -48,7 +89,7 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
   return (
     <HudPanel
       title={dashboardCopy.panels.network.title}
-      subtitle={`${dashboardCopy.panels.network.subtitle} // ${dataSourceLabel(dataSource)}`}
+      subtitle={dashboardCopy.panels.network.subtitle}
       className={`network-throughput ${className}`.trim()}
       frameStyle="contained"
       variant="compact"
@@ -61,7 +102,7 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
       <div className="network-throughput__chart">
         {hoveredPoint && (
           <div className="network-throughput__tooltip" role="status">
-            <strong>{hoveredPoint.offsetSeconds === 0 ? "NOW" : `${Math.abs(hoveredPoint.offsetSeconds)}s ago`}</strong>
+            <strong>MEASURED · {measurementTime(hoveredPoint)}</strong>
             <span><i className="network-throughput__tooltip-dot network-throughput__tooltip-dot--download" />↓ {formatRate(hoveredPoint.downloadRate)}</span>
             <span><i className="network-throughput__tooltip-dot network-throughput__tooltip-dot--upload" />↑ {formatRate(hoveredPoint.uploadRate)}</span>
           </div>
@@ -80,23 +121,26 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
           {downloadPath && <path className="network-throughput__area" d={`${downloadPath} L100 34 L0 34 Z`} />}
           <path className="network-throughput__line network-throughput__line--download" d={downloadPath} />
           <path className="network-throughput__line network-throughput__line--upload" d={uploadPath} />
+          <path className="network-throughput__flow network-throughput__flow--download" d={downloadPath} aria-hidden="true" />
+          <path className="network-throughput__flow network-throughput__flow--upload" d={uploadPath} aria-hidden="true" />
           {maximum > 0 && series.map((point, index) => {
             const download = pointPosition(series, index, "downloadRate", maximum);
             const upload = pointPosition(series, index, "uploadRate", maximum);
             return (
               <g
                 className={`network-throughput__point-group${hoveredIndex === index ? " is-active" : ""}`}
-                key={`${point.offsetSeconds}-${index}`}
+                key={`${point.timestamp ?? point.offsetSeconds}-${index}`}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
                 onFocus={() => setHoveredIndex(index)}
                 onBlur={() => setHoveredIndex(null)}
                 tabIndex="0"
-                aria-label={`Network at ${point.offsetSeconds === 0 ? "now" : `${Math.abs(point.offsetSeconds)} seconds ago`}: download ${formatRate(point.downloadRate)}, upload ${formatRate(point.uploadRate)}`}
+                aria-label={`Network measured at ${measurementTime(point)}: download ${formatRate(point.downloadRate)}, upload ${formatRate(point.uploadRate)}`}
               >
-                <circle className="network-throughput__hit-area" cx={download.x} cy={CHART_HEIGHT / 2} r="3.5" />
-                <circle className="network-throughput__point network-throughput__point--download" cx={download.x} cy={download.y} r="1.25" />
-                <circle className="network-throughput__point network-throughput__point--upload" cx={upload.x} cy={upload.y} r="1.1" />
+                <line className="network-throughput__hit-area" x1={download.x} x2={download.x} y1="0" y2={CHART_HEIGHT} />
+                <line className="network-throughput__guide" x1={download.x} x2={download.x} y1="0" y2={CHART_HEIGHT} />
+                <circle className="network-throughput__point network-throughput__point--download" cx={download.x} cy={download.y} r="0.85" />
+                <circle className="network-throughput__point network-throughput__point--upload" cx={upload.x} cy={upload.y} r="0.75" />
               </g>
             );
           })}
@@ -104,9 +148,12 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
       </div>
 
       <dl className="network-throughput__totals">
-        <div><dt>{dashboardCopy.network.received}</dt><dd>{formatBytes(data.totalReceived)}</dd></div>
-        <div><dt>{dashboardCopy.network.transmitted}</dt><dd>{formatBytes(data.totalTransmitted)}</dd></div>
-        <div><dt>{dashboardCopy.network.interface}</dt><dd>{data.networkInterface ?? dashboardCopy.common.unavailable}</dd></div>
+        <div><dt>{dashboardCopy.network.received}{totalsSuffix}</dt><dd>{formatBytes(received)}</dd></div>
+        <div><dt>{dashboardCopy.network.transmitted}{totalsSuffix}</dt><dd>{formatBytes(transmitted)}</dd></div>
+        <div>
+          <dt>{data.networkInterface ? dashboardCopy.network.interface : "LAST SAMPLE"}</dt>
+          <dd>{data.networkInterface ?? (latestPoint ? measurementTime(latestPoint) : dashboardCopy.common.unavailable)}</dd>
+        </div>
       </dl>
     </HudPanel>
   );

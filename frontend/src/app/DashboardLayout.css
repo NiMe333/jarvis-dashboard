@@ -20,7 +20,7 @@
 }
 
 .dashboard-layout__header { grid-area: header; }
-.dashboard-layout__left { grid-area: left; display: grid; grid-template-rows: minmax(0, 31fr) minmax(0, 46fr) minmax(0, 23fr); gap: clamp(7px, 0.55vh, 11px); }
+.dashboard-layout__left { grid-area: left; display: grid; grid-template-rows: minmax(0, 29fr) minmax(0, 38fr) minmax(0, 33fr); gap: clamp(7px, 0.55vh, 11px); }
 .dashboard-layout__center { grid-area: center; display: grid; grid-template-rows: minmax(0, 78fr) minmax(140px, 22fr); gap: clamp(7px, 0.55vh, 11px); }
 .dashboard-layout__right { grid-area: right; display: grid; grid-template-rows: minmax(0, 34fr) minmax(0, 28fr) max-content; align-content: start; gap: clamp(7px, 0.55vh, 11px); }
 
