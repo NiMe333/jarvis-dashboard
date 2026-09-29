@@ -3,11 +3,14 @@ import "./SystemStatus.css";
 export default function SystemStatus({
   dataSource = "loading",
   isRetrying = false,
+  warningTone = false,
 }) {
   const reachable = dataSource === "live" || dataSource === "partial";
-  const state = reachable ? "online" : dataSource === "loading" ? "loading" : "offline";
-  const label = reachable ? "SYSTEM ONLINE" : state === "loading" ? "CONNECTING" : "SERVER UNREACHABLE";
-  const secondary = reachable
+  const state = !reachable ? dataSource === "loading" ? "loading" : "offline" : warningTone ? "warning" : "online";
+  const label = state === "warning" ? "SYSTEM ATTENTION" : reachable ? "SYSTEM ONLINE" : state === "loading" ? "CONNECTING" : "SERVER UNREACHABLE";
+  const secondary = state === "warning"
+    ? "TELEMETRY WARNING"
+    : reachable
     ? "TELEMETRY CONNECTED"
     : state === "loading"
       ? "WAITING FOR TELEMETRY"

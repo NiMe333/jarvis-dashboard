@@ -1,11 +1,10 @@
-import { memo, useLayoutEffect, useRef, useState } from "react";
-import JarvisShader from "../JarvisShader.jsx";
+import { lazy, memo, Suspense, useLayoutEffect, useRef, useState } from "react";
 import {
   dashboardCopy,
 } from "../../config/dashboardContent.js";
 import "./JarvisCorePanel.css";
 
-const StableJarvisShader = memo(JarvisShader);
+const StableJarvisShader = memo(lazy(() => import("../JarvisShader.jsx")));
 const SEGMENTS = Array.from({ length: 7 }, (_, index) => index);
 
 const displayMetric = (value, suffix = "") =>
@@ -421,7 +420,9 @@ export default function JarvisCorePanel({ telemetry = {} }) {
 
       <div className="jarvis-core-panel__viewport">
         <div className="jarvis-core-panel__shader-shell">
-          <StableJarvisShader quality="high" />
+          <Suspense fallback={<div className="jarvis-core-panel__shader-loading" aria-label="Loading core visual" />}>
+            <StableJarvisShader quality="high" />
+          </Suspense>
         </div>
       </div>
 

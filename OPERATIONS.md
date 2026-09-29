@@ -114,6 +114,32 @@ Pri normalnem stanju pričakuj:
 
 Po večji nadgradnji Proxmoxa ali Node.js vedno zaženi preverjanje iz prejšnjega poglavja. Če se spremeni topologija diskov, mount point `/mnt/storage`, IP dashboard LXC ali API token, preveri tudi `.env` in agentovo `/etc/jarvis-sensor-agent.env`.
 
+## Dnevni health-check
+
+Na dashboard LXC je na voljo systemd timer, ki enkrat dnevno preveri:
+
+- ali je `jarvis-backend` aktiven;
+- ali lokalni `/api/health` vrne `status: ok` in `source: proxmox`;
+- ali je `hostMetricsAvailable: true`, kar potrdi povezavo do Proxmox sensor agenta.
+
+Po običajnem backend deployu ga namesti in sproži začetni test:
+
+```bash
+ssh root@192.168.0.30
+/opt/jarvis-dashboard/backend/deploy/install-health-check.sh
+systemctl list-timers jarvis-health-check.timer
+journalctl -u jarvis-health-check -n 30 --no-pager
+```
+
+Timer teče vsak dan ob približno 09:00 (z do 10-minutnim zamikom) in preživi reboot LXC-ja. Ob napaki se v journald zapiše `ALERT`; preveri ga z:
+
+```bash
+journalctl -t jarvis-health-alert -n 30 --no-pager
+journalctl -u jarvis-health-check -n 100 --no-pager
+```
+
+To je lokalni systemd/journald alarm. Za push obvestilo na telefon je treba ločeno izbrati kanal (npr. ntfy, Telegram ali e-mail) in ga dodati v alert service.
+
 ## Produkcijski backend `.env`
 
 Datoteka je samo na dashboard LXC: `/opt/jarvis-dashboard/backend/.env`.

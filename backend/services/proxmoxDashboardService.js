@@ -197,6 +197,7 @@ export class ProxmoxDashboardService extends DashboardService {
     this.alertConfig = alertConfig;
     this.cpuHighSince = null;
     this.cachedSnapshot = null;
+    this.cachedServices = [];
     this.snapshotPromise = null;
   }
 
@@ -454,10 +455,27 @@ export class ProxmoxDashboardService extends DashboardService {
 
   async getServices() {
     const snapshot = await this.getSnapshot();
-    return [
-      ...snapshot.qemu.map((guest) => guestService(guest, "qemu", this.nodeName)),
-      ...snapshot.lxc.map((guest) => guestService(guest, "lxc", this.nodeName)),
-    ].sort((a, b) => (a.vmid ?? 0) - (b.vmid ?? 0));
+    const availableKinds = {
+      qemu: snapshot.available.qemu === true,
+      lxc: snapshot.available.lxc === true,
+    };
+
+    if (!availableKinds.qemu && !availableKinds.lxc) {
+      // Do not turn a transient Proxmox inventory failure into an empty list.
+      // Throwing lets the frontend keep its last successful response instead.
+      throw new Error("Proxmox guest inventory is unavailable");
+    }
+
+    const current = [
+      ...(availableKinds.qemu ? snapshot.qemu.map((guest) => guestService(guest, "qemu", this.nodeName)) : []),
+      ...(availableKinds.lxc ? snapshot.lxc.map((guest) => guestService(guest, "lxc", this.nodeName)) : []),
+    ];
+    const staleKinds = this.cachedServices.filter((service) => !availableKinds[service.kind]);
+    const services = [...current, ...staleKinds]
+      .sort((a, b) => (a.vmid ?? 0) - (b.vmid ?? 0));
+
+    this.cachedServices = services;
+    return services;
   }
 
   async getEvents() {

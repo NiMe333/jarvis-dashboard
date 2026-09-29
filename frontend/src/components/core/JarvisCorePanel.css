@@ -163,6 +163,12 @@
   height: 100%;
 }
 
+.jarvis-core-panel__shader-loading {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgb(59 210 223 / 0.14), transparent 54%);
+}
+
 .jarvis-core-panel__title {
   position: relative;
   z-index: 3;
@@ -408,9 +414,15 @@
 
 .jarvis-core__telemetry[data-status="warning"] .jarvis-core__integrity-value,
 .jarvis-core__telemetry[data-status="warning"] .jarvis-core__integrity-status,
+.jarvis-core__telemetry[data-status="warning"] .jarvis-core__segments i,
 .jarvis-core__telemetry[data-status="warning"]
   .jarvis-core__state-value {
   color: #efad54;
+}
+
+.jarvis-core__telemetry[data-status="warning"] .jarvis-core__segments i {
+  background: #efad54;
+  box-shadow: 0 0 4px rgb(239 173 84 / 0.28);
 }
 
 .jarvis-core__telemetry[data-status="critical"] .jarvis-core__integrity-value,

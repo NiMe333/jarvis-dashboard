@@ -1,0 +1,13 @@
+[Unit]
+Description=JARVIS daily dashboard health check
+After=network-online.target jarvis-backend.service
+Wants=network-online.target
+OnFailure=jarvis-health-alert@%n.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/jarvis-dashboard/backend/deploy/jarvis-health-check.sh
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full

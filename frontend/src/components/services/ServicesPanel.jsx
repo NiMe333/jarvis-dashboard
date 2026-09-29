@@ -39,13 +39,13 @@ function serviceSecondaryLine(service) {
   return service.description ?? dashboardCopy.common.unavailable;
 }
 
-function ServiceRow({ service }) {
+function ServiceRow({ service, warningTone }) {
   const status = normalizeStatus(service.status);
   const Icon = SERVICE_ICONS[service.icon] ?? CircleHelp;
   const statusLabel = service.statusLabel ?? dashboardCopy.services.statusLabels[status];
   const isExternalUrl = /^https?:\/\//i.test(service.url ?? "");
   const sharedProps = {
-    className: `services-panel__row services-panel__row--${status}${service.url ? " is-linked" : " is-static"}`,
+    className: `services-panel__row services-panel__row--${status}${warningTone && status === "running" ? " services-panel__row--attention" : ""}${service.url ? " is-linked" : " is-static"}`,
     id: `service-${service.id}`,
   };
 
@@ -103,7 +103,7 @@ function ServiceRow({ service }) {
   );
 }
 
-export default function ServicesPanel({ services = [], className = "" }) {
+export default function ServicesPanel({ services = [], warningTone = false, className = "" }) {
   return (
     <HudPanel
       id="services-panel"
@@ -114,7 +114,7 @@ export default function ServicesPanel({ services = [], className = "" }) {
     >
       <div id="services-list" className="services-panel__list">
         {services.length > 0 ? (
-          services.map((service) => <ServiceRow key={service.id} service={service} />)
+          services.map((service) => <ServiceRow key={service.id} service={service} warningTone={warningTone} />)
         ) : (
           <p className="services-panel__empty">{dashboardCopy.services.empty}</p>
         )}

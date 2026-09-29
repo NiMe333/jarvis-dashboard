@@ -26,6 +26,7 @@
 .system-status--offline { --status-color: #e0a353; }
 .system-status--loading { --status-color: #7caeb4; }
 .system-status--online { --status-color: #3bd6e1; }
+.system-status--warning { --status-color: #efad54; }
 
 .system-status__meta {
   display: flex;

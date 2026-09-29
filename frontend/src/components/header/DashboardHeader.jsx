@@ -43,6 +43,7 @@ export default function DashboardHeader({ data = {}, imageSrc = jarvisLogo, clas
       <SystemStatus
         dataSource={data.dataSource}
         isRetrying={data.isRetrying}
+        warningTone={data.warningTone}
       />
     </header>
   );

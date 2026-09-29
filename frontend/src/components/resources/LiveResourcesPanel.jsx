@@ -63,11 +63,13 @@ function fallbackDisk(role) {
   };
 }
 
-function StorageCard({ disk }) {
+function StorageCard({ disk, warningTone, dataSource }) {
   const usage = disk.usage ?? {};
   const percent = normalizedPercent(usage);
-  const online = disk.smartHealth !== false;
+  const telemetryUnavailable = dataSource === "offline" || !disk.device;
+  const online = !telemetryUnavailable && disk.smartHealth !== false;
   const SmartIcon = disk.smartHealth === false ? ShieldAlert : ShieldCheck;
+  const statusText = telemetryUnavailable ? "DATA N/A" : online ? "ONLINE" : "SMART ALERT";
 
   return (
     <article className="storage-overview__card">
@@ -80,8 +82,8 @@ function StorageCard({ disk }) {
             {disk.device && <b>{disk.device}</b>}
           </small>
         </span>
-        <span className={`storage-overview__status ${online ? "" : "storage-overview__status--warning"}`}>
-          <i aria-hidden="true" />{online ? "ONLINE" : "SMART ALERT"}
+        <span className={`storage-overview__status ${!online || warningTone ? "storage-overview__status--warning" : ""}`}>
+          <i aria-hidden="true" />{statusText}
         </span>
       </header>
 
@@ -120,7 +122,7 @@ function StorageCard({ disk }) {
   );
 }
 
-export default function LiveResourcesPanel({ data = {}, dataSource = "offline", className = "" }) {
+export default function LiveResourcesPanel({ data = {}, dataSource = "offline", warningTone = false, className = "" }) {
   const storageDevices = Array.isArray(data.storageDevices) ? data.storageDevices : [];
   const system = storageDevices.find((disk) => disk?.role === "system") ?? fallbackDisk("system");
   const dataDisk = storageDevices.find((disk) => disk?.role === "data") ?? fallbackDisk("data");
@@ -134,8 +136,8 @@ export default function LiveResourcesPanel({ data = {}, dataSource = "offline", 
       variant="compact"
     >
       <div className="storage-overview__grid">
-        <StorageCard disk={system} />
-        <StorageCard disk={dataDisk} />
+        <StorageCard disk={system} warningTone={warningTone} dataSource={dataSource} />
+        <StorageCard disk={dataDisk} warningTone={warningTone} dataSource={dataSource} />
       </div>
     </HudPanel>
   );

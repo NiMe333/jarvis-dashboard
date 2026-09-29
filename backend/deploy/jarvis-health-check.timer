@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the JARVIS dashboard health check every day
+
+[Timer]
+OnCalendar=*-*-* 09:00:00
+Persistent=true
+RandomizedDelaySec=10m
+Unit=jarvis-health-check.service
+
+[Install]
+WantedBy=timers.target

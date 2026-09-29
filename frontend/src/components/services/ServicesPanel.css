@@ -146,6 +146,8 @@
   background: currentColor;
 }
 
+.services-panel__row--attention .services-panel__state { color: #efad54; }
+
 .services-panel__resources {
   display: grid;
   min-width: 0;

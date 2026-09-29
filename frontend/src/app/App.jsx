@@ -36,19 +36,31 @@ function DevelopmentDataStatus({ data }) {
 
 export default function App() {
   const data = useDashboardData();
+  const hostWarningStatus = data.metrics?.warnings?.status;
+  const warningTone = data.dataSource === "partial"
+    || data.dataSource === "offline"
+    || Boolean(data.dataError?.length)
+    || data.isRetrying
+    || ["warning", "critical", "offline", "unavailable"].includes(hostWarningStatus)
+    || data.metrics?.sensorStatus === "warning"
+    || data.metrics?.ssdSmartHealth === false;
+  const overviewStatus = data.dataSource !== "offline" && warningTone
+    ? { ...data.overviewStatus, state: "warning", status: "ATTENTION" }
+    : data.overviewStatus;
+  const coreStatus = warningTone && data.dataSource !== "offline" ? "warning" : data.core?.status;
 
   return (
-    <DashboardShell>
+    <DashboardShell tone={warningTone ? "warning" : "normal"}>
       <DevelopmentDataStatus data={data} />
       <div className="dashboard-layout">
         <DashboardHeader
-          data={{ ...data.header, dataSource: data.dataSource, isRetrying: data.isRetrying }}
+          data={{ ...data.header, dataSource: data.dataSource, isRetrying: data.isRetrying, warningTone }}
           className="dashboard-layout__header"
         />
 
         <div className="dashboard-layout__left">
-          <SystemOverview telemetry={data.systemOverview} status={data.overviewStatus} />
-          <LiveResourcesPanel data={data.metrics} dataSource={data.dataSource} className="dashboard-layout__resource" />
+          <SystemOverview telemetry={data.systemOverview} status={overviewStatus} />
+          <LiveResourcesPanel data={data.metrics} dataSource={data.dataSource} warningTone={warningTone} className="dashboard-layout__resource" />
           <NetworkThroughputPanel data={data.metrics} dataSource={data.dataSource} className="dashboard-layout__network" />
         </div>
 
@@ -65,13 +77,14 @@ export default function App() {
               ...data.metrics,
               ...data.hostTelemetry,
               dataSource: data.dataSource,
+              status: coreStatus,
             }} />
           </HudPanel>
           <RecentEventsPanel events={data.recentEvents} dataSource={data.dataSource} className="dashboard-layout__events" />
         </div>
 
         <div className="dashboard-layout__right">
-          <ServicesPanel services={data.services} className="dashboard-layout__services" />
+          <ServicesPanel services={data.services} warningTone={warningTone} className="dashboard-layout__services" />
           <HostTelemetryPanel
             data={data.metrics}
             host={data.hostTelemetry}
