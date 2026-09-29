@@ -394,9 +394,9 @@ export const JarvisCoreTelemetry = memo(function JarvisCoreTelemetry({
 
       <div className="jarvis-core__telemetry-group jarvis-core__telemetry-group--status">
         {cpuMetrics.map(({ label, value }) => (
-          <div className="jarvis-core__state-row" key={label}>
+          <div className="jarvis-core__metric" key={label}>
             <span className="jarvis-core__telemetry-label">{label}</span>
-            <strong className="jarvis-core__state-value">{value}</strong>
+            <strong className="jarvis-core__telemetry-value">{value}</strong>
           </div>
         ))}
 

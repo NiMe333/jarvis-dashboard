@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { loadDashboardData } from "../api/dashboardApi.js";
 
+const REFRESH_INTERVAL_MS = 5_000;
+
 const EMPTY_DASHBOARD_DATA = Object.freeze({
   header: Object.freeze({}),
   systemOverview: Object.freeze({}),
@@ -49,14 +51,19 @@ export function useDashboardData() {
 
   useEffect(() => {
     const controller = new AbortController();
+    let refreshInFlight = false;
+    let disposed = false;
 
     const refresh = () => {
+      if (refreshInFlight || disposed) return;
+      refreshInFlight = true;
       setData((current) => current.dataSource === "offline"
         ? { ...current, isRetrying: true }
         : current);
 
       return loadDashboardData({ signal: controller.signal })
       .then((payload) => {
+        if (disposed) return;
         const successfulEndpoints = Object.keys(payload).filter((key) => key !== "errors");
         const failedEndpoints = Object.keys(payload.errors ?? {});
         const source = successfulEndpoints.length === 0
@@ -88,7 +95,7 @@ export function useDashboardData() {
         });
       })
       .catch((error) => {
-        if (error.name !== "AbortError") {
+        if (!disposed && error.name !== "AbortError") {
           console.error("Dashboard API unavailable.", error);
           setData(() => ({
             ...EMPTY_DASHBOARD_DATA,
@@ -97,13 +104,17 @@ export function useDashboardData() {
             isRetrying: false,
           }));
         }
+      })
+      .finally(() => {
+        refreshInFlight = false;
       });
     };
 
     refresh();
-    const refreshTimer = window.setInterval(refresh, 15_000);
+    const refreshTimer = window.setInterval(refresh, REFRESH_INTERVAL_MS);
 
     return () => {
+      disposed = true;
       window.clearInterval(refreshTimer);
       controller.abort();
     };

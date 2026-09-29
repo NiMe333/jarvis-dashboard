@@ -47,9 +47,9 @@ Both development servers can also be started together:
 npm run dev
 ```
 
-If `VITE_API_BASE_URL` is empty or the API is unavailable, the frontend keeps
-using `frontend/src/config/dashboardMockData.js`. There is no polling; data is
-loaded once when the dashboard mounts.
+If `VITE_API_BASE_URL` is empty or the API is unavailable, the dashboard shows
+unavailable data until the API returns. The frontend refreshes all dashboard
+endpoints every five seconds and prevents overlapping refresh cycles.
 
 ## Data source configuration
 

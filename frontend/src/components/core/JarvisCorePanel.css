@@ -372,8 +372,9 @@
 
 .jarvis-core__telemetry-group--status {
   display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
   align-content: center;
-  gap: 8px;
+  gap: 6px;
   padding: 0;
 }
 
@@ -388,7 +389,7 @@
   color: #69cdd7;
   max-width: 11ch;
   overflow: hidden;
-  font-size: clamp(7px, 0.5vw, 9px);
+  font-size: clamp(10px, 0.78vw, 13px);
   font-weight: 400;
   letter-spacing: 0.06em;
   line-height: 1;
@@ -470,6 +471,7 @@
   .jarvis-core__telemetry-group--status {
     gap: 5px;
   }
+
 }
 
 @container jarvis-core-panel (max-height: 430px) {
