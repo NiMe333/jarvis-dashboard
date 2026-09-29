@@ -10,8 +10,8 @@
   padding-bottom: 0.18rem;
 }
 
-.network-throughput .hud-panel__title { font-size: 0.68rem; }
-.network-throughput .hud-panel__subtitle { margin-top: 0.08rem; font-size: 0.46rem; }
+.network-throughput .hud-panel__title { font-size: 0.82rem; }
+.network-throughput .hud-panel__subtitle { margin-top: 0.1rem; font-size: 0.56rem; }
 
 .network-throughput .hud-panel__body {
   display: grid;
@@ -32,7 +32,7 @@
   margin-top: 0.18rem;
   padding: 0.16rem 0.05rem 0.12rem;
   color: var(--text-secondary);
-  font: 0.48rem/1 var(--font-mono);
+  font: 0.58rem/1 var(--font-mono);
   letter-spacing: 0.06em;
 }
 
@@ -45,7 +45,7 @@
 
 .network-throughput__rates strong {
   color: var(--text-primary);
-  font-size: clamp(0.53rem, 1.2cqi, 0.66rem);
+  font-size: clamp(0.66rem, 1.5cqi, 0.8rem);
   font-weight: 400;
   white-space: nowrap;
 }
@@ -196,10 +196,10 @@
   background: rgb(4 19 27 / 0.94);
   box-shadow: 0 0 12px rgb(0 0 0 / 0.25);
   color: var(--text-secondary);
-  font: 0.46rem/1 var(--font-mono);
+  font: 0.56rem/1.15 var(--font-mono);
   pointer-events: none;
 }
-.network-throughput__tooltip strong { color: var(--text-primary); font-size: 0.5rem; letter-spacing: 0.08em; }
+.network-throughput__tooltip strong { color: var(--text-primary); font-size: 0.64rem; letter-spacing: 0.07em; }
 .network-throughput__tooltip span { white-space: nowrap; }
 .network-throughput__tooltip-dot { display: inline-block; width: 0.35rem; height: 0.35rem; margin-right: 0.25rem; border-radius: 50%; }
 .network-throughput__tooltip-dot--download { background: #55e8f2; }
@@ -220,13 +220,13 @@
 }
 
 .network-throughput__totals > div:last-child { border-right: 0; }
-.network-throughput__totals dt { color: var(--text-secondary); font: 0.39rem/1 var(--font-mono); letter-spacing: 0.05em; }
-.network-throughput__totals dd { margin: 0.11rem 0 0; overflow: hidden; color: var(--text-primary); font: 0.5rem/1 var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
+.network-throughput__totals dt { color: var(--text-secondary); font: 0.52rem/1 var(--font-mono); letter-spacing: 0.05em; }
+.network-throughput__totals dd { margin: 0.14rem 0 0; overflow: hidden; color: var(--text-primary); font: 0.64rem/1 var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
 
 @container network-throughput-panel (max-width: 330px) {
   .network-throughput__rates { justify-content: space-between; gap: 0.3rem; }
   .network-throughput__rates > div { gap: 0.2rem; }
-  .network-throughput__totals dt { font-size: 0.4rem; }
+  .network-throughput__totals dt { font-size: 0.48rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
