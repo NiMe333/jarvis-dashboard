@@ -189,10 +189,12 @@ function CorePanelDecoration({ panelRef }) {
     { angle: 38, side: "right", offset: 0.06, tone: "orange" },
   ];
 
+  const statusRailOffset = 22;
+
   const connectorPath = ({ angle, target }) => {
     const start = polar(angle, radius * 0.96);
     const exit = polar(angle, radius * 1.035);
-    const endY = statusTop + 5;
+    const endY = statusTop + statusRailOffset;
     const railY = Math.max(exit.y + 10, endY - 18);
 
     return [
@@ -282,7 +284,7 @@ function CorePanelDecoration({ panelRef }) {
 
                 <circle cx={start.x} cy={start.y} r="2.4" />
 
-                <circle cx={connector.target} cy={statusTop + 5} r="2.8" />
+                <circle cx={connector.target} cy={statusTop + statusRailOffset} r="2.8" />
               </g>
             );
           })}

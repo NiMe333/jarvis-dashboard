@@ -229,7 +229,7 @@
   flex: none;
   align-items: center;
   gap: clamp(18px, 2vw, 28px);
-  padding: 10px clamp(22px, 2.4vw, 32px) 6px;
+  padding: 28px clamp(22px, 2.4vw, 32px) 6px;
   background: linear-gradient(
     to bottom,
     rgba(2, 14, 20, 0.18) 0%,
@@ -244,7 +244,7 @@
 /* Thin divider where the three core connections arrive. */
 .jarvis-core__telemetry::before {
   position: absolute;
-  top: 5px;
+  top: 21px;
   right: 12px;
   left: 12px;
   height: 1px;
@@ -308,6 +308,8 @@
 .jarvis-core__telemetry-group--integrity {
   display: grid;
   width: min(100%, 280px);
+  min-width: 0;
+  container-type: inline-size;
   justify-self: center;
   place-items: center;
   gap: 3px;
@@ -324,20 +326,21 @@
   display: grid;
   width: 100%;
   grid-template-columns:
-    minmax(34px, 1fr)
+    minmax(0, 1fr)
     auto
-    minmax(34px, 1fr); 
+    minmax(0, 1fr);
   align-items: center;
-  gap: clamp(7px, 0.7vw, 11px);
+  gap: clamp(3px, 3cqi, 9px);
 }
 
 .jarvis-core__integrity-value {
-  min-width: 4ch;
+  min-width: 0;
   color: #7de3ea;
-  font-size: clamp(10px, 1.7vw, 14px);
+  font-size: clamp(10px, 6.6cqi, 16px);
   font-weight: 300;
   line-height: 0.9;
   letter-spacing: -0.04em;
+  white-space: nowrap;
   text-shadow: 0 0 7px rgba(72, 226, 235, 0.42);
   transition:
     color 180ms ease,
@@ -347,13 +350,17 @@
 .jarvis-core__segments {
   display: flex;
   min-width: 0;
+  overflow: hidden;
   justify-content: center;
-  gap: 2px;
+  gap: clamp(1px, 0.9cqi, 2px);
 }
+
+.jarvis-core__segments--left { justify-content: flex-end; }
+.jarvis-core__segments--right { justify-content: flex-start; }
 
 .jarvis-core__segments i {
   display: block;
-  width: clamp(5px, 0.55vw, 9px);
+  width: clamp(3px, 4.4cqi, 8px);
   height: 4px;
   background: #27d7e3;
   box-shadow: 0 0 4px rgba(39, 215, 227, 0.28);
@@ -366,8 +373,9 @@
 
 .jarvis-core__integrity-status {
   color: #56b7c0;
-  font-size: clamp(8px, 0.52vw, 10px);
+  font-size: clamp(7px, 3.9cqi, 10px);
   letter-spacing: 0.13em;
+  white-space: nowrap;
 }
 
 .jarvis-core__telemetry-group--status {
