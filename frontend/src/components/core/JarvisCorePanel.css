@@ -326,7 +326,7 @@
   grid-template-columns:
     minmax(34px, 1fr)
     auto
-    minmax(34px, 1fr);
+    minmax(34px, 1fr); 
   align-items: center;
   gap: clamp(7px, 0.7vw, 11px);
 }

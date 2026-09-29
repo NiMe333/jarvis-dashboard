@@ -2,7 +2,7 @@
   --status-accent: #42eaff;
   --status-text: #dffbff;
   display: grid;
-  width: min(100%, 300px);
+  width: min(100%, 360px);
   min-width: 0;
   min-height: 0;
   align-content: center;
@@ -27,7 +27,7 @@
 
 .jarvis-status__heading {
   color: color-mix(in srgb, var(--status-accent) 62%, #78959a);
-  font: 500 clamp(8px, 4.9cqw, 13px)/1 var(--font-mono);
+  font: 500 clamp(11px, 5.8cqw, 18px)/1 var(--font-mono);
   letter-spacing: 0.11em;
   white-space: nowrap;
 }
@@ -35,7 +35,7 @@
 .jarvis-status__value {
   max-width: 100%;
   color: var(--status-text);
-  font: 400 clamp(22px, 10.2cqw, 35px)/1 var(--font-mono);
+  font: 400 clamp(30px, 12.5cqw, 52px)/1 var(--font-mono);
   letter-spacing: 0.06em;
   text-shadow: 0 0 6px color-mix(in srgb, var(--status-accent) 22%, transparent);
   white-space: nowrap;

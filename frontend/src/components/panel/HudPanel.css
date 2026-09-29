@@ -153,7 +153,7 @@
 .hud-panel__title-group { min-width: 0; }
 .hud-panel__eyebrow { display: block; margin-bottom: 0.18rem; color: var(--panel-accent); font: 0.55rem/1 var(--font-mono); letter-spacing: 0.16em; opacity: 0.72; }
 .hud-panel__title { margin: 0; overflow: hidden; color: var(--text-primary); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.15em; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
-.hud-panel__subtitle { margin: 0.2rem 0 0; color: var(--text-secondary); font: 0.58rem/1.25 var(--font-mono); letter-spacing: 0.06em; }
+.hud-panel__subtitle { margin: 0.2rem 0 0; color: #55b9c2; font: 0.58rem/1.25 var(--font-mono); letter-spacing: 0.06em; }
 .hud-panel__action { flex: none; color: var(--panel-accent); font: 0.58rem/1 var(--font-mono); letter-spacing: 0.1em; opacity: 0.68; transition: opacity var(--transition-fast); }
 .hud-panel__action:hover { opacity: 1; }
 .hud-panel__body { position: relative; z-index: 1; display: flex; min-height: 0; flex: 1; flex-direction: column; }

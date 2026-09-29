@@ -52,6 +52,7 @@
 .network-throughput__key--upload { color: #d89a53; }
 
 .network-throughput__chart {
+  position: relative;
   min-height: 34px;
   flex: 1;
   overflow: hidden;
@@ -92,6 +93,38 @@
   stroke-width: 1.1;
   filter: drop-shadow(0 0 2px rgb(216 154 83 / 0.35));
 }
+
+.network-throughput__point-group { outline: none; cursor: crosshair; }
+.network-throughput__hit-area { fill: transparent; stroke: transparent; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.network-throughput__point { opacity: 0; vector-effect: non-scaling-stroke; transition: opacity 120ms ease, r 120ms ease; }
+.network-throughput__point--download { fill: #55e8f2; }
+.network-throughput__point--upload { fill: #d89a53; }
+.network-throughput__point-group:hover .network-throughput__point,
+.network-throughput__point-group:focus-visible .network-throughput__point,
+.network-throughput__point-group.is-active .network-throughput__point { opacity: 1; }
+.network-throughput__point-group:focus-visible .network-throughput__hit-area { stroke: rgb(85 232 242 / 0.45); }
+
+.network-throughput__tooltip {
+  position: absolute;
+  z-index: 3;
+  top: 0.35rem;
+  left: 0.5rem;
+  display: grid;
+  gap: 0.2rem;
+  min-width: 5.7rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgb(85 232 242 / 0.35);
+  background: rgb(4 19 27 / 0.94);
+  box-shadow: 0 0 12px rgb(0 0 0 / 0.25);
+  color: var(--text-secondary);
+  font: 0.46rem/1 var(--font-mono);
+  pointer-events: none;
+}
+.network-throughput__tooltip strong { color: var(--text-primary); font-size: 0.5rem; letter-spacing: 0.08em; }
+.network-throughput__tooltip span { white-space: nowrap; }
+.network-throughput__tooltip-dot { display: inline-block; width: 0.35rem; height: 0.35rem; margin-right: 0.25rem; border-radius: 50%; }
+.network-throughput__tooltip-dot--download { background: #55e8f2; }
+.network-throughput__tooltip-dot--upload { background: #d89a53; }
 
 .network-throughput__totals {
   display: grid;

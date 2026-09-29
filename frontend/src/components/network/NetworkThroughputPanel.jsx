@@ -1,4 +1,5 @@
 import HudPanel from "../panel/HudPanel.jsx";
+import { useState } from "react";
 import { dashboardCopy } from "../../config/dashboardContent.js";
 import { dataSourceLabel } from "../../utils/dashboardFormatters.js";
 import "./NetworkThroughputPanel.css";
@@ -27,11 +28,19 @@ function buildPath(series, key, maximum) {
   }).join(" ");
 }
 
+function pointPosition(series, index, key, maximum) {
+  const x = series.length === 1 ? 0 : (index / (series.length - 1)) * CHART_WIDTH;
+  const y = CHART_HEIGHT - (Math.max(0, series[index][key] ?? 0) / maximum) * (CHART_HEIGHT - 2) - 1;
+  return { x, y };
+}
+
 export default function NetworkThroughputPanel({ data = {}, dataSource = "offline", className = "" }) {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   const series = data.networkSeries ?? [];
   const maximum = Math.max(0, ...series.flatMap((point) => [point.downloadRate ?? 0, point.uploadRate ?? 0]));
   const downloadPath = buildPath(series, "downloadRate", maximum);
   const uploadPath = buildPath(series, "uploadRate", maximum);
+  const hoveredPoint = hoveredIndex === null ? null : series[hoveredIndex];
   const formatRate = (value) => Number.isFinite(value)
     ? `${value}${dashboardCopy.common.units.dataRate}`
     : dashboardCopy.common.unavailable;
@@ -50,6 +59,13 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
       </div>
 
       <div className="network-throughput__chart">
+        {hoveredPoint && (
+          <div className="network-throughput__tooltip" role="status">
+            <strong>{hoveredPoint.offsetSeconds === 0 ? "NOW" : `${Math.abs(hoveredPoint.offsetSeconds)}s ago`}</strong>
+            <span><i className="network-throughput__tooltip-dot network-throughput__tooltip-dot--download" />↓ {formatRate(hoveredPoint.downloadRate)}</span>
+            <span><i className="network-throughput__tooltip-dot network-throughput__tooltip-dot--upload" />↑ {formatRate(hoveredPoint.uploadRate)}</span>
+          </div>
+        )}
         <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={dashboardCopy.network.liveChartLabel}>
           <defs>
             <linearGradient id="network-download-fill" x1="0" y1="0" x2="0" y2="1">
@@ -64,6 +80,26 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
           {downloadPath && <path className="network-throughput__area" d={`${downloadPath} L100 34 L0 34 Z`} />}
           <path className="network-throughput__line network-throughput__line--download" d={downloadPath} />
           <path className="network-throughput__line network-throughput__line--upload" d={uploadPath} />
+          {maximum > 0 && series.map((point, index) => {
+            const download = pointPosition(series, index, "downloadRate", maximum);
+            const upload = pointPosition(series, index, "uploadRate", maximum);
+            return (
+              <g
+                className={`network-throughput__point-group${hoveredIndex === index ? " is-active" : ""}`}
+                key={`${point.offsetSeconds}-${index}`}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onFocus={() => setHoveredIndex(index)}
+                onBlur={() => setHoveredIndex(null)}
+                tabIndex="0"
+                aria-label={`Network at ${point.offsetSeconds === 0 ? "now" : `${Math.abs(point.offsetSeconds)} seconds ago`}: download ${formatRate(point.downloadRate)}, upload ${formatRate(point.uploadRate)}`}
+              >
+                <circle className="network-throughput__hit-area" cx={download.x} cy={CHART_HEIGHT / 2} r="3.5" />
+                <circle className="network-throughput__point network-throughput__point--download" cx={download.x} cy={download.y} r="1.25" />
+                <circle className="network-throughput__point network-throughput__point--upload" cx={upload.x} cy={upload.y} r="1.1" />
+              </g>
+            );
+          })}
         </svg>
       </div>
 
