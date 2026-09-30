@@ -41,6 +41,7 @@
   min-width: 0;
   align-items: center;
   gap: 0.2rem;
+  transition: opacity 170ms ease, color 170ms ease;
 }
 
 .network-throughput__rates strong {
@@ -86,7 +87,6 @@
 
 .network-throughput__area {
   fill: url(#network-download-fill);
-  animation: network-area-breathe 4s ease-in-out infinite;
 }
 
 .network-throughput__line {
@@ -95,6 +95,7 @@
   stroke-linejoin: round;
   stroke-width: 1.35;
   vector-effect: non-scaling-stroke;
+  transition: opacity 170ms ease, stroke-width 170ms ease;
 }
 
 .network-throughput__line--download {
@@ -115,7 +116,7 @@
   stroke-dasharray: 0.08 10;
   opacity: 0.92;
   vector-effect: non-scaling-stroke;
-  animation: network-flow 4.6s linear infinite;
+  display: none;
 }
 
 .network-throughput__flow--download {
@@ -129,22 +130,16 @@
 .network-throughput__flow--upload {
   stroke: #fff4df;
   opacity: 0.9;
-  animation-duration: 5.2s;
-  animation-delay: -1.7s;
   filter:
     drop-shadow(0 0 1px #ffffff)
     drop-shadow(0 0 3px rgb(216 154 83 / 0.95))
     drop-shadow(0 0 6px rgb(216 154 83 / 0.5));
 }
 
-@keyframes network-flow {
-  to { stroke-dashoffset: -36; }
-}
-
-@keyframes network-area-breathe {
-  0%, 100% { opacity: 0.72; }
-  50% { opacity: 1; }
-}
+.network-throughput__chart.is-highlighting-download .network-throughput__line--upload,
+.network-throughput__chart.is-highlighting-upload .network-throughput__line--download { opacity: 0.3; }
+.network-throughput__chart.is-highlighting-download .network-throughput__line--download,
+.network-throughput__chart.is-highlighting-upload .network-throughput__line--upload { stroke-width: 1.8; }
 
 .network-throughput__point-group { outline: none; cursor: crosshair; }
 .network-throughput__hit-area {
@@ -230,6 +225,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .network-throughput__area,
-  .network-throughput__flow { animation: none; }
+  .network-throughput__rates > div,
+  .network-throughput__line,
+  .network-throughput__guide,
+  .network-throughput__point { transition: none; }
 }

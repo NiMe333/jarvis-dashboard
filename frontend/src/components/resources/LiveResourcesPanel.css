@@ -35,6 +35,7 @@
   border: 1px solid rgb(65 205 218 / 0.48);
   border-radius: 2px 10px 2px 10px;
   background: linear-gradient(135deg, rgb(18 83 92 / 0.1), transparent 50%), rgb(2 15 21 / 0.44);
+  transition: border-color 180ms ease, background-color 180ms ease;
 }
 
 .storage-overview__card::before,
@@ -49,6 +50,16 @@
 
 .storage-overview__card::before { top: 0; right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%); }
 .storage-overview__card::after { bottom: 0; left: 0; clip-path: polygon(0 0, 0 100%, 100% 100%); opacity: 0.8; }
+
+@media (hover: hover) {
+  .storage-overview__card:hover {
+    border-color: rgb(85 229 239 / 0.72);
+    background-color: rgb(5 27 34 / 0.72);
+  }
+
+  .storage-overview__card:hover::before,
+  .storage-overview__card:hover::after { background: #ffc064; }
+}
 
 .storage-overview__card-header {
   display: flex;
@@ -151,23 +162,17 @@
   background: repeating-linear-gradient(90deg, rgb(56 146 156 / 0.2) 0 calc(6.25% - 1px), rgb(3 17 24 / 0.86) calc(6.25% - 1px) 6.25%);
 }
 
-.storage-overview__meter span { display: block; height: 100%; background: repeating-linear-gradient(90deg, #58e6ef 0 calc(6.25% - 1px), #36beca calc(6.25% - 1px) 6.25%); }
-
 .storage-overview__meter span {
-  position: relative;
-  overflow: hidden;
-  animation: storage-meter-fill 650ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
-  transform-origin: left center;
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(90deg, #58e6ef 0 calc(6.25% - 1px), #36beca calc(6.25% - 1px) 6.25%);
+  transition: width 340ms ease;
 }
 
-.storage-overview__meter span::after {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 22%;
-  background: linear-gradient(90deg, transparent, rgb(223 255 255 / 0.82), transparent);
-  content: "";
-  animation: storage-meter-scan 2.8s ease-in-out infinite;
+.storage-overview__meter:focus-visible {
+  border-color: var(--accent-cyan);
+  outline: 1px solid var(--accent-cyan);
+  outline-offset: 2px;
 }
 
 .storage-overview__free {
@@ -225,18 +230,7 @@
   .storage-overview__card { min-height: clamp(11rem, 52cqi, 15rem); }
 }
 
-@keyframes storage-meter-fill {
-  from { transform: scaleX(0); opacity: 0.35; }
-  to { transform: scaleX(1); opacity: 1; }
-}
-
-@keyframes storage-meter-scan {
-  0%, 18% { transform: translateX(-160%); opacity: 0; }
-  32% { opacity: 0.8; }
-  64%, 100% { transform: translateX(540%); opacity: 0; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .storage-overview__meter span,
-  .storage-overview__meter span::after { animation: none; }
+  .storage-overview__card,
+  .storage-overview__meter span { transition: none; }
 }

@@ -47,6 +47,8 @@
 
 .services-panel__list::-webkit-scrollbar { width: 4px; }
 .services-panel__list::-webkit-scrollbar-thumb { border-radius: 999px; background: rgb(55 213 225 / 0.4); }
+.services-panel__list:hover { scrollbar-color: rgb(55 213 225 / 0.68) transparent; }
+.services-panel__list:hover::-webkit-scrollbar-thumb { background: rgb(55 213 225 / 0.68); }
 
 .services-panel__row {
   display: grid;
@@ -60,18 +62,23 @@
   background: rgb(5 22 29 / 0.9);
   color: inherit;
   text-decoration: none;
+  transition: border-color 180ms ease, background-color 180ms ease;
 }
 
-.services-panel__row.is-linked {
-  cursor: pointer;
-  transition: border-color var(--transition-fast), background-color var(--transition-fast);
-}
+.services-panel__row.is-linked { cursor: pointer; }
 
 .services-panel__row.is-linked:hover,
 .services-panel__row.is-linked:focus-visible {
   border-color: rgb(70 222 232 / 0.54);
   background: rgb(7 29 37 / 0.96);
   outline: none;
+}
+
+@media (hover: hover) {
+  .services-panel__row.is-static:hover {
+    border-color: rgb(70 222 232 / 0.42);
+    background: rgb(7 29 37 / 0.94);
+  }
 }
 
 .services-panel__card-head {
@@ -127,6 +134,7 @@
 .services-panel__state {
   align-self: start;
   color: var(--service-state, var(--text-secondary));
+  transition: color 220ms ease;
 }
 
 .services-panel__state-line {
@@ -237,5 +245,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .services-panel__row.is-linked { transition: none; }
+  .services-panel__row,
+  .services-panel__state { transition: none; }
 }

@@ -4,7 +4,10 @@
 .memory-workload .hud-panel__body { gap: clamp(0.35rem, 1.1cqi, 0.62rem); overflow: hidden; }
 
 .memory-workload__top { display: grid; min-height: 0; grid-template-columns: minmax(0, 1.5fr) minmax(9.5rem, 1fr); gap: clamp(0.4rem, 1.2cqi, 0.7rem); }
-.memory-workload__memory, .memory-workload__swap, .memory-workload__pressure, .memory-workload__hardware { min-width: 0; border: 1px solid rgb(69 199 210 / 0.34); background: linear-gradient(135deg, rgb(20 89 99 / 0.12), transparent 62%), rgb(3 17 23 / 0.3); }
+.memory-workload__memory, .memory-workload__swap, .memory-workload__pressure, .memory-workload__hardware { min-width: 0; border: 1px solid rgb(69 199 210 / 0.34); background: linear-gradient(135deg, rgb(20 89 99 / 0.12), transparent 62%), rgb(3 17 23 / 0.3); transition: border-color 180ms ease, background-color 180ms ease; }
+@media (hover: hover) {
+  .memory-workload__memory:hover, .memory-workload__swap:hover, .memory-workload__pressure:hover, .memory-workload__hardware:hover { border-color: rgb(69 213 225 / 0.5); background-color: rgb(5 26 33 / 0.45); }
+}
 .memory-workload__memory, .memory-workload__swap, .memory-workload__pressure { padding: clamp(0.5rem, 1.45cqi, 0.8rem); }
 .memory-workload__memory > header, .memory-workload__swap > header, .memory-workload__pressure > header, .memory-workload__hardware > header { display: flex; align-items: center; gap: 0.34rem; color: #8bc8cd; font: 600 clamp(0.46rem, 1.15cqi, 0.64rem)/1 var(--font-mono); letter-spacing: 0.09em; white-space: nowrap; }
 .memory-workload header svg { width: 1em; height: 1em; color: var(--accent-cyan); }
@@ -14,9 +17,19 @@
 .memory-workload__capacity em, .memory-workload__swap em { color: #75dde4; font-style: normal; font-weight: 300; }
 .memory-workload__capacity > span, .memory-workload__swap > span { flex: none; color: #70dbe3; font: clamp(0.42rem, 1.03cqi, 0.58rem)/1 var(--font-mono); letter-spacing: 0.06em; white-space: nowrap; }
 .memory-workload__meter { height: clamp(0.42rem, 1.12cqi, 0.62rem); margin-top: clamp(0.38rem, 1cqi, 0.56rem); overflow: hidden; border: 1px solid rgb(73 202 214 / 0.5); background: repeating-linear-gradient(90deg, rgb(56 146 156 / 0.22) 0 calc(6.25% - 1px), rgb(3 17 24 / 0.86) calc(6.25% - 1px) 6.25%); }
-.memory-workload__meter span { display: block; height: 100%; background: repeating-linear-gradient(90deg, #58e6ef 0 calc(6.25% - 1px), #36beca calc(6.25% - 1px) 6.25%); }
+.memory-workload__meter span { display: block; height: 100%; background: repeating-linear-gradient(90deg, #58e6ef 0 calc(6.25% - 1px), #36beca calc(6.25% - 1px) 6.25%); transition: width 340ms ease; }
 .memory-workload__chart-label { display: flex; justify-content: space-between; gap: 0.4rem; margin-top: clamp(0.35rem, 0.92cqi, 0.52rem); color: #739fa5; font: clamp(0.4rem, 0.85cqi, 0.52rem)/1 var(--font-mono); letter-spacing: 0.07em; }
+.memory-workload__chart-wrap { position: relative; min-height: 0; }
 .memory-workload__chart { display: block; width: 100%; height: clamp(1.4rem, 3.4cqi, 2.15rem); margin-top: 0.22rem; border-top: 1px solid rgb(65 205 218 / 0.14); border-bottom: 1px solid rgb(65 205 218 / 0.14); }
+.memory-workload__chart-tooltip { position: absolute; z-index: 2; top: 0.15rem; right: 0.2rem; padding: 0.2rem 0.3rem; border: 1px solid rgb(85 232 242 / 0.32); background: rgb(4 19 27 / 0.94); color: #c8edf0; font: 0.48rem/1.1 var(--font-mono); pointer-events: none; }
+.memory-workload__chart-hit { stroke: transparent; stroke-width: 4; pointer-events: stroke; vector-effect: non-scaling-stroke; }
+.memory-workload__chart-guide, .memory-workload__chart-point { opacity: 0; pointer-events: none; transition: opacity 140ms ease; }
+.memory-workload__chart-guide { stroke: rgb(188 249 253 / 0.42); stroke-width: 0.7; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+.memory-workload__chart-point { fill: #8af7fa; vector-effect: non-scaling-stroke; }
+.memory-workload__chart g:hover .memory-workload__chart-guide,
+.memory-workload__chart g:hover .memory-workload__chart-point,
+.memory-workload__chart g:focus-visible .memory-workload__chart-guide,
+.memory-workload__chart g:focus-visible .memory-workload__chart-point { opacity: 1; }
 .memory-workload__chart--empty { display: grid; place-items: center; color: #618f95; font: clamp(0.35rem, 0.72cqi, 0.45rem)/1 var(--font-mono); letter-spacing: 0.1em; }
 .memory-workload__chart-grid { fill: none; stroke: rgb(69 199 210 / 0.14); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .memory-workload__chart-fill { fill: rgb(69 219 228 / 0.08); }
@@ -40,7 +53,8 @@
 .memory-workload__hardware > dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.45rem; margin: 0.38rem 0 0; }
 .memory-workload__hardware > dl > div + div { padding-left: 0.45rem; border-left: 1px solid rgb(65 205 218 / 0.2); }
 .memory-workload__modules { display: grid; gap: 0.22rem; margin-top: 0.36rem; padding-top: 0.32rem; border-top: 1px solid rgb(65 205 218 / 0.17); }
-.memory-workload__modules > div { display: grid; min-width: 0; grid-template-columns: minmax(3.8rem, auto) minmax(3.4rem, auto) minmax(0, 1fr); gap: 0.4rem; color: #9bced3; font: clamp(0.48rem, 1.02cqi, 0.66rem)/1 var(--font-mono); }
+.memory-workload__modules > div { display: grid; min-width: 0; grid-template-columns: minmax(3.8rem, auto) minmax(3.4rem, auto) minmax(0, 1fr); gap: 0.4rem; padding-block: 0.08rem; color: #9bced3; font: clamp(0.48rem, 1.02cqi, 0.66rem)/1 var(--font-mono); transition: background-color 160ms ease; }
+@media (hover: hover) { .memory-workload__modules > div:hover { background: rgb(20 89 99 / 0.16); } }
 .memory-workload__modules b, .memory-workload__modules span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .memory-workload__modules b { color: #6ed8e1; font-weight: 500; }
 .memory-workload__modules > span { color: #719da2; font: clamp(0.43rem, 0.9cqi, 0.56rem)/1 var(--font-mono); letter-spacing: 0.06em; }
@@ -54,4 +68,10 @@
   .memory-workload__pressure { align-items: flex-start; flex-direction: column; justify-content: center; }
   .memory-workload__hardware > dl { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.5rem; }
   .memory-workload__hardware > dl > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-workload__memory, .memory-workload__swap, .memory-workload__pressure, .memory-workload__hardware,
+  .memory-workload__meter span, .memory-workload__modules > div,
+  .memory-workload__chart-guide, .memory-workload__chart-point { transition: none; }
 }

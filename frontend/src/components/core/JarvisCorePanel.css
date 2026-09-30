@@ -244,7 +244,7 @@
   );
   color: var(--text-primary);
   font-family: var(--font-mono);
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* Thin divider where the three core connections arrive. */
@@ -285,6 +285,16 @@
   align-items: center;
   min-width: 0;
   gap: 12px;
+  padding: 0.16rem 0.28rem;
+  border-left: 1px solid transparent;
+  transition: border-color 170ms ease, background-color 170ms ease;
+}
+
+@media (hover: hover) {
+  .jarvis-core__metric:hover {
+    border-left-color: rgb(68 217 228 / 0.46);
+    background: rgb(18 78 88 / 0.13);
+  }
 }
 
 .jarvis-core__telemetry-label,
@@ -502,6 +512,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .jarvis-core__metric,
   .jarvis-core__telemetry-value,
   .jarvis-core__integrity-value {
     transition: none;

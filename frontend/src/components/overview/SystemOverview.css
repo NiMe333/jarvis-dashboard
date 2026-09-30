@@ -198,7 +198,7 @@
 .system-overview__hardware {
   display: grid;
   min-width: 0;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: baseline;
   column-gap: 10px;
   row-gap: clamp(5px, 0.9cqh, 8px);
@@ -206,12 +206,32 @@
 }
 
 .system-overview__hardware-row {
-  display: contents;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  margin-inline: -0.3rem;
+  padding: 0.14rem 0.3rem;
+  border-left: 1px solid transparent;
+  transition: border-color 180ms ease, background-color 180ms ease;
 }
 
 .system-overview__hardware dt,
 .system-overview__hardware dd {
   margin: 0;
+}
+
+@media (hover: hover) {
+  .system-overview__hardware-row:hover {
+    border-left-color: rgb(66 217 228 / 0.46);
+    background: rgb(22 91 101 / 0.12);
+  }
+
+  .system-overview:hover .hud-frame__segment {
+    opacity: 1;
+    background: rgb(85 217 227 / 0.68);
+  }
 }
 
 .system-overview__hardware dd {

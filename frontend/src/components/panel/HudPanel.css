@@ -86,6 +86,13 @@
 .hud-panel--frame-core .hud-frame__segment--br::after { height: 25px; width: 2px; }
 .hud-panel--frame-core .hud-frame__tick { width: 8px; height: 2px; }
 
+@media (hover: hover) {
+  .hud-panel--frame-core:hover .hud-frame__segment,
+  .hud-panel--frame-core:hover .hud-frame__tick {
+    background: #72e7efc9;
+  }
+}
+
 .hud-panel--frame-core::before,
 .hud-panel--frame-core::after {
   position: absolute;

@@ -4,6 +4,7 @@ export default function SystemStatus({
   dataSource = "loading",
   isRetrying = false,
   warningTone = false,
+  lastSuccessfulRefreshAt = null,
 }) {
   const reachable = dataSource === "live" || dataSource === "partial";
   const state = !reachable ? dataSource === "loading" ? "loading" : "offline" : warningTone ? "warning" : "online";
@@ -15,12 +16,17 @@ export default function SystemStatus({
     : state === "loading"
       ? "WAITING FOR TELEMETRY"
       : isRetrying ? "RETRYING CONNECTION" : "CONNECTION UNAVAILABLE";
+  const refreshedAt = lastSuccessfulRefreshAt
+    ? new Date(lastSuccessfulRefreshAt).toLocaleTimeString("sl-SI", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : "NOT YET AVAILABLE";
+  const statusDetails = `${label}. ${secondary}. Last successful refresh: ${refreshedAt}.`;
 
   return (
     <div
       className={`system-status system-status--${state}`}
       role="status"
-      aria-label={`${label}. ${secondary}.`}
+      aria-label={statusDetails}
+      title={statusDetails}
     >
       <span className="system-status__meta">JARVIS / NODE</span>
       <div className="system-status__body">

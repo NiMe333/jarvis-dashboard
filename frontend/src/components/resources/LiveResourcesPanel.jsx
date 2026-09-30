@@ -87,7 +87,11 @@ function StorageCard({ disk, warningTone, dataSource }) {
         </span>
       </header>
 
-      <section className="storage-overview__capacity" aria-label={`${disk.name} capacity`}>
+      <section
+        className="storage-overview__capacity"
+        aria-label={`${disk.name} capacity`}
+        title={`Used ${formatBytes(usage.used)} · Free ${formatBytes(usage.free)} · Total ${formatBytes(usage.total)} · ${percent === null ? unavailable : `${percent.toFixed(1)}% used`}`}
+      >
         <span>{usage.label ?? "USAGE"}</span>
         <strong>{capacityPair(usage.used, usage.total)}</strong>
         <div
@@ -97,6 +101,7 @@ function StorageCard({ disk, warningTone, dataSource }) {
           aria-valuemin="0"
           aria-valuemax="100"
           aria-valuenow={percent === null ? undefined : Math.round(percent)}
+          tabIndex="0"
         >
           <span style={{ width: percent === null ? "0%" : `${percent}%` }} />
         </div>
@@ -110,12 +115,15 @@ function StorageCard({ disk, warningTone, dataSource }) {
         </div>
         <div>
           <dt><SmartIcon aria-hidden="true" />SMART STATUS</dt>
-          <dd className={disk.smartHealth === false ? "storage-overview__health-alert" : ""}>{statusLabel(disk.smartHealth)}</dd>
+          <dd
+            className={disk.smartHealth === false ? "storage-overview__health-alert" : ""}
+            title={disk.smartHealth === true ? "SMART self-assessment reports the drive is healthy." : disk.smartHealth === false ? "SMART reports a drive health warning." : "SMART status is unavailable."}
+          >{statusLabel(disk.smartHealth)}</dd>
         </div>
       </dl>
 
       <footer className="storage-overview__footer">
-        <span>{disk.mountPoint ?? unavailable}</span>
+        <span title={disk.mountPoint ?? undefined}>{disk.mountPoint ?? unavailable}</span>
         <span>PHYSICAL: {formatBytes(disk.physicalTotal)}</span>
       </footer>
     </article>

@@ -67,6 +67,7 @@ function transferredBytes(series, key) {
 
 export default function NetworkThroughputPanel({ data = {}, dataSource = "offline", className = "" }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [highlightedSeries, setHighlightedSeries] = useState(null);
   const series = data.networkSeries ?? [];
   const maximum = Math.max(0, ...series.flatMap((point) => [point.downloadRate ?? 0, point.uploadRate ?? 0]));
   const downloadPath = buildPath(series, "downloadRate", maximum);
@@ -95,11 +96,11 @@ export default function NetworkThroughputPanel({ data = {}, dataSource = "offlin
       variant="compact"
     >
       <div className="network-throughput__rates">
-        <div><span className="network-throughput__key network-throughput__key--download" />{dashboardCopy.network.download}<strong>{formatRate(data.downloadRate)}</strong></div>
-        <div><span className="network-throughput__key network-throughput__key--upload" />{dashboardCopy.network.upload}<strong>{formatRate(data.uploadRate)}</strong></div>
+        <div onMouseEnter={() => setHighlightedSeries("download")} onMouseLeave={() => setHighlightedSeries(null)}><span className="network-throughput__key network-throughput__key--download" />{dashboardCopy.network.download}<strong>{formatRate(data.downloadRate)}</strong></div>
+        <div onMouseEnter={() => setHighlightedSeries("upload")} onMouseLeave={() => setHighlightedSeries(null)}><span className="network-throughput__key network-throughput__key--upload" />{dashboardCopy.network.upload}<strong>{formatRate(data.uploadRate)}</strong></div>
       </div>
 
-      <div className="network-throughput__chart">
+      <div className={`network-throughput__chart${highlightedSeries ? ` is-highlighting-${highlightedSeries}` : ""}`}>
         {hoveredPoint && (
           <div className="network-throughput__tooltip" role="status">
             <strong>MEASURED · {measurementTime(hoveredPoint)}</strong>

@@ -56,8 +56,8 @@ function ServiceRow({ service, warningTone }) {
           <Icon size={18} strokeWidth={1.55} />
         </span>
         <span className="services-panel__identity">
-          <strong>{service.name ?? dashboardCopy.common.unavailable}</strong>
-          <small>{serviceSecondaryLine(service)}</small>
+          <strong title={service.name ?? undefined}>{service.name ?? dashboardCopy.common.unavailable}</strong>
+          <small title={serviceSecondaryLine(service)}>{serviceSecondaryLine(service)}</small>
         </span>
         <span className="services-panel__state">
           <span className="services-panel__state-line">

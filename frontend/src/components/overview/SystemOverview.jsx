@@ -9,7 +9,6 @@ const HARDWARE_FIELDS = [
   ["hypervisor", "hypervisor"],
   ["processor", "processor"],
   ["memory", "memory"],
-  ["storage", "storage"],
 ];
 
 function VectorClock() {
@@ -72,7 +71,7 @@ export default function SystemOverview({
 
           <dl className="system-overview__hardware">
             {identity.map((item) => (
-              <div className="system-overview__hardware-row" key={item.label}>
+              <div className="system-overview__hardware-row" key={item.label} title={`${item.label}: ${formatNullable(item.value)}`}>
                 <dt>{item.label}</dt>
                 <dd>{formatNullable(item.value)}</dd>
               </div>

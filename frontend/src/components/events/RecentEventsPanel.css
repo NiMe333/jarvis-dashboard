@@ -32,7 +32,11 @@
   font: inherit;
   letter-spacing: inherit;
   text-shadow: 0 0 8px rgb(38 222 235 / 0.28);
+  transition: color 160ms ease, opacity 160ms ease, transform 120ms ease;
 }
+
+.recent-events__view-all:hover { color: #d9fbfd; }
+.recent-events__view-all:active { transform: translateY(1px); }
 
 .recent-events__view-all:focus-visible,
 .recent-events-dialog__close:focus-visible {
@@ -59,6 +63,20 @@
   padding-inline: 0.15rem;
   border-bottom: 1px solid rgb(59 188 199 / 0.12);
   color: var(--event-accent, var(--accent-cyan));
+  animation: event-row-in 260ms ease-out both;
+  transition: background-color 170ms ease, border-color 170ms ease;
+}
+
+@media (hover: hover) {
+  .recent-events__row:hover {
+    border-bottom-color: rgb(75 214 225 / 0.28);
+    background: rgb(16 68 77 / 0.16);
+  }
+}
+
+@keyframes event-row-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .recent-events__date-divider {

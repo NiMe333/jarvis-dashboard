@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CircleHelp,
   Download,
@@ -43,7 +43,7 @@ function QuickAction({ action, restartState, onRestart }) {
   if (hasDestination) {
     return (
       <a
-        className="quick-actions__button quick-actions__button--active"
+        className={`quick-actions__button quick-actions__button--active quick-actions__button--${action.id}`}
         href={destination}
         target="_blank"
         rel="noopener noreferrer"
@@ -59,7 +59,7 @@ function QuickAction({ action, restartState, onRestart }) {
     return (
       <button
         type="button"
-        className="quick-actions__button quick-actions__button--active"
+        className={`quick-actions__button quick-actions__button--active quick-actions__button--${action.id}`}
         onClick={onRestart}
         disabled={restartState === "loading" || restartDisabled}
         title={restartDisabled ? "RESTART DISABLED IN BACKEND CONFIGURATION" : undefined}
@@ -126,9 +126,12 @@ export default function QuickActionsPanel({ actions = [], className = "" }) {
   const [restartFeedback, setRestartFeedback] = useState("");
   const [isRestartConfirmationOpen, setIsRestartConfirmationOpen] = useState(false);
   const [restartCountdown, setRestartCountdown] = useState(10);
+  const restartInFlightRef = useRef(false);
   const visibleActions = actions.filter((action) => ["restart-service", "open-proxmox"].includes(action.id));
 
   const restart = useCallback(async () => {
+    if (restartInFlightRef.current) return;
+    restartInFlightRef.current = true;
     setIsRestartConfirmationOpen(false);
     setRestartState("loading");
     setRestartFeedback("RESTARTING…");
@@ -138,6 +141,7 @@ export default function QuickActionsPanel({ actions = [], className = "" }) {
       setRestartState("success");
       setRestartFeedback("REBOOT ACCEPTED");
     } catch (error) {
+      restartInFlightRef.current = false;
       setRestartState("error");
       setRestartFeedback(error?.message || "RESTART FAILED");
     }

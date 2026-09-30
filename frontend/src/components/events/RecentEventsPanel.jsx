@@ -46,7 +46,7 @@ function EventRow({ event, expanded = false }) {
   const type = normalizeEventType(event.type);
 
   return (
-    <article className={`recent-events__row recent-events__row--${type}${expanded ? " recent-events__row--expanded" : ""}`}>
+    <article className={`recent-events__row recent-events__row--${type}${expanded ? " recent-events__row--expanded" : ""}`} title={event.message}>
       <span className="recent-events__indicator" aria-hidden="true" />
       <time dateTime={event.timestamp}>{formatEventTime(event.timestamp)}</time>
       <span className="recent-events__message" title={!expanded ? event.message : undefined}>

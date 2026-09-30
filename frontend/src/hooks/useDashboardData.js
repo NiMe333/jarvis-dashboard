@@ -17,6 +17,7 @@ const EMPTY_DASHBOARD_DATA = Object.freeze({
   dataSource: "loading",
   dataError: null,
   isRetrying: false,
+  lastSuccessfulRefreshAt: null,
 });
 
 function mergeApiData(previous, payload) {
@@ -79,6 +80,7 @@ export function useDashboardData() {
               dataSource: "offline",
               dataError: failedEndpoints,
               isRetrying: false,
+              lastSuccessfulRefreshAt: current.lastSuccessfulRefreshAt,
             };
             if (import.meta.env.DEV) console.info("[dashboard] component data", offline);
             return offline;
@@ -89,6 +91,7 @@ export function useDashboardData() {
             dataSource: source,
             dataError: failedEndpoints.length > 0 ? failedEndpoints : null,
             isRetrying: false,
+            lastSuccessfulRefreshAt: new Date().toISOString(),
           };
           if (import.meta.env.DEV) console.info("[dashboard] component data", next);
           return next;
@@ -97,11 +100,12 @@ export function useDashboardData() {
       .catch((error) => {
         if (!disposed && error.name !== "AbortError") {
           console.error("Dashboard API unavailable.", error);
-          setData(() => ({
+          setData((current) => ({
             ...EMPTY_DASHBOARD_DATA,
             dataSource: "offline",
             dataError: ["api"],
             isRetrying: false,
+            lastSuccessfulRefreshAt: current.lastSuccessfulRefreshAt,
           }));
         }
       })

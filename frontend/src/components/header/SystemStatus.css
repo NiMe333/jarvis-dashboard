@@ -9,6 +9,7 @@
   column-gap: clamp(10px, 0.85vw, 14px);
   row-gap: 11px;
   padding: 14px var(--header-section-inline);
+  transition: color 200ms ease;
 }
 
 .system-status::after {
@@ -82,6 +83,13 @@
   border-radius: 50%;
   background: radial-gradient(circle at 38% 35%, color-mix(in srgb, var(--status-color) 42%, white), var(--status-color) 56%, color-mix(in srgb, var(--status-color) 76%, black));
   box-shadow: 0 0 7px color-mix(in srgb, var(--status-color) 46%, transparent), 0 0 17px color-mix(in srgb, var(--status-color) 26%, transparent);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+@media (hover: hover) {
+  .system-status:hover .system-status__icon i {
+    box-shadow: 0 0 9px color-mix(in srgb, var(--status-color) 58%, transparent), 0 0 19px color-mix(in srgb, var(--status-color) 30%, transparent);
+  }
 }
 
 .system-status__copy {

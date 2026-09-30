@@ -54,7 +54,7 @@ export default function App() {
       <DevelopmentDataStatus data={data} />
       <div className="dashboard-layout">
         <DashboardHeader
-          data={{ ...data.header, dataSource: data.dataSource, isRetrying: data.isRetrying, warningTone }}
+          data={{ ...data.header, dataSource: data.dataSource, isRetrying: data.isRetrying, warningTone, lastSuccessfulRefreshAt: data.lastSuccessfulRefreshAt }}
           className="dashboard-layout__header"
         />
 

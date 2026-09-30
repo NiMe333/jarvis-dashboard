@@ -82,6 +82,14 @@
   object-fit: contain;
   opacity: 0.92;
   filter: drop-shadow(0 0 5px rgba(69, 212, 223, 0.22));
+  transition: filter 180ms ease, opacity 180ms ease;
+}
+
+@media (hover: hover) {
+  .dashboard-header__identity:hover .dashboard-header__identity-image img {
+    opacity: 1;
+    filter: brightness(1.1) drop-shadow(0 0 6px rgba(69, 212, 223, 0.38));
+  }
 }
 
 .dashboard-header__brand {
