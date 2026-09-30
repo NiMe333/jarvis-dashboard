@@ -15,6 +15,7 @@
 .hud-panel--neutral { --panel-accent: var(--text-secondary); --panel-line: #55d9e358; }
 .hud-panel--no-padding { padding: 0; }
 
+
 .hud-frame {
   position: absolute;
   z-index: 0;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CircleHelp,
   Download,
@@ -82,8 +82,6 @@ function QuickAction({ action, restartState, onRestart }) {
 }
 
 function RestartConfirmation({ countdown, onCancel, onConfirm }) {
-  const ready = countdown === 0;
-
   return (
     <div className="restart-confirmation" role="presentation">
       <div className="restart-confirmation__backdrop" onClick={onCancel} />
@@ -102,7 +100,7 @@ function RestartConfirmation({ countdown, onCancel, onConfirm }) {
 
         <div className="restart-confirmation__countdown" aria-live="polite">
           <strong>{countdown}</strong>
-          <span>{ready ? "CONFIRMATION UNLOCKED" : "SAFETY DELAY"}</span>
+          <span>{countdown === 0 ? "RESTARTING" : "SAFETY DELAY"}</span>
           <i style={{ "--countdown-progress": `${(10 - countdown) * 10}%` }} aria-hidden="true" />
         </div>
 
@@ -114,9 +112,8 @@ function RestartConfirmation({ countdown, onCancel, onConfirm }) {
             type="button"
             className="restart-confirmation__execute"
             onClick={onConfirm}
-            disabled={!ready}
           >
-            {ready ? "CONFIRM REBOOT" : `CONFIRM IN ${countdown}s`}
+            {countdown > 0 ? "RESTART NOW" : "RESTARTING…"}
           </button>
         </div>
       </section>
@@ -131,31 +128,8 @@ export default function QuickActionsPanel({ actions = [], className = "" }) {
   const [restartCountdown, setRestartCountdown] = useState(10);
   const visibleActions = actions.filter((action) => ["restart-service", "open-proxmox"].includes(action.id));
 
-  useEffect(() => {
-    if (!isRestartConfirmationOpen) return undefined;
-
-    setRestartCountdown(10);
-    const timer = window.setInterval(() => {
-      setRestartCountdown((current) => {
-        if (current <= 1) {
-          window.clearInterval(timer);
-          return 0;
-        }
-        return current - 1;
-      });
-    }, 1_000);
-
-    return () => window.clearInterval(timer);
-  }, [isRestartConfirmationOpen]);
-
-  const openRestartConfirmation = () => {
-    if (restartState !== "loading") setIsRestartConfirmationOpen(true);
-  };
-
-  const restart = async () => {
-    if (restartCountdown > 0) return;
+  const restart = useCallback(async () => {
     setIsRestartConfirmationOpen(false);
-
     setRestartState("loading");
     setRestartFeedback("RESTARTING…");
     try {
@@ -167,6 +141,28 @@ export default function QuickActionsPanel({ actions = [], className = "" }) {
       setRestartState("error");
       setRestartFeedback(error?.message || "RESTART FAILED");
     }
+  }, []);
+
+  useEffect(() => {
+    if (!isRestartConfirmationOpen) return undefined;
+
+    setRestartCountdown(10);
+    const timer = window.setInterval(() => {
+      setRestartCountdown((current) => {
+        if (current <= 1) {
+          window.clearInterval(timer);
+          void restart();
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1_000);
+
+    return () => window.clearInterval(timer);
+  }, [isRestartConfirmationOpen, restart]);
+
+  const openRestartConfirmation = () => {
+    if (restartState !== "loading") setIsRestartConfirmationOpen(true);
   };
 
   return (

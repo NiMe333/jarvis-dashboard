@@ -90,6 +90,17 @@
   color: #e0fbfc;
 }
 
+.quick-actions__button--active:hover .quick-actions__icon {
+  border-color: var(--accent-cyan);
+  background: rgb(25 111 121 / 0.34);
+  box-shadow: 0 0 11px rgb(42 215 228 / 0.16), inset 0 0 7px rgb(51 218 230 / 0.12);
+  transform: scale(1.06) rotate(-4deg);
+}
+
+.quick-actions__icon {
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
 .quick-actions__button--active:focus-visible {
   border-color: var(--accent-cyan);
   outline: 1px solid var(--accent-cyan);
@@ -155,6 +166,7 @@
 
 .restart-confirmation__dialog {
   position: relative;
+  z-index: 1;
   width: min(31rem, 100%);
   padding: clamp(1.25rem, 4vw, 2rem);
   border: 1px solid rgb(245 169 84 / 0.72);
@@ -268,4 +280,6 @@
   .quick-actions__button--active {
     transition: none;
   }
+
+  .quick-actions__icon { transition: none; }
 }

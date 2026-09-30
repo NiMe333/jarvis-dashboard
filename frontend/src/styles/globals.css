@@ -25,6 +25,30 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Interaction stays on content cards/rows, never on the large dashboard panels. */
+.storage-overview__card,
+.services-panel__row,
+.system-overview__hardware-row,
+.system-overview__uptime-row,
+.network-throughput__metric,
+.host-telemetry__metric,
+.recent-events__event {
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.storage-overview__card:hover,
+.services-panel__row:hover,
+.system-overview__hardware-row:hover,
+.system-overview__uptime-row:hover,
+.network-throughput__metric:hover,
+.host-telemetry__metric:hover,
+.recent-events__event:hover {
+  border-color: rgb(70 222 232 / 0.46);
+  background-color: rgb(10 45 54 / 0.34);
+  box-shadow: inset 0 0 14px rgb(42 215 228 / 0.045);
+  transform: translateX(2px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
