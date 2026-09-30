@@ -22,7 +22,7 @@ const ACTION_ICONS = {
   update: Download,
 };
 
-const PROXMOX_WEB_URL = "https://jarvis.taile46e9c.ts.net/#v1:0:18:4:::::::";
+const PROXMOX_WEB_URL = "https://jarvis.taile46e9c.ts.net/#v1:0:=node%2Fjarvis:4:=jsconsole::::::5";
 
 function QuickAction({ action, restartState, onRestart }) {
   const Icon = ACTION_ICONS[action.icon] ?? CircleHelp;

@@ -151,7 +151,7 @@ Za Proxmox in senzorje morajo biti nastavljene vsaj naslednje vrednosti:
 DASHBOARD_DATA_SOURCE=proxmox
 PROXMOX_API_URL=https://192.168.0.11:8006
 PROXMOX_NODE_NAME=jarvis
-PROXMOX_WEB_URL=https://jarvis.taile46e9c.ts.net/#v1:0:18:4:::::::
+PROXMOX_WEB_URL=https://jarvis.taile46e9c.ts.net/#v1:0:=node%2Fjarvis:4:=jsconsole::::::5
 HOST_METRICS_AGENT_URL=http://192.168.0.11:3100
 HOST_METRICS_AGENT_TOKEN=<isti-token-kot-v-/etc/jarvis-sensor-agent.env>
 ```
