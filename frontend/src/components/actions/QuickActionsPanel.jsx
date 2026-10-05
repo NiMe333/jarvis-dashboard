@@ -28,7 +28,7 @@ function QuickAction({ action, restartState, onRestart }) {
   const Icon = ACTION_ICONS[action.icon] ?? CircleHelp;
   const label = dashboardCopy.quickActions.labels[action.id] ?? action.label;
   const destination = action.id === "open-proxmox"
-    ? action.url?.trim() || PROXMOX_WEB_URL
+    ? PROXMOX_WEB_URL
     : action.url?.trim();
   const hasDestination = Boolean(destination);
   const content = (
